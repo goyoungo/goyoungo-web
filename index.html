@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S3 정적 웹사이트 호스팅 테스트</title>
+    <script src="https://developers.kakao.com/sdk/js/kakao.js">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        /* 로그인 화면 스타일 */
+        #loginScreen {
+            display: block;
+        }
+
+        #loginScreen h1 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+
+        #loginScreen p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        #kakaoLoginBtn {
+            background: #FEE500;
+            color: #000000;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        #kakaoLoginBtn:hover {
+            background: #FDD835;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        #kakaoLoginBtn::before {
+            content: "💬";
+            font-size: 1.5rem;
+        }
+
+        /* 메인 컨텐츠 스타일 */
+        #mainContent {
+            display: none;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .user-info {
+            background: #FEE500;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .user-info .name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .info-box {
+            background: #f5f5f5;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+            text-align: left;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            padding: 0.5rem 0;
+            color: #555;
+        }
+
+        .info-box li::before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .timestamp {
+            margin-top: 2rem;
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        #logoutBtn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: background 0.3s;
+        }
+
+        #logoutBtn:hover {
+            background: #d32f2f;
+        }
+
+        .loading {
+            display: none;
+            color: #666;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 로그인 화면 -->
+        <div id="loginScreen">
+            <div class="success-icon">🔐</div>
+            <h1>카카오톡 인증 필요</h1>
+            <p>이 페이지에 접근하려면<br>카카오톡 로그인이 필요합니다.</p>
+            <button id="kakaoLoginBtn">카카오 로그인</button>
+            <div class="loading">로그인 중...</div>
+        </div>
+
+        <!-- 메인 컨텐츠 (로그인 후 표시) -->
+        <div id="mainContent">
+            <div class="success-icon">🎉</div>
+            <h1>S3 호스팅 성공!</h1>
+
+            <div class="user-info">
+                <img id="userProfileImg" src="" alt="프로필">
+                <div>
+                    <div class="name" id="userName"></div>
+                    <div style="font-size: 0.9rem; color: #666;">카카오톡 인증 완료</div>
+                </div>
+            </div>
+
+            <p>Amazon S3 정적 웹사이트 호스팅이 정상적으로 작동하고 있습니다.</p>
+
+            <div class="info-box">
+                <h3>확인된 사항</h3>
+                <ul>
+                    <li>카카오톡 인증 완료</li>
+                    <li>S3 버킷 설정 완료</li>
+                    <li>정적 웹사이트 호스팅 활성화</li>
+                    <li>퍼블릭 액세스 권한 설정</li>
+                    <li>index.html 파일 업로드 완료</li>
+                </ul>
+            </div>
+
+            <div class="timestamp">
+                페이지 로드 시간: <span id="datetime"></span>
+            </div>
+
+            <button id="logoutBtn">로그아웃</button>
+        </div>
+    </div>
+
+    <script>
+        // 카카오 JavaScript 키
+        const KAKAO_JS_KEY = '0ffa9164b98f13f79e8dd6902be2f599';
+
+        // 페이지 로드 시 초기화
+        window.onload = function() {
+            console.log('=== 카카오 로그인 디버깅 시작 ===');
+
+            // Kakao SDK 로드 확인
+            if (typeof Kakao === 'undefined') {
+                console.error('❌ Kakao SDK가 로드되지 않았습니다.');
+                alert('카카오 SDK 로드 실패. 인터넷 연결을 확인해주세요.');
+                return;
+            }
+            console.log('✅ Kakao SDK 로드 완료');
+
+            // SDK 초기화
+            try {
+                if (!Kakao.isInitialized()) {
+                    Kakao.init(KAKAO_JS_KEY);
+                    console.log('✅ Kakao SDK 초기화 완료:', Kakao.isInitialized());
+                } else {
+                    console.log('✅ Kakao SDK 이미 초기화됨');
+                }
+            } catch (error) {
+                console.error('❌ SDK 초기화 실패:', error);
+                alert('카카오 SDK 초기화 실패: ' + error.message);
+                return;
+            }
+
+            // 로그인 버튼 이벤트 등록
+            const loginBtn = document.getElementById('kakaoLoginBtn');
+            loginBtn.addEventListener('click', function() {
+                console.log('🔘 로그인 버튼 클릭됨');
+                handleKakaoLogin();
+            });
+            console.log('✅ 로그인 버튼 이벤트 등록 완료');
+
+            // 로그아웃 버튼 이벤트 등록
+            const logoutBtn = document.getElementById('logoutBtn');
+            logoutBtn.addEventListener('click', function() {
+                console.log('🔘 로그아웃 버튼 클릭됨');
+                handleKakaoLogout();
+            });
+
+            // 초기 로그인 상태 확인
+            checkLoginStatus();
+        };
+
+        // 카카오 로그인 처리
+        function handleKakaoLogin() {
+            console.log('🔐 카카오 로그인 시도...');
+
+            try {
+                Kakao.Auth.login({
+                    success: function(authObj) {
+                        console.log('✅ 로그인 성공:', authObj);
+                        getUserInfo();
+                    },
+                    fail: function(err) {
+                        console.error('❌ 로그인 실패:', err);
+                        let errorMsg = '카카오 로그인에 실패했습니다.';
+
+                        if (err.error === 'access_denied') {
+                            errorMsg += '\n사용자가 로그인을 취소했습니다.';
+                        } else if (err.error === 'invalid_client') {
+                            errorMsg += '\n앱 키가 올바르지 않습니다.';
+                        } else if (err.error_description) {
+                            errorMsg += '\n' + err.error_description;
+                        }
+
+                        alert(errorMsg);
+                    }
+                });
+            } catch (error) {
+                console.error('❌ 로그인 함수 실행 오류:', error);
+                alert('로그인 중 오류 발생: ' + error.message + '\n\n카카오 디벨로퍼스에서 다음을 확인하세요:\n1. Web 플랫폼 등록 (현재 URL)\n2. 카카오 로그인 활성화\n3. Redirect URI 등록');
+            }
+        }
+
+        // 로그인 상태 확인
+        function checkLoginStatus() {
+            console.log('🔍 로그인 상태 확인 중...');
+
+            Kakao.Auth.getStatusInfo()
+                .then(function(res) {
+                    console.log('상태 정보:', res);
+                    if (res.status === 'connected') {
+                        console.log('✅ 이미 로그인된 상태');
+                        getUserInfo();
+                    } else {
+                        console.log('ℹ️ 로그인되지 않은 상태');
+                        showLoginScreen();
+                    }
+                })
+                .catch(function(err) {
+                    console.log('ℹ️ 로그인 상태 확인 불가:', err);
+                    showLoginScreen();
+                });
+        }
+
+        // 사용자 정보 가져오기
+        function getUserInfo() {
+            console.log('👤 사용자 정보 조회 중...');
+
+            Kakao.API.request({
+                url: '/v2/user/me',
+                success: function(res) {
+                    console.log('✅ 사용자 정보:', res);
+                    showMainContent(res);
+                },
+                fail: function(err) {
+                    console.error('❌ 사용자 정보 조회 실패:', err);
+                    alert('사용자 정보를 가져올 수 없습니다.');
+                    showLoginScreen();
+                }
+            });
+        }
+
+        // 로그아웃 처리
+        function handleKakaoLogout() {
+            console.log('🚪 로그아웃 시도...');
+
+            Kakao.Auth.logout(function() {
+                console.log('✅ 로그아웃 성공');
+                alert('로그아웃되었습니다.');
+                showLoginScreen();
+            });
+        }
+
+        // 로그인 화면 표시
+        function showLoginScreen() {
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('mainContent').style.display = 'none';
+        }
+
+        // 메인 컨텐츠 표시
+        function showMainContent(userInfo) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+
+            // 사용자 정보 표시
+            const profile = userInfo.properties || userInfo.kakao_account?.profile;
+            document.getElementById('userName').textContent = profile.nickname || '사용자';
+            document.getElementById('userProfileImg').src = profile.profile_image || profile.thumbnail_image || 'https://via.placeholder.com/50';
+
+            // 타임스탬프
+            document.getElementById('datetime').textContent = new Date().toLocaleString('ko-KR');
+        }
+    </script>
+</body>
+</html>

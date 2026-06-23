@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd ~/goyoungo-web && git add . && git commit -m \\\"Initial commit: Kakao login integrated website\\n\\n- Add index.html with Kakao OAuth login\\n- Add setup documentation\\n- Configure for goyo...",
+  "error": "Exit code 128\nAuthor identity unknown\n\n*** Please tell me who you are.\n\nRun\n\n  git config --global user.email \"you@example.com\"\n  git config --global user.name \"Your Name\"\n\nto set your account's default identity.\nOmit --global to set the identity only in this repository.\n\nfatal: empty ident name (for <kyy@A-YounYoung.localdomain>) not allowed",
+  "timestamp": "2026-06-23T06:48:23.134Z",
+  "retry_count": 1
+}
