@@ -1,38 +1,31 @@
 # 카카오 디벨로퍼스 설정 가이드
 
-## 필수 설정 (배포 전 완료 필요)
+## 필수 설정
 
 ### 1. Web 플랫폼 등록
-https://developers.kakao.com → 앱 선택 → "앱 설정" → "플랫폼"
 
-**Web 플랫폼 등록**:
+카카오 디벨로퍼스에서 앱을 선택한 뒤 `앱 설정` → `플랫폼`에 다음 사이트를 등록합니다.
+
 - `https://goyoungo.com`
-- `https://www.goyoungo.com`
+- `https://www.goyoungo.com`을 실제 서비스할 때만 추가
 
 ### 2. 카카오 로그인 활성화
-"제품 설정" → "카카오 로그인" → **활성화 상태: ON**
+
+`제품 설정` → `카카오 로그인`에서 활성화 상태를 `ON`으로 설정합니다.
 
 ### 3. Redirect URI 등록
-"제품 설정" → "카카오 로그인" → "Redirect URI"
 
-**추가할 URI**:
+현재 페이지는 레거시 JavaScript SDK 팝업 로그인을 사용합니다. 카카오 앱 설정에 실제 서비스 주소를 등록합니다.
+
+- `https://goyoungo.com/`
 - `https://goyoungo.com/index.html`
-- `https://www.goyoungo.com/index.html`
-- `https://goyoungo.com/` (optional)
-- `https://www.goyoungo.com/` (optional)
 
-### 4. 동의 항목 설정
-"제품 설정" → "카카오 로그인" → "동의항목"
+AWS Amplify의 임시 주소에서도 확인해야 한다면 해당 HTTPS 주소도 Web 플랫폼에 추가합니다.
 
-**필수 설정**:
-- ✅ 닉네임 (필수 동의)
-- ✅ 프로필 사진 (필수 동의)
+### 4. 동의 항목
 
----
+이 사이트는 로그인 여부만 사용하며 닉네임이나 프로필 사진을 조회하지 않습니다. 프로필 정보 동의를 필수로 요구하지 마세요.
 
-## 배포 후 Amplify URL 추가
+## 유지보수 참고
 
-Amplify가 생성한 임시 URL도 추가:
-- 예: `https://main.xxxxx.amplifyapp.com`
-
-위 설정을 먼저 완료하셨나요?
+현재 인증 흐름은 Kakao JavaScript SDK v1 방식입니다. Kakao의 지원 종료 일정에 맞춰 v2 인가 코드 방식으로 별도 전환이 필요합니다.
