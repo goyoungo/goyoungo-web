@@ -1,4 +1,7 @@
 window.SITE_DATA = {
+  "config": {
+    "voteApiUrl": "https://ndx4bl2obl.execute-api.ap-northeast-3.amazonaws.com"
+  },
   "brand": {
     "title": "스키장 정보 공유",
     "byline": "by @go.youngo",

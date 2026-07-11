@@ -7,6 +7,7 @@
 - HTML5 / CSS / Vanilla JavaScript
 - Kakao JavaScript SDK
 - AWS Amplify / CloudFront
+- API Gateway HTTP API / Lambda / DynamoDB
 - 빌드 과정 없는 다중 정적 페이지 구조
 
 ## 자체 페이지
@@ -21,6 +22,8 @@
 - `/shuttle.html`
 
 공통 화면은 `assets/site.css`, `assets/site.js`, `assets/auth.js`를 사용하며, Notion에서 복사한 읽기 전용 스냅샷은 `assets/site-data.js`에 있습니다.
+
+맛집 추천·비추천은 기존 스냅샷의 평가 수에 카카오 계정 기반 실시간 평가를 더해 표시합니다. 한 계정은 맛집마다 한 번 선택할 수 있고, 같은 선택을 다시 누르면 취소되며 반대 선택을 누르면 평가가 변경됩니다. API 구성과 운영 방법은 `backend/README.md`를 참고하세요.
 
 > 현재 카카오 로그인은 정적 사이트의 화면 접근을 제어하는 방식입니다. 정적 파일 자체를 서버에서 비공개로 보호해야 한다면 별도의 인증 백엔드나 엣지 접근 제어가 필요합니다.
 

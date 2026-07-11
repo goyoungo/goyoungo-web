@@ -5,6 +5,16 @@
     var root = document.getElementById("pageRoot");
     if (!data || !root) return;
 
+    var voteApiUrl = data.config && data.config.voteApiUrl
+        ? String(data.config.voteApiUrl).replace(/\/$/, "")
+        : "";
+    var voteState = new Map();
+    var voteVenueIds = [];
+    var voteReadSequence = 0;
+    var voteAuthEpoch = 0;
+    var localPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname) &&
+        new URLSearchParams(window.location.search).has("preview");
+
     function esc(value) {
         return String(value == null ? "" : value).replace(/[&<>"']/g, function (character) {
             return {
@@ -99,10 +109,283 @@
     }
 
     function scoreHtml(item) {
-        var scoreClass = item.score > 0 ? "positive" : item.score < 0 ? "negative" : "";
-        var prefix = item.score > 0 ? "+" : "";
-        return '<span class="score ' + scoreClass + '">' + prefix + esc(item.score) + "</span>" +
-            '<span class="score-detail">추천 ' + item.recommenders.length + " · 비추천 " + item.detractors.length + "</span>";
+        var baseRecommend = item.recommenders.length;
+        var baseNotRecommend = item.detractors.length;
+        var baseScore = baseRecommend - baseNotRecommend;
+        var scoreClass = baseScore > 0 ? "positive" : baseScore < 0 ? "negative" : "";
+        var prefix = baseScore > 0 ? "+" : "";
+
+        return [
+            '<div class="vote-control" data-vote-control data-venue-id="' + esc(item.id) + '"',
+            ' data-base-recommend="' + baseRecommend + '" data-base-not-recommend="' + baseNotRecommend + '">',
+            '<div class="vote-summary">',
+            '<span class="score ' + scoreClass + '" data-score>' + prefix + baseScore + "</span>",
+            '<span class="score-detail">기존 기록 포함</span>',
+            "</div>",
+            '<div class="vote-buttons" role="group" aria-label="' + esc(item.name) + ' 평가">',
+            '<button class="vote-button recommend" type="button" data-vote-choice="recommend" aria-pressed="false">',
+            '<span aria-hidden="true">👍</span><span>추천</span><strong data-recommend-count>' + baseRecommend + "</strong></button>",
+            '<button class="vote-button not-recommend" type="button" data-vote-choice="not_recommend" aria-pressed="false">',
+            '<span aria-hidden="true">👎</span><span>비추천</span><strong data-not-recommend-count>' + baseNotRecommend + "</strong></button>",
+            "</div>",
+            '<span class="vote-status" data-vote-status role="status" aria-live="polite">카카오 계정당 1표 · 다시 누르면 취소</span>',
+            "</div>"
+        ].join("");
+    }
+
+    function getVoteToken() {
+        return window.GoyoungoAuth && typeof window.GoyoungoAuth.getAccessToken === "function"
+            ? window.GoyoungoAuth.getAccessToken()
+            : null;
+    }
+
+    function controlsForVenue(venueId) {
+        return Array.from(root.querySelectorAll("[data-vote-control]")).filter(function (control) {
+            return control.dataset.venueId === venueId;
+        });
+    }
+
+    function numberOrZero(value) {
+        var number = Number(value);
+        return Number.isFinite(number) ? Math.max(0, Math.round(number)) : 0;
+    }
+
+    function defaultVoteState() {
+        return {
+            recommend: 0,
+            notRecommend: 0,
+            userChoice: null,
+            loading: false,
+            message: "",
+            revision: 0,
+            readRequest: 0
+        };
+    }
+
+    function voteStatusMessage(state) {
+        if (state.message) return state.message;
+        if (state.userChoice === "recommend") return "추천했습니다 · 다시 누르면 취소";
+        if (state.userChoice === "not_recommend") return "비추천했습니다 · 다시 누르면 취소";
+        return "카카오 계정당 1표 · 다시 누르면 취소";
+    }
+
+    function renderVoteState(venueId) {
+        var state = voteState.get(venueId) || defaultVoteState();
+
+        controlsForVenue(venueId).forEach(function (control) {
+            var baseRecommend = numberOrZero(control.dataset.baseRecommend);
+            var baseNotRecommend = numberOrZero(control.dataset.baseNotRecommend);
+            var recommend = baseRecommend + numberOrZero(state.recommend);
+            var notRecommend = baseNotRecommend + numberOrZero(state.notRecommend);
+            var score = recommend - notRecommend;
+            var scoreElement = control.querySelector("[data-score]");
+            var recommendElement = control.querySelector("[data-recommend-count]");
+            var notRecommendElement = control.querySelector("[data-not-recommend-count]");
+            var statusElement = control.querySelector("[data-vote-status]");
+
+            if (scoreElement) {
+                scoreElement.textContent = (score > 0 ? "+" : "") + score;
+                scoreElement.classList.toggle("positive", score > 0);
+                scoreElement.classList.toggle("negative", score < 0);
+            }
+            if (recommendElement) recommendElement.textContent = String(recommend);
+            if (notRecommendElement) notRecommendElement.textContent = String(notRecommend);
+            if (statusElement) statusElement.textContent = voteStatusMessage(state);
+
+            control.classList.toggle("is-loading", state.loading);
+            control.setAttribute("aria-busy", state.loading ? "true" : "false");
+            control.querySelectorAll("[data-vote-choice]").forEach(function (button) {
+                var selected = state.userChoice === button.dataset.voteChoice;
+                button.setAttribute("aria-pressed", selected ? "true" : "false");
+                button.disabled = state.loading || localPreview;
+            });
+        });
+    }
+
+    function updateVoteState(venueId, values) {
+        var current = voteState.get(venueId) || defaultVoteState();
+        voteState.set(venueId, Object.assign({}, current, values));
+        renderVoteState(venueId);
+    }
+
+    async function loadVotes(venueIds) {
+        if (!voteApiUrl || !venueIds.length || localPreview) return false;
+
+        var requestId = ++voteReadSequence;
+        var authEpoch = voteAuthEpoch;
+        var token = getVoteToken();
+        var headers = token ? { Authorization: "Bearer " + token } : {};
+        var revisions = new Map();
+        var applied = 0;
+
+        venueIds.forEach(function (venueId) {
+            var current = voteState.get(venueId) || defaultVoteState();
+            revisions.set(venueId, current.revision);
+            updateVoteState(venueId, {
+                readRequest: requestId,
+                loading: Boolean(token),
+                message: ""
+            });
+        });
+
+        try {
+            var response = await fetch(
+                voteApiUrl + "/votes?venueIds=" + encodeURIComponent(venueIds.join(",")),
+                { method: "GET", headers: headers, credentials: "omit" }
+            );
+            if (!response.ok) {
+                var error = new Error("Vote read failed");
+                error.status = response.status;
+                throw error;
+            }
+
+            var payload = await response.json();
+            if (authEpoch !== voteAuthEpoch) return false;
+
+            venueIds.forEach(function (venueId) {
+                var current = voteState.get(venueId) || defaultVoteState();
+                if (
+                    current.readRequest !== requestId ||
+                    current.revision !== revisions.get(venueId)
+                ) return;
+
+                var item = payload.votes && payload.votes[venueId] ? payload.votes[venueId] : {};
+                updateVoteState(venueId, {
+                    recommend: numberOrZero(item.recommend),
+                    notRecommend: numberOrZero(item.notRecommend),
+                    userChoice: item.userChoice === "recommend" || item.userChoice === "not_recommend"
+                        ? item.userChoice
+                        : null,
+                    loading: false,
+                    message: ""
+                });
+                applied += 1;
+            });
+            return applied > 0;
+        } catch (error) {
+            if (authEpoch !== voteAuthEpoch) return false;
+            var message = error.status === 401
+                ? "로그인이 만료되었습니다. 다시 로그인해 주세요."
+                : "평가 정보를 불러오지 못했습니다.";
+            venueIds.forEach(function (venueId) {
+                var current = voteState.get(venueId) || defaultVoteState();
+                if (
+                    current.readRequest !== requestId ||
+                    current.revision !== revisions.get(venueId)
+                ) return;
+                updateVoteState(venueId, { loading: false, message: message });
+            });
+            return false;
+        }
+    }
+
+    async function submitVote(venueId, choice) {
+        var token = getVoteToken();
+        if (!token) {
+            updateVoteState(venueId, { message: "카카오 로그인이 필요합니다." });
+            return;
+        }
+
+        var current = voteState.get(venueId) || defaultVoteState();
+        if (current.loading) return;
+        var authEpoch = voteAuthEpoch;
+        var writeRevision = current.revision + 1;
+        var nextChoice = current.userChoice === choice ? null : choice;
+        updateVoteState(venueId, {
+            loading: true,
+            message: "평가를 저장하는 중…",
+            revision: writeRevision
+        });
+
+        try {
+            var response = await fetch(voteApiUrl + "/votes/" + encodeURIComponent(venueId), {
+                method: "PUT",
+                headers: {
+                    Authorization: "Bearer " + token,
+                    "Content-Type": "application/json"
+                },
+                credentials: "omit",
+                body: JSON.stringify({ choice: nextChoice })
+            });
+            var payload = await response.json().catch(function () { return {}; });
+            var latest = voteState.get(venueId) || defaultVoteState();
+            if (authEpoch !== voteAuthEpoch || latest.revision !== writeRevision) return;
+
+            if (response.status === 409) {
+                var refreshed = await loadVotes([venueId]);
+                latest = voteState.get(venueId) || defaultVoteState();
+                if (
+                    refreshed &&
+                    authEpoch === voteAuthEpoch &&
+                    latest.revision === writeRevision
+                ) {
+                    updateVoteState(venueId, { message: "다른 화면의 변경을 반영했습니다. 다시 선택해 주세요." });
+                }
+                return;
+            }
+            if (!response.ok) {
+                var error = new Error("Vote write failed");
+                error.status = response.status;
+                throw error;
+            }
+
+            updateVoteState(venueId, {
+                recommend: numberOrZero(payload.recommend),
+                notRecommend: numberOrZero(payload.notRecommend),
+                userChoice: payload.userChoice === "recommend" || payload.userChoice === "not_recommend"
+                    ? payload.userChoice
+                    : null,
+                loading: false,
+                message: ""
+            });
+        } catch (error) {
+            var latest = voteState.get(venueId) || defaultVoteState();
+            if (authEpoch !== voteAuthEpoch || latest.revision !== writeRevision) return;
+            updateVoteState(venueId, {
+                loading: false,
+                message: error.status === 401
+                    ? "로그인이 만료되었습니다. 다시 로그인해 주세요."
+                    : "평가를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
+            });
+        }
+    }
+
+    function bindVenueVoting(page) {
+        voteVenueIds = Array.from(new Set(page.sections.reduce(function (ids, section) {
+            return ids.concat(section.items.map(function (item) { return item.id; }));
+        }, [])));
+
+        voteVenueIds.forEach(function (venueId) {
+            updateVoteState(venueId, {
+                message: localPreview ? "운영 사이트에서 평가할 수 있습니다." : ""
+            });
+        });
+
+        root.addEventListener("click", function (event) {
+            var button = event.target.closest("[data-vote-choice]");
+            if (!button || !root.contains(button)) return;
+            var control = button.closest("[data-vote-control]");
+            if (!control) return;
+            submitVote(control.dataset.venueId, button.dataset.voteChoice);
+        });
+
+        document.addEventListener("goyoungo:authchange", function (event) {
+            var authenticated = event.detail && event.detail.authenticated;
+            voteAuthEpoch += 1;
+            voteVenueIds.forEach(function (venueId) {
+                var current = voteState.get(venueId) || defaultVoteState();
+                updateVoteState(venueId, {
+                    userChoice: null,
+                    loading: false,
+                    message: localPreview ? "운영 사이트에서 평가할 수 있습니다." : "",
+                    revision: current.revision + 1,
+                    readRequest: 0
+                });
+            });
+            if (authenticated && !localPreview) loadVotes(voteVenueIds);
+        });
+
+        if (!localPreview) loadVotes(voteVenueIds);
     }
 
     function restaurantSearchText(item) {
@@ -141,7 +424,7 @@
             "<h3>" + esc(item.name) + "</h3>",
             tagsHtml(item.menus),
             '<div class="venue-meta">' + meta + "</div>",
-            '<div class="venue-score"><span>' + scoreHtml(item) + "</span></div>",
+            '<div class="venue-score">' + scoreHtml(item) + "</div>",
             "</article>"
         ].join("");
     }
@@ -221,6 +504,7 @@
 
         root.innerHTML = '<div class="page-wrap">' + hero(page) + content + footer() + "</div>";
         bindRestaurantSearch(total);
+        if (total) bindVenueVoting(page);
     }
 
     function renderMarket(page) {
@@ -379,4 +663,3 @@
         renderCurrentPage();
     }
 })();
-
