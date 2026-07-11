@@ -58,9 +58,13 @@ Resources:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
+                # TransactWriteItems authorizes each underlying item operation.
                 Action:
                   - dynamodb:BatchGetItem
                   - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
                   - dynamodb:TransactWriteItems
                 Resource: !GetAtt VoteTable.Arn
         - PolicyName: VoteFunctionLogs
