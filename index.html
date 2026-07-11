@@ -3,372 +3,529 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S3 정적 웹사이트 호스팅 테스트</title>
-    <script src="https://developers.kakao.com/sdk/js/kakao.js">
+    <meta name="theme-color" content="#191919">
+    <meta name="description" content="카카오 로그인 후 이용하는 스키장 정보 공유 허브">
+    <meta property="og:title" content="스키장 정보 공유 - by @go.youngo">
+    <meta property="og:description" content="맛집, 거래, 시즌방, 제휴 및 셔틀 정보를 한곳에서 확인하세요.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://goyoungo.com/">
+    <title>스키장 정보 공유 - by @go.youngo</title>
+    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
     <style>
+        :root {
+            color-scheme: dark;
+            --page-bg: #191919;
+            --page-fg: #f0efed;
+            --muted: rgba(240, 239, 237, 0.65);
+            --hover: rgba(255, 255, 243, 0.082);
+            --line: rgba(255, 255, 255, 0.13);
+            --kakao: #fee500;
+            --kakao-hover: #f4dc00;
+        }
+
         * {
-            margin: 0;
-            padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+        html {
+            background: var(--page-bg);
+            min-height: 100%;
         }
 
-        .container {
-            background: white;
-            padding: 3rem;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
+        body {
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: var(--page-bg);
+            color: var(--page-fg);
+            font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        button,
+        a {
+            font: inherit;
+        }
+
+        .skip-link {
+            position: fixed;
+            top: 8px;
+            left: 8px;
+            z-index: 100;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: #fff;
+            color: #111;
+            transform: translateY(-150%);
+        }
+
+        .skip-link:focus {
+            transform: translateY(0);
+        }
+
+        /* Login gate */
+        .login-screen {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        .login-card {
+            width: min(100%, 420px);
+            padding: 36px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: #202020;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
             text-align: center;
         }
 
-        /* 로그인 화면 스타일 */
-        #loginScreen {
-            display: block;
+        .login-lock {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 20px;
+            display: grid;
+            place-items: center;
+            border-radius: 13px;
+            background: rgba(255, 255, 255, 0.07);
+            font-size: 26px;
         }
 
-        #loginScreen h1 {
-            color: #333;
-            margin-bottom: 1rem;
-            font-size: 2rem;
+        .login-card h1 {
+            margin: 0 0 10px;
+            color: var(--page-fg);
+            font-size: 26px;
+            line-height: 1.3;
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }
 
-        #loginScreen p {
-            color: #666;
-            margin-bottom: 2rem;
+        .login-card p {
+            margin: 0 0 24px;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.65;
         }
 
         #kakaoLoginBtn {
-            background: #FEE500;
-            color: #000000;
-            border: none;
-            padding: 1rem 2rem;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border-radius: 12px;
-            cursor: pointer;
+            width: 100%;
+            min-height: 50px;
+            border: 0;
+            border-radius: 10px;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s;
-        }
-
-        #kakaoLoginBtn:hover {
-            background: #FDD835;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            justify-content: center;
+            gap: 9px;
+            background: var(--kakao);
+            color: #191919;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background 140ms ease, transform 140ms ease;
         }
 
         #kakaoLoginBtn::before {
             content: "💬";
-            font-size: 1.5rem;
+            font-size: 19px;
         }
 
-        /* 메인 컨텐츠 스타일 */
-        #mainContent {
-            display: none;
+        #kakaoLoginBtn:hover:not(:disabled) {
+            background: var(--kakao-hover);
+            transform: translateY(-1px);
         }
 
-        h1 {
-            color: #333;
-            margin-bottom: 1rem;
-            font-size: 2.5rem;
+        #kakaoLoginBtn:disabled {
+            cursor: wait;
+            opacity: 0.65;
         }
 
-        .success-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
+        #kakaoLoginBtn:focus-visible,
+        #logoutBtn:focus-visible,
+        .page-link:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 3px;
         }
 
-        p {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 1rem;
+        .auth-status {
+            min-height: 22px;
+            margin: 14px 0 0 !important;
+            color: var(--muted) !important;
+            font-size: 13px !important;
         }
 
-        .user-info {
-            background: #FEE500;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1.5rem;
+        /* Post-login Notion replica */
+        .site-shell {
+            min-height: 100vh;
+            background: var(--page-bg);
+        }
+
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            height: 44px;
+            padding: 0 10px 0 12px;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            justify-content: space-between;
+            gap: 16px;
+            background: var(--page-bg);
+            color: var(--page-fg);
         }
 
-        .user-info img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-        }
-
-        .user-info .name {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .info-box {
-            background: #f5f5f5;
-            padding: 1.5rem;
-            border-radius: 10px;
-            margin-top: 2rem;
-            text-align: left;
-        }
-
-        .info-box h3 {
-            color: #667eea;
-            margin-bottom: 1rem;
-        }
-
-        .info-box ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .info-box li {
-            padding: 0.5rem 0;
-            color: #555;
-        }
-
-        .info-box li::before {
-            content: "✓ ";
-            color: #667eea;
-            font-weight: bold;
-            margin-right: 0.5rem;
-        }
-
-        .timestamp {
-            margin-top: 2rem;
-            color: #999;
-            font-size: 0.9rem;
+        .site-title {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 14px;
+            line-height: 16.8px;
+            font-weight: 400;
         }
 
         #logoutBtn {
-            background: #f44336;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            border-radius: 8px;
+            flex: none;
+            min-height: 32px;
+            padding: 5px 12px;
+            border: 0;
+            border-radius: 6px;
+            background: #2c2c2b;
+            color: var(--page-fg);
             cursor: pointer;
-            margin-top: 1.5rem;
-            transition: background 0.3s;
+            font-size: 14px;
+            font-weight: 500;
         }
 
         #logoutBtn:hover {
-            background: #d32f2f;
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .loading {
-            display: none;
-            color: #666;
-            margin-top: 1rem;
+        .notion-frame {
+            min-height: calc(100vh - 44px);
+            background: var(--page-bg);
+        }
+
+        .notion-page {
+            width: calc(100vw - 207px);
+            margin-left: 96px;
+            padding: 84px 0 270px;
+        }
+
+        .notion-page h1 {
+            width: 100%;
+            margin: 0;
+            padding: 0 8px;
+            color: var(--page-fg);
+            font-size: 40px;
+            line-height: 48px;
+            font-weight: 700;
+            letter-spacing: normal;
+            white-space: break-spaces;
+            word-break: break-word;
+            overflow-wrap: normal;
+        }
+
+        .page-links {
+            margin: 22px 6px 0;
+            display: grid;
+            gap: 52px;
+        }
+
+        .page-link {
+            min-width: 0;
+            min-height: 28px;
+            padding: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            border-radius: 4px;
+            color: var(--page-fg);
+            text-decoration: none;
+            font-size: 16px;
+            line-height: 24px;
+            font-weight: 500;
+            transition: background-color 100ms ease;
+        }
+
+        .page-link:hover {
+            background: var(--hover);
+        }
+
+        .page-icon {
+            flex: none;
+            width: 24px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            line-height: 1;
+        }
+
+        .page-label {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            box-shadow: inset 0 -1px rgba(255, 255, 235, 0.1);
+        }
+
+        .comments-block {
+            width: calc(100% - 16px);
+            height: 320px;
+            margin: 54px 8px 0;
+            border: 0;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .comments-block iframe {
+            width: 100%;
+            height: 320px;
+            display: block;
+            border: 0;
+            background: #fff;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        @media (max-width: 560px) {
+            .site-header {
+                gap: 8px;
+                padding-right: 8px;
+            }
+
+            .site-title {
+                max-width: calc(100vw - 102px);
+            }
+
+            #logoutBtn {
+                padding-inline: 9px;
+            }
+
+            .login-card {
+                padding: 30px 24px;
+            }
+        }
+
+        @media (max-width: 260px) {
+            .notion-page {
+                width: calc(100vw - 48px);
+                margin-left: 24px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- 로그인 화면 -->
-        <div id="loginScreen">
-            <div class="success-icon">🔐</div>
-            <h1>카카오톡 인증 필요</h1>
-            <p>이 페이지에 접근하려면<br>카카오톡 로그인이 필요합니다.</p>
-            <button id="kakaoLoginBtn">카카오 로그인</button>
-            <div class="loading">로그인 중...</div>
+    <a class="skip-link" href="#main">콘텐츠로 건너뛰기</a>
+
+    <section id="loginScreen" class="login-screen" aria-labelledby="loginTitle">
+        <div class="login-card">
+            <div class="login-lock" aria-hidden="true">🔐</div>
+            <h1 id="loginTitle">카카오톡 인증 필요</h1>
+            <p>스키장 정보 공유 페이지를 이용하려면<br>카카오 로그인이 필요합니다.</p>
+            <button id="kakaoLoginBtn" type="button">카카오 로그인</button>
+            <p id="authStatus" class="auth-status" role="status" aria-live="polite"></p>
         </div>
+    </section>
 
-        <!-- 메인 컨텐츠 (로그인 후 표시) -->
-        <div id="mainContent">
-            <div class="success-icon">🎉</div>
-            <h1>S3 호스팅 성공!</h1>
+    <section id="mainContent" class="site-shell" hidden>
+        <header class="site-header">
+            <div class="site-title">스키장 정보 공유 - by @go.youngo</div>
+            <button id="logoutBtn" type="button">로그아웃</button>
+        </header>
 
-            <div class="user-info">
-                <img id="userProfileImg" src="" alt="프로필">
-                <div>
-                    <div class="name" id="userName"></div>
-                    <div style="font-size: 0.9rem; color: #666;">카카오톡 인증 완료</div>
-                </div>
-            </div>
+        <main id="main" class="notion-frame">
+            <article class="notion-page" aria-labelledby="pageTitle">
+                <h1 id="pageTitle">스키장 정보 공유 - by @go.youngo</h1>
 
-            <p>Amazon S3 정적 웹사이트 호스팅이 정상적으로 작동하고 있습니다.</p>
+                <nav class="page-links" aria-label="스키장 정보 페이지">
+                    <a class="page-link" href="https://cheddar-bottom-4b7.notion.site/by-go-youngo-a9e9fa4c1ca44fa1938438ae08a974c5?pvs=25">
+                        <span class="page-icon" aria-hidden="true">🦝</span>
+                        <span class="page-label">웰팍 맛집 리스트 - by @go.youngo</span>
+                    </a>
+                    <a class="page-link" href="https://cheddar-bottom-4b7.notion.site/by-go-youngo-3e053d1bb58f47628f47c32fc8ece9a6?pvs=25">
+                        <span class="page-icon" aria-hidden="true">🐦</span>
+                        <span class="page-label">휘팍 맛집 리스트 - by @go.youngo</span>
+                    </a>
+                    <a class="page-link" href="https://cheddar-bottom-4b7.notion.site/by-go-youngo-2930ef2b60e3800eb3fbcac7947e88cc?pvs=25">
+                        <span class="page-icon" aria-hidden="true">🐉</span>
+                        <span class="page-label">용평 맛집 리스트 - by @go.youngo</span>
+                    </a>
+                    <a class="page-link" href="https://cheddar-bottom-4b7.notion.site/by-go-youngo-29d0ef2b60e38004bd2ee7ccd0ea64b6?pvs=25">
+                        <span class="page-icon" aria-hidden="true">✋</span>
+                        <span class="page-label">하이원 맛집 리스트 - by @go.youngo</span>
+                    </a>
+                    <a class="page-link" href="https://cheddar-bottom-4b7.notion.site/by-go-youngo-b724566c848e46bbaa37cc32dcce1651?pvs=25">
+                        <span class="page-icon" aria-hidden="true">💵</span>
+                        <span class="page-label">웰리휘리 거래 게시판 - by @go.youngo</span>
+                    </a>
+                    <a class="page-link" href="https://cheddar-bottom-4b7.notion.site/by-go-youngo-12a0ef2b60e380688f89fadeee76e752?pvs=25">
+                        <span class="page-icon" aria-hidden="true">🏠</span>
+                        <span class="page-label">시즌방/주주 구해요 - by @go.youngo</span>
+                    </a>
+                    <a class="page-link" href="https://cheddar-bottom-4b7.notion.site/666f696583ec437d94651b1476004110?pvs=25">
+                        <span class="page-icon" aria-hidden="true">🤝</span>
+                        <span class="page-label">제휴 업체 - 렌탈샵 : 웰리힐리파크 보드카페</span>
+                    </a>
+                    <a class="page-link" href="https://cheddar-bottom-4b7.notion.site/24-25-1420ef2b60e380349d43c6b3edd2481b?pvs=25">
+                        <span class="page-icon" aria-hidden="true">🚌</span>
+                        <span class="page-label">24/25 스키장 셔틀</span>
+                    </a>
+                </nav>
 
-            <div class="info-box">
-                <h3>확인된 사항</h3>
-                <ul>
-                    <li>카카오톡 인증 완료</li>
-                    <li>S3 버킷 설정 완료</li>
-                    <li>정적 웹사이트 호스팅 활성화</li>
-                    <li>퍼블릭 액세스 권한 설정</li>
-                    <li>index.html 파일 업로드 완료</li>
-                </ul>
-            </div>
-
-            <div class="timestamp">
-                페이지 로드 시간: <span id="datetime"></span>
-            </div>
-
-            <button id="logoutBtn">로그아웃</button>
-        </div>
-    </div>
+                <figure class="comments-block">
+                    <figcaption class="visually-hidden">업데이트 요청 댓글</figcaption>
+                    <iframe
+                        src="https://apption.co/app_posts/667c8ee7"
+                        title="업데이트 요청 댓글"
+                        loading="lazy"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                    ></iframe>
+                </figure>
+            </article>
+        </main>
+    </section>
 
     <script>
-        // 카카오 JavaScript 키
         const KAKAO_JS_KEY = '0ffa9164b98f13f79e8dd6902be2f599';
+        const loginScreen = document.getElementById('loginScreen');
+        const mainContent = document.getElementById('mainContent');
+        const loginButton = document.getElementById('kakaoLoginBtn');
+        const logoutButton = document.getElementById('logoutBtn');
+        const authStatus = document.getElementById('authStatus');
 
-        // 페이지 로드 시 초기화
-        window.onload = function() {
-            console.log('=== 카카오 로그인 디버깅 시작 ===');
+        function setAuthStatus(message) {
+            authStatus.textContent = message || '';
+        }
 
-            // Kakao SDK 로드 확인
-            if (typeof Kakao === 'undefined') {
-                console.error('❌ Kakao SDK가 로드되지 않았습니다.');
-                alert('카카오 SDK 로드 실패. 인터넷 연결을 확인해주세요.');
-                return;
-            }
-            console.log('✅ Kakao SDK 로드 완료');
+        function setLoginLoading(isLoading) {
+            loginButton.disabled = isLoading;
+            loginButton.textContent = isLoading ? '로그인 중...' : '카카오 로그인';
+        }
 
-            // SDK 초기화
-            try {
-                if (!Kakao.isInitialized()) {
-                    Kakao.init(KAKAO_JS_KEY);
-                    console.log('✅ Kakao SDK 초기화 완료:', Kakao.isInitialized());
-                } else {
-                    console.log('✅ Kakao SDK 이미 초기화됨');
-                }
-            } catch (error) {
-                console.error('❌ SDK 초기화 실패:', error);
-                alert('카카오 SDK 초기화 실패: ' + error.message);
-                return;
-            }
+        function showLoginScreen(message = '') {
+            mainContent.hidden = true;
+            loginScreen.hidden = false;
+            document.body.dataset.view = 'login';
+            setLoginLoading(false);
+            setAuthStatus(message);
+            window.scrollTo(0, 0);
+        }
 
-            // 로그인 버튼 이벤트 등록
-            const loginBtn = document.getElementById('kakaoLoginBtn');
-            loginBtn.addEventListener('click', function() {
-                console.log('🔘 로그인 버튼 클릭됨');
-                handleKakaoLogin();
-            });
-            console.log('✅ 로그인 버튼 이벤트 등록 완료');
+        function showMainContent() {
+            loginScreen.hidden = true;
+            mainContent.hidden = false;
+            document.body.dataset.view = 'content';
+            setLoginLoading(false);
+            setAuthStatus('');
+            window.scrollTo(0, 0);
+        }
 
-            // 로그아웃 버튼 이벤트 등록
-            const logoutBtn = document.getElementById('logoutBtn');
-            logoutBtn.addEventListener('click', function() {
-                console.log('🔘 로그아웃 버튼 클릭됨');
-                handleKakaoLogout();
-            });
-
-            // 초기 로그인 상태 확인
-            checkLoginStatus();
-        };
-
-        // 카카오 로그인 처리
         function handleKakaoLogin() {
-            console.log('🔐 카카오 로그인 시도...');
+            setLoginLoading(true);
+            setAuthStatus('카카오 로그인 창을 확인해 주세요.');
 
             try {
                 Kakao.Auth.login({
-                    success: function(authObj) {
-                        console.log('✅ 로그인 성공:', authObj);
-                        getUserInfo();
+                    success: function() {
+                        showMainContent();
                     },
-                    fail: function(err) {
-                        console.error('❌ 로그인 실패:', err);
-                        let errorMsg = '카카오 로그인에 실패했습니다.';
-
-                        if (err.error === 'access_denied') {
-                            errorMsg += '\n사용자가 로그인을 취소했습니다.';
-                        } else if (err.error === 'invalid_client') {
-                            errorMsg += '\n앱 키가 올바르지 않습니다.';
-                        } else if (err.error_description) {
-                            errorMsg += '\n' + err.error_description;
-                        }
-
-                        alert(errorMsg);
+                    fail: function(error) {
+                        const detail = error && error.error === 'access_denied'
+                            ? '로그인이 취소되었습니다.'
+                            : '카카오 로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+                        showLoginScreen(detail);
                     }
                 });
             } catch (error) {
-                console.error('❌ 로그인 함수 실행 오류:', error);
-                alert('로그인 중 오류 발생: ' + error.message + '\n\n카카오 디벨로퍼스에서 다음을 확인하세요:\n1. Web 플랫폼 등록 (현재 URL)\n2. 카카오 로그인 활성화\n3. Redirect URI 등록');
+                showLoginScreen('로그인을 시작할 수 없습니다. 카카오 앱 설정을 확인해 주세요.');
             }
         }
 
-        // 로그인 상태 확인
-        function checkLoginStatus() {
-            console.log('🔍 로그인 상태 확인 중...');
+        function handleKakaoLogout() {
+            try {
+                if (!window.Kakao || !Kakao.isInitialized() || !Kakao.Auth.getAccessToken()) {
+                    showLoginScreen('로그아웃되었습니다.');
+                    return;
+                }
 
+                Kakao.Auth.logout(function() {
+                    showLoginScreen('로그아웃되었습니다.');
+                });
+            } catch (error) {
+                showLoginScreen('로그아웃되었습니다.');
+            }
+        }
+
+        function checkLoginStatus() {
             Kakao.Auth.getStatusInfo()
-                .then(function(res) {
-                    console.log('상태 정보:', res);
-                    if (res.status === 'connected') {
-                        console.log('✅ 이미 로그인된 상태');
-                        getUserInfo();
+                .then(function(result) {
+                    if (result.status === 'connected') {
+                        showMainContent();
                     } else {
-                        console.log('ℹ️ 로그인되지 않은 상태');
                         showLoginScreen();
                     }
                 })
-                .catch(function(err) {
-                    console.log('ℹ️ 로그인 상태 확인 불가:', err);
+                .catch(function() {
                     showLoginScreen();
                 });
         }
 
-        // 사용자 정보 가져오기
-        function getUserInfo() {
-            console.log('👤 사용자 정보 조회 중...');
+        function initializePage() {
+            loginButton.addEventListener('click', handleKakaoLogin);
+            logoutButton.addEventListener('click', handleKakaoLogout);
 
-            Kakao.API.request({
-                url: '/v2/user/me',
-                success: function(res) {
-                    console.log('✅ 사용자 정보:', res);
-                    showMainContent(res);
-                },
-                fail: function(err) {
-                    console.error('❌ 사용자 정보 조회 실패:', err);
-                    alert('사용자 정보를 가져올 수 없습니다.');
-                    showLoginScreen();
+            const localPreview = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+                && new URLSearchParams(window.location.search).has('preview');
+
+            if (localPreview) {
+                showMainContent();
+                return;
+            }
+
+            if (!window.Kakao) {
+                showLoginScreen('카카오 로그인 서비스를 불러오지 못했습니다. 새로고침해 주세요.');
+                loginButton.disabled = true;
+                return;
+            }
+
+            try {
+                if (!Kakao.isInitialized()) {
+                    Kakao.init(KAKAO_JS_KEY);
                 }
-            });
+                checkLoginStatus();
+            } catch (error) {
+                showLoginScreen('카카오 로그인 서비스를 초기화하지 못했습니다.');
+                loginButton.disabled = true;
+            }
         }
 
-        // 로그아웃 처리
-        function handleKakaoLogout() {
-            console.log('🚪 로그아웃 시도...');
-
-            Kakao.Auth.logout(function() {
-                console.log('✅ 로그아웃 성공');
-                alert('로그아웃되었습니다.');
-                showLoginScreen();
-            });
-        }
-
-        // 로그인 화면 표시
-        function showLoginScreen() {
-            document.getElementById('loginScreen').style.display = 'block';
-            document.getElementById('mainContent').style.display = 'none';
-        }
-
-        // 메인 컨텐츠 표시
-        function showMainContent(userInfo) {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('mainContent').style.display = 'block';
-
-            // 사용자 정보 표시
-            const profile = userInfo.properties || userInfo.kakao_account?.profile;
-            document.getElementById('userName').textContent = profile.nickname || '사용자';
-            document.getElementById('userProfileImg').src = profile.profile_image || profile.thumbnail_image || 'https://via.placeholder.com/50';
-
-            // 타임스탬프
-            document.getElementById('datetime').textContent = new Date().toLocaleString('ko-KR');
-        }
+        document.addEventListener('DOMContentLoaded', initializePage);
     </script>
 </body>
 </html>
