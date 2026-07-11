@@ -520,9 +520,12 @@ img {
     color: var(--muted);
 }
 
-.phone-cell,
-.score-cell {
+.phone-cell {
     white-space: nowrap;
+}
+
+.score-cell {
+    min-width: 230px;
 }
 
 .note-cell {
@@ -586,6 +589,91 @@ img {
     margin-top: 4px;
     color: var(--faint);
     font-size: 10px;
+}
+
+.vote-control {
+    min-width: 204px;
+    display: grid;
+    gap: 8px;
+}
+
+.vote-summary {
+    min-height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.vote-summary .score-detail {
+    margin: 0;
+}
+
+.vote-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.vote-button {
+    min-height: 44px;
+    padding: 7px 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 720;
+    line-height: 1;
+    transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+}
+
+.vote-button strong {
+    min-width: 13px;
+    color: var(--text);
+    font-size: 11px;
+    text-align: right;
+}
+
+.vote-button:hover:not(:disabled) {
+    border-color: var(--line-strong);
+    background: var(--surface-3);
+    color: var(--text);
+}
+
+.vote-button.recommend[aria-pressed="true"] {
+    border-color: rgba(115, 215, 160, 0.55);
+    background: rgba(115, 215, 160, 0.14);
+    color: var(--success);
+}
+
+.vote-button.not-recommend[aria-pressed="true"] {
+    border-color: rgba(255, 142, 135, 0.55);
+    background: rgba(255, 142, 135, 0.13);
+    color: var(--danger);
+}
+
+.vote-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
+}
+
+.vote-control.is-loading .vote-button {
+    cursor: wait;
+}
+
+.vote-status {
+    min-height: 16px;
+    display: block;
+    color: var(--faint);
+    font-size: 10px;
+    line-height: 1.45;
+    white-space: normal;
 }
 
 .mobile-cards {
@@ -1015,11 +1103,12 @@ img {
     .venue-score {
         margin-top: 14px;
         padding-top: 13px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
+        display: block;
         border-top: 1px solid var(--line);
+    }
+
+    .venue-score .vote-control {
+        width: 100%;
     }
 
     .product-grid {
@@ -1070,6 +1159,5 @@ img {
         transition-duration: 0.01ms !important;
     }
 }
-
 
 

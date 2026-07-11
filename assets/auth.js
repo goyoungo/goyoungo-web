@@ -4,6 +4,29 @@
     var KAKAO_JS_KEY = "0ffa9164b98f13f79e8dd6902be2f599";
     var SDK_LOAD_ERROR = "카카오 로그인 파일을 불러오지 못했습니다. 광고·추적 차단 기능에서 t1.kakaocdn.net을 허용한 뒤 새로고침해 주세요.";
 
+    function getAccessToken() {
+        try {
+            return window.Kakao && Kakao.isInitialized()
+                ? Kakao.Auth.getAccessToken()
+                : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    window.GoyoungoAuth = {
+        getAccessToken: getAccessToken,
+        isAuthenticated: function () {
+            return Boolean(getAccessToken());
+        }
+    };
+
+    function dispatchAuthChange(authenticated) {
+        document.dispatchEvent(new CustomEvent("goyoungo:authchange", {
+            detail: { authenticated: Boolean(authenticated) }
+        }));
+    }
+
     function elements() {
         return {
             loginScreen: document.getElementById("loginScreen"),
@@ -32,6 +55,7 @@
         setStatus(ui, message || "");
         window.scrollTo(0, 0);
         if (focus) ui.loginButton.focus();
+        dispatchAuthChange(false);
     }
 
     function showContent(ui, focus) {
@@ -42,6 +66,7 @@
         setStatus(ui, "");
         window.scrollTo(0, 0);
         if (focus) ui.main.focus();
+        dispatchAuthChange(window.GoyoungoAuth.isAuthenticated());
     }
 
     function login(ui) {
@@ -126,4 +151,3 @@
         initialize();
     }
 })();
-
