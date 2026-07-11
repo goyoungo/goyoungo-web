@@ -28,4 +28,6 @@ AWS Amplify의 임시 주소에서도 확인해야 한다면 해당 HTTPS 주소
 
 ## 유지보수 참고
 
-현재 인증 흐름은 Kakao JavaScript SDK v1 방식입니다. Kakao의 지원 종료 일정에 맞춰 v2 인가 코드 방식으로 별도 전환이 필요합니다.
+현재 인증 흐름은 Kakao JavaScript SDK v1 콜백 방식입니다. SDK 파일은 카카오 공식 Legacy CDN 주소인 `https://t1.kakaocdn.net/kakao_js_sdk/v1/kakao.min.js`에서 불러옵니다. 광고·추적 차단 기능을 사용한다면 `t1.kakaocdn.net`을 허용해야 합니다.
+
+Legacy v1은 2026년 12월 31일 지원 종료 예정이므로, 그 전에 v2의 `Kakao.Auth.authorize()`와 서버 측 인가 코드·토큰 교환 방식으로 전환해야 합니다.
