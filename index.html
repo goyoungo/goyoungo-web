@@ -10,7 +10,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://goyoungo.com/">
     <title>스키장 정보 공유 - by @go.youngo</title>
-    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/v1/kakao.min.js"></script>
     <style>
         :root {
             color-scheme: dark;
@@ -418,6 +418,7 @@
         const loginButton = document.getElementById('kakaoLoginBtn');
         const logoutButton = document.getElementById('logoutBtn');
         const authStatus = document.getElementById('authStatus');
+        const KAKAO_SDK_LOAD_ERROR = '카카오 로그인 파일을 불러오지 못했습니다. 광고·추적 차단 기능에서 t1.kakaocdn.net을 허용한 뒤 새로고침해 주세요.';
 
         function setAuthStatus(message) {
             authStatus.textContent = message || '';
@@ -483,17 +484,13 @@
         }
 
         function checkLoginStatus() {
-            Kakao.Auth.getStatusInfo()
-                .then(function(result) {
-                    if (result.status === 'connected') {
-                        showMainContent();
-                    } else {
-                        showLoginScreen();
-                    }
-                })
-                .catch(function() {
+            Kakao.Auth.getStatusInfo(function(result) {
+                if (result.status === 'connected') {
+                    showMainContent();
+                } else {
                     showLoginScreen();
-                });
+                }
+            });
         }
 
         function initializePage() {
@@ -509,7 +506,7 @@
             }
 
             if (!window.Kakao) {
-                showLoginScreen('카카오 로그인 서비스를 불러오지 못했습니다. 새로고침해 주세요.');
+                showLoginScreen(KAKAO_SDK_LOAD_ERROR);
                 loginButton.disabled = true;
                 return;
             }
@@ -520,7 +517,9 @@
                 }
                 checkLoginStatus();
             } catch (error) {
-                showLoginScreen('카카오 로그인 서비스를 초기화하지 못했습니다.');
+                showLoginScreen(window.Kakao
+                    ? '카카오 로그인 서비스를 초기화하지 못했습니다.'
+                    : KAKAO_SDK_LOAD_ERROR);
                 loginButton.disabled = true;
             }
         }
