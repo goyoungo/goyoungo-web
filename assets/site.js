@@ -47,6 +47,10 @@
         return merged;
     }
 
+    function importedRecommendationCount(item) {
+        return numberOrZero(item.memoRecommendCount);
+    }
+
     function mergeImportedRestaurants() {
         var imported = window.NAVER_RESTAURANTS;
         if (!imported || !imported.pages) return;
@@ -90,6 +94,7 @@
                     naverUrl: "https://map.naver.com/p/entry/place/" + sourceItem.naverId,
                     driveFrom: resortNames[pageId],
                     driveMinutes: sourceItem.driveMinutes,
+                    memoRecommendCount: sourceItem.memoRecommendCount,
                     votingEnabled: sourceItem.votingEnabled !== false &&
                         Boolean(data.config && data.config.importedVotingEnabled)
                 };
@@ -431,7 +436,7 @@
     }
 
     function scoreHtml(item) {
-        var baseRecommend = item.recommenders.length;
+        var baseRecommend = item.recommenders.length + importedRecommendationCount(item);
         var baseNotRecommend = item.detractors.length;
         var baseScore = baseRecommend - baseNotRecommend;
         var scoreClass = baseScore > 0 ? "positive" : baseScore < 0 ? "negative" : "";
@@ -497,6 +502,7 @@
     function restaurantVoteTotals(item) {
         var live = voteState.get(item.id) || defaultVoteState();
         var recommend = (Array.isArray(item.recommenders) ? item.recommenders.length : 0) +
+            importedRecommendationCount(item) +
             numberOrZero(live.recommend);
         var notRecommend = (Array.isArray(item.detractors) ? item.detractors.length : 0) +
             numberOrZero(live.notRecommend);

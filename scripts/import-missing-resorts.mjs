@@ -2,10 +2,12 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import vm from "node:vm";
 import { fileURLToPath } from "node:url";
+import { applyMemoRecommendations } from "./recommendation-memos.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..");
 const dataPath = path.join(repositoryRoot, "assets", "naver-restaurants.js");
+const siteDataPath = path.join(repositoryRoot, "assets", "site-data.js");
 const sourceUrl =
   "https://pages.map.naver.com/save-pages/api/maps-bookmark/v3/shares/" +
   "e11f7bbf34c444a99cd0297c37123374/bookmarks" +
@@ -88,8 +90,9 @@ if (configuredIds.length !== 63 || new Set(configuredIds).size !== 63) {
   throw new Error("누락 장소 배정은 중복 없이 정확히 63곳이어야 합니다.");
 }
 
-const [source, response] = await Promise.all([
+const [source, siteSource, response] = await Promise.all([
   fs.readFile(dataPath, "utf8"),
+  fs.readFile(siteDataPath, "utf8"),
   fetch(sourceUrl, {
     headers: {
       accept: "application/json",
@@ -106,6 +109,9 @@ if (!response.ok) {
 }
 
 const dataset = readDataset(source);
+const siteDataContext = { window: {} };
+vm.runInNewContext(siteSource, siteDataContext, { filename: siteDataPath });
+const siteData = siteDataContext.window.SITE_DATA;
 const shared = await response.json();
 const sharedPlaces = shared.bookmarkList || [];
 const sourceById = new Map(
@@ -187,6 +193,7 @@ dataset.source.menuSource = {
   placesWithMenus: 0,
   maxMenusPerPlace: 5,
 };
+applyMemoRecommendations(dataset, siteData);
 
 await fs.writeFile(
   dataPath,
