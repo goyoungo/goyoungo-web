@@ -17,7 +17,7 @@ export function parseRecommendationMemo(value) {
   const recommenders = [];
   const seen = new Set();
   const attributionPattern =
-    /((?:[^\s,.!?]+님(?:\s*,\s*)?)+)\s*추천(?=\s|[,.!?]|$)/g;
+    /((?:[^\s,.!?]+님(?:\s*,\s*)?)+)\s*(?:추천|소개)(?=\s|[,.!?]|$)/g;
   const memo = String(value || "").replace(
     attributionPattern,
     (_match, attribution) => {

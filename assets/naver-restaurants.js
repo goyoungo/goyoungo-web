@@ -20,7 +20,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1196663152",
         "name": "둔내한방순대국",
         "address": "강원 횡성군 두원길 3",
-        "memo": "24.12.23+ 야끼니꾸님 소개 카레순대국 파는 집.",
+        "memo": "24.12.23+ 카레순대국 파는 집.",
         "driveMinutes": 3,
         "menus": [
           "순댓국 (고기만/순대만 가능)",
@@ -29,7 +29,7 @@ window.NAVER_RESTAURANTS = {
           "술국",
           "모듬수육"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "37084680",
@@ -125,7 +125,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "37370416",
         "name": "한우 무한리필 라오니아",
         "address": "강원 횡성군 고원로398번길 6",
-        "memo": "22.12.27+ 빠따킹님 소개 가성비 고기집.",
+        "memo": "22.12.27+ 가성비 고기집.",
         "driveMinutes": 3,
         "menus": [
           "성인",
@@ -133,7 +133,7 @@ window.NAVER_RESTAURANTS = {
           "미취학행",
           "36개월미만"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "1342752867",
@@ -212,7 +212,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1844224792",
         "name": "들꽃피는언덕",
         "address": "강원 횡성군 고원로 158-27",
-        "memo": "23.01.29++ 제이지님 소개 막걸리 맛집. 앞마당 썰매로 유명. 삼겹살 쌈밥 추천.",
+        "memo": "23.01.29++ 막걸리 맛집. 앞마당 썰매로 유명. 삼겹살 쌈밥 추천.",
         "driveMinutes": 5,
         "menus": [
           "제육볶음 쌈밥정식(2인이상)",
@@ -221,7 +221,7 @@ window.NAVER_RESTAURANTS = {
           "[당일불가]1++꽃등심 쌈밥정식",
           "[예약]토종닭볶음탕(3-4인)"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "34157610",
@@ -560,7 +560,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1042315106",
         "name": "앙버거",
         "address": "강원 횡성군 경강로둔방10길 10-1",
-        "memo": "25.07.07 야끼니꾸님, 고융고님 소개 수제버거집.",
+        "memo": "25.07.07 수제버거집.",
         "driveMinutes": 7,
         "menus": [
           "비프더블불고기버거",
@@ -569,7 +569,7 @@ window.NAVER_RESTAURANTS = {
           "스파이시 비프버거",
           "스파이시 치킨버거"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 2
       },
       {
         "naverId": "1307087805",
@@ -605,7 +605,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11858251",
         "name": "청솔순대",
         "address": "강원 횡성군 둔내로51번길 10-1",
-        "memo": "23.02.28 롤로롤님 소개 늦게까지 하는 순대집.",
+        "memo": "23.02.28 늦게까지 하는 순대집.",
         "driveMinutes": 7,
         "menus": [
           "찹쌀순대",
@@ -614,7 +614,7 @@ window.NAVER_RESTAURANTS = {
           "내장전골 대",
           "순대국밥"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "15519886",
@@ -853,7 +853,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1195195046",
         "name": "메밀다방",
         "address": "강원 평창군 경강로 551",
-        "memo": "23.12.10 옥케님 소개 직접 원두 로스팅 해서 맷돌에 갈아서 내리는 커피 맛집.",
+        "memo": "23.12.10 직접 원두 로스팅 해서 맷돌에 갈아서 내리는 커피 맛집.",
         "driveMinutes": 3,
         "menus": [
           "생딸기크로플",
@@ -862,7 +862,7 @@ window.NAVER_RESTAURANTS = {
           "메밀소금",
           "에소프레소"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "15551975",
@@ -924,12 +924,12 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1009744101",
         "name": "브레스 하우스",
         "address": "강원 평창군 태기로 137",
-        "memo": "23.12.29 옥케님 소개 휘팍 도보권 커피 맛집.",
+        "memo": "23.12.29 휘팍 도보권 커피 맛집.",
         "driveMinutes": 3,
         "menus": [
           "에스프레소"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "38623943",
@@ -1081,7 +1081,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1564311945",
         "name": "청년피자 휘닉스파크점",
         "address": "강원 평창군 태기로 335",
-        "memo": "24.02.14+ 양꼬치님 소개 피자집.",
+        "memo": "24.02.14+ 피자집.",
         "driveMinutes": 3,
         "menus": [
           "토핑농장",
@@ -1090,7 +1090,7 @@ window.NAVER_RESTAURANTS = {
           "매드쉬림프",
           "고기밭"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "1383986451",
@@ -1141,7 +1141,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1909241837",
         "name": "파인리프",
         "address": "강원 평창군 태기로 396-6",
-        "memo": "24.11.19 알리님 소개 카페.",
+        "memo": "24.11.19 카페.",
         "driveMinutes": 3,
         "menus": [
           "당근홀케이크",
@@ -1150,7 +1150,7 @@ window.NAVER_RESTAURANTS = {
           "애플파이",
           "딸기파이"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "12812456",
@@ -1212,14 +1212,14 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15552082",
         "name": "휘팍샤브샤브",
         "address": "강원 평창군 태기로 100",
-        "memo": "24.12.02 미망인님 소개 맛집. 야채는 좋은데, 고기가 냉동이라 별로.",
+        "memo": "24.12.02 맛집. 야채는 좋은데, 고기가 냉동이라 별로.",
         "driveMinutes": 3,
         "menus": [
           "소고기 샤브 1인(100g)",
           "소고기샤브1인(미취학아동) 100g",
           "소고기추가(150g)"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "15551895",
@@ -1255,7 +1255,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "36830638",
         "name": "또래오래 휘닉스파크점",
         "address": "강원 평창군 태기로 443",
-        "memo": "24.12.02 미망인님 소개 치킨집.",
+        "memo": "24.12.02 치킨집.",
         "driveMinutes": 4,
         "menus": [
           "강서방족발과 쟁반막국수",
@@ -1264,7 +1264,7 @@ window.NAVER_RESTAURANTS = {
           "후라이드치킨",
           "양념치킨"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "1488696381",
@@ -1439,7 +1439,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15550550",
         "name": "봉평고향막국수",
         "address": "강원 평창군 이효석길 142",
-        "memo": "23.11.30 침묵님 소개 막국수 신흥 강자 맛집.",
+        "memo": "23.11.30 막국수 신흥 강자 맛집.",
         "driveMinutes": 9,
         "menus": [
           "봉평전통메밀국수",
@@ -1448,7 +1448,7 @@ window.NAVER_RESTAURANTS = {
           "막국수 (물/비빔)",
           "메밀싹 꼬막비빔밥"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "13321079",
@@ -1769,7 +1769,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1443639774",
         "name": "큰맘할매순대국 용평리조트점",
         "address": "강원 평창군 올림픽로 715",
-        "memo": "25.01.04 색시닭님 소개 용평 타워프라자 내 먹을만한 맛집.",
+        "memo": "25.01.04 용평 타워프라자 내 먹을만한 맛집.",
         "driveMinutes": 3,
         "menus": [
           "순대국",
@@ -1778,7 +1778,7 @@ window.NAVER_RESTAURANTS = {
           "술국",
           "황태해장국"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "1454895584",
@@ -2062,7 +2062,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "19593776",
         "name": "원조맷돌순두부",
         "address": "강원 평창군 송천길 10",
-        "memo": "25.10.23 제이지님 소개 오삼불고기 맛집. 두부전골 추천.",
+        "memo": "25.10.23 오삼불고기 맛집. 두부전골 추천.",
         "driveMinutes": 6,
         "menus": [
           "두부전골",
@@ -2071,7 +2071,7 @@ window.NAVER_RESTAURANTS = {
           "오삼불고기",
           "황태전골"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "15560909",
@@ -2166,14 +2166,14 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1078747527",
         "name": "길자네 냉동삼겹살",
         "address": "강원 평창군 대관령로 110",
-        "memo": "25.10.23 제이지님 소개 냉삼 맛집.",
+        "memo": "25.10.23 냉삼 맛집.",
         "driveMinutes": 7,
         "menus": [
           "한우차돌",
           "고추장삼겹살",
           "냉동삼겹살"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "38404118",
@@ -2253,7 +2253,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1822726100",
         "name": "대관령돈드럼통",
         "address": "강원 평창군 대관령로 120",
-        "memo": "25.10.23 제이지님 소개 돼지고기 구이 맛집.",
+        "memo": "25.10.23 돼지고기 구이 맛집.",
         "driveMinutes": 7,
         "menus": [
           "대표신현민",
@@ -2262,13 +2262,13 @@ window.NAVER_RESTAURANTS = {
           "소알곱창",
           "소막창"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "1972566352",
         "name": "대관령뚝배기식당",
         "address": "강원 평창군 횡계2길 7-8",
-        "memo": "25.11.20 제이지님 소개 오삼불고기 맛집. 영업시간 랜덤, 예약 안됨.",
+        "memo": "25.11.20 오삼불고기 맛집. 영업시간 랜덤, 예약 안됨.",
         "driveMinutes": 7,
         "menus": [
           "병천순대국밥",
@@ -2277,7 +2277,7 @@ window.NAVER_RESTAURANTS = {
           "옛날할머니추어탕",
           "선지해장국"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "32756802",
@@ -2645,12 +2645,12 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1198994999",
         "name": "대관령김치찌개집",
         "address": "강원 평창군 경강로 5103",
-        "memo": "24.10.11+ 너겟님 소개 맛집. 24시간 영업.",
+        "memo": "24.10.11+ 맛집. 24시간 영업.",
         "driveMinutes": 8,
         "menus": [
           "김치찌개"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "11785672",
@@ -2734,7 +2734,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15560992",
         "name": "이촌쉼터",
         "address": "강원 평창군 꽃밭양지길 405",
-        "memo": "22.12.27 닝닝님 소개 찐 강원도 옹심이 맛집.",
+        "memo": "22.12.27 찐 강원도 옹심이 맛집.",
         "driveMinutes": 12,
         "menus": [
           "옹심이칼국수",
@@ -2743,7 +2743,7 @@ window.NAVER_RESTAURANTS = {
           "도토리묵무침",
           "감자전 1장"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "21074624",
@@ -3166,7 +3166,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1107242729",
         "name": "청년다방 강원정선점",
         "address": "강원 정선군 고한로 45",
-        "memo": "25.02.21 딛고일어서지않기님 소개 분식집.",
+        "memo": "25.02.21 분식집.",
         "driveMinutes": 3,
         "menus": [
           "말차크림차돌떡볶이",
@@ -3175,7 +3175,7 @@ window.NAVER_RESTAURANTS = {
           "통큰오짱떡볶이",
           "떡튀순떡볶이"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "2097318243",
@@ -3226,7 +3226,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1748137360",
         "name": "하이원리조트 운암정",
         "address": "강원 정선군 하이원길 265",
-        "memo": "26.01.02- 하양님 소개 한옥 카페. 비싼 값에 비해 평범한 맛.",
+        "memo": "26.01.02- 한옥 카페. 비싼 값에 비해 평범한 맛.",
         "driveMinutes": 3,
         "menus": [
           "해님꽃",
@@ -3235,7 +3235,7 @@ window.NAVER_RESTAURANTS = {
           "원추리 커피빵",
           "수리취치즈와플"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "31058075",
@@ -3327,7 +3327,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1423169287",
         "name": "화로상회 정선고한점",
         "address": "강원 정선군 고한6길 30-1",
-        "memo": "23.01.13 배야님 소개 무한리필 고기집.",
+        "memo": "23.01.13 무한리필 고기집.",
         "driveMinutes": 3,
         "menus": [
           "성인(초등 5학년부터)",
@@ -3336,7 +3336,7 @@ window.NAVER_RESTAURANTS = {
           "통감자된장찌개",
           "4~6세(23년생부터)"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "1470628198",
@@ -3616,7 +3616,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "35166575",
         "name": "우해정 곤지암점",
         "address": "경기 광주시 곤지암천로 248",
-        "memo": "26.01.22 제이지님 소개 돼지갈비 맛집.",
+        "memo": "26.01.22 돼지갈비 맛집.",
         "driveMinutes": 9,
         "menus": [
           "한돈 부드러운 돼지갈비",
@@ -3625,7 +3625,7 @@ window.NAVER_RESTAURANTS = {
           "소생갈비",
           "한돈 오겹살(새송이 꽈리 서비스)"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "37067234",
@@ -3699,7 +3699,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "18050259",
         "name": "구일가든",
         "address": "경기 광주시 경충대로 540",
-        "memo": "26.01.22 제이지님 소개 소머리국밥 맛집.",
+        "memo": "26.01.22 소머리국밥 맛집.",
         "driveMinutes": 11,
         "menus": [
           "소머리국밥",
@@ -3708,7 +3708,7 @@ window.NAVER_RESTAURANTS = {
           "수육(대)",
           "소주"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "1528447043",
@@ -3729,7 +3729,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1417314194",
         "name": "호운",
         "address": "경기 이천시 황무로 200",
-        "memo": "25.05.14 제이지님 소개 생선구이 맛집.",
+        "memo": "25.05.14 생선구이 맛집.",
         "driveMinutes": 15,
         "menus": [
           "고•제SET(고등어+제육+솥밥2개)",
@@ -3738,13 +3738,13 @@ window.NAVER_RESTAURANTS = {
           "쌈 싸먹는 고등어 정식+찰솥밥1개",
           "쌈 싸먹는 임연수 정식+찰솥밥 1개"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "13301852",
         "name": "이천돌솥밥",
         "address": "경기 이천시 경충대로 3194",
-        "memo": "25.05.14 제이지님 소개 맛집.",
+        "memo": "25.05.14 맛집.",
         "driveMinutes": 18,
         "menus": [
           "한정식(돌솥밥)-주중 판매(월~금)",
@@ -3753,7 +3753,7 @@ window.NAVER_RESTAURANTS = {
           "보쌈 추가",
           "코다리구이"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       }
     ],
     "jisan": [
@@ -3785,7 +3785,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "116218805",
         "name": "아이성",
         "address": "경기 이천시 지산로103번길 66",
-        "memo": "23.11.13 제이지님 소개 중국집. 사천탕수육 추천.",
+        "memo": "23.11.13 중국집. 사천탕수육 추천.",
         "driveMinutes": 5,
         "menus": [
           "탕수육(대)",
@@ -3794,7 +3794,7 @@ window.NAVER_RESTAURANTS = {
           "간짜장",
           "짬뽕"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "13573708",
@@ -3824,7 +3824,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "13573706",
         "name": "나고야",
         "address": "경기 이천시 덕평로 713",
-        "memo": "23.11.13 제이지님 소개 초밥 맛집.",
+        "memo": "23.11.13 초밥 맛집.",
         "driveMinutes": 7,
         "menus": [
           "초밥정식",
@@ -3833,13 +3833,13 @@ window.NAVER_RESTAURANTS = {
           "광어정식",
           "새우정식"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "38695562",
         "name": "덕평 마산아구 이천쌀밥",
         "address": "경기 이천시 덕평로882번길 2-9",
-        "memo": "23.01.07 제이지님 소개 한정식 맛집.",
+        "memo": "23.01.07 한정식 맛집.",
         "driveMinutes": 7,
         "menus": [
           "이천쌀밥한정식",
@@ -3848,13 +3848,13 @@ window.NAVER_RESTAURANTS = {
           "꽃게탕",
           "(추가메뉴)황태채더덕구이 한판"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "18514716",
         "name": "덕평한우촌",
         "address": "경기 이천시 덕평로748번길 17",
-        "memo": "23.11.13 제이지님 소개 한우 맛집.",
+        "memo": "23.11.13 한우 맛집.",
         "driveMinutes": 7,
         "menus": [
           "토시살",
@@ -3863,13 +3863,13 @@ window.NAVER_RESTAURANTS = {
           "차돌박이",
           "주물럭"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "13288345",
         "name": "마루&커피잇수다",
         "address": "경기 이천시 지산로 4",
-        "memo": "23.11.13 제이지님 소개 찌개류 맛집.",
+        "memo": "23.11.13 찌개류 맛집.",
         "driveMinutes": 7,
         "menus": [
           "꽃게탕",
@@ -3878,13 +3878,13 @@ window.NAVER_RESTAURANTS = {
           "닭볶음탕",
           "통오징어불고기"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "1606157558",
         "name": "어야디야",
         "address": "경기 이천시 덕평로 802",
-        "memo": "24.01.09 제이지님 소개 맛집. 보리굴비정식 추천.",
+        "memo": "24.01.09 맛집. 보리굴비정식 추천.",
         "driveMinutes": 7,
         "menus": [
           "꼬막비빔밥",
@@ -3893,7 +3893,7 @@ window.NAVER_RESTAURANTS = {
           "낚지볶음정식",
           "제육볶음정식"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "1858306697",
@@ -3929,7 +3929,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "34818419",
         "name": "영짬뽕",
         "address": "경기 이천시 덕평로 917",
-        "memo": "23.11.13 제이지님 소개 맛집. 알짬뽕 추천.",
+        "memo": "23.11.13 맛집. 알짬뽕 추천.",
         "driveMinutes": 8,
         "menus": [
           "알짬뽕",
@@ -3938,13 +3938,13 @@ window.NAVER_RESTAURANTS = {
           "새우볶음밥",
           "군만두"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "13577036",
         "name": "유정이네통영굴밥",
         "address": "경기 용인시 처인구 중부대로 2656",
-        "memo": "23.01.07 제이지님 소개 맛집.",
+        "memo": "23.01.07 맛집.",
         "driveMinutes": 9,
         "menus": [
           "굴정식(2인이상)",
@@ -3953,22 +3953,22 @@ window.NAVER_RESTAURANTS = {
           "간장게장정식",
           "양념게장정식"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "1982805189",
         "name": "이태리상회",
         "address": "경기 이천시 마장로 91",
-        "memo": "23.01.07 제이지님 소개 파스타 맛집.",
+        "memo": "23.01.07 파스타 맛집.",
         "driveMinutes": 9,
         "menus": [],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "1228200860",
         "name": "소소식당",
         "address": "경기 이천시 양촌로6번길 13-6",
-        "memo": "23.11.13 제이지님 소개 돈까스 맛집.",
+        "memo": "23.11.13 돈까스 맛집.",
         "driveMinutes": 10,
         "menus": [
           "믹스카츠(등심+안심+생선+새우)",
@@ -3977,7 +3977,7 @@ window.NAVER_RESTAURANTS = {
           "로스카츠(등심)",
           "히레카츠(안심)"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       }
     ],
     "o2": [
@@ -4074,7 +4074,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "37060588",
         "name": "태성각",
         "address": "강원 태백시 문화로 14",
-        "memo": "22.08.09 제이지님 소개 꽃게 짬뽕 맛집.",
+        "memo": "22.08.09 꽃게 짬뽕 맛집.",
         "driveMinutes": 5,
         "menus": [
           "짜장면",
@@ -4083,7 +4083,7 @@ window.NAVER_RESTAURANTS = {
           "군만두",
           "콩국수"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "11691779",
@@ -4104,7 +4104,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "35161492",
         "name": "미친곱창",
         "address": "강원 태백시 서학로 1090",
-        "memo": "22.08.09 제이지님 소개 볶음밥 먹기 위해 곱창 먹는 맛집.",
+        "memo": "22.08.09 볶음밥 먹기 위해 곱창 먹는 맛집.",
         "driveMinutes": 7,
         "menus": [
           "소막창",
@@ -4113,7 +4113,7 @@ window.NAVER_RESTAURANTS = {
           "특양",
           "염통"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "11722939",
@@ -4256,7 +4256,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1773457234",
         "name": "강원도위가연탄불고기 용인양지본점",
         "address": "경기 용인시 처인구 남평로 73-4",
-        "memo": "23.01.07 제이지님 소개 맛집.",
+        "memo": "23.01.07 맛집.",
         "driveMinutes": 6,
         "menus": [
           "고추장 불고기",
@@ -4265,13 +4265,13 @@ window.NAVER_RESTAURANTS = {
           "(점심특선) 연탄불고기 + 우럭미역국",
           "연탄 불고기 + 냉면 (물 / 비빔)"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "20103498",
         "name": "산매동식당",
         "address": "경기 용인시 처인구 남평로231번길 3",
-        "memo": "23.11.13 제이지님 소개 돌판 오리고기 맛집.",
+        "memo": "23.11.13 돌판 오리고기 맛집.",
         "driveMinutes": 7,
         "menus": [
           "오리 돌구이",
@@ -4280,13 +4280,13 @@ window.NAVER_RESTAURANTS = {
           "오리백숙",
           "토종닭백숙"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "34744320",
         "name": "양지맛집 미역이랑배추랑",
         "address": "경기 용인시 처인구 죽양대로 2293",
-        "memo": "23.11.13 제이지님 소개 아욱국 맛집.",
+        "memo": "23.11.13 아욱국 맛집.",
         "driveMinutes": 7,
         "menus": [
           "배춧국 백반",
@@ -4295,7 +4295,7 @@ window.NAVER_RESTAURANTS = {
           "들깨국수 (냉/온)",
           "비빔국수"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "1960786782",
@@ -4383,7 +4383,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "20955845",
         "name": "무주뚝배기",
         "address": "전북 무주군 관동길 7",
-        "memo": "26.01.22 제이지님 소개 능이버섯전골 맛집",
+        "memo": "26.01.22 능이버섯전골 맛집",
         "driveMinutes": 6,
         "menus": [
           "능이버섯전골(중)",
@@ -4392,7 +4392,7 @@ window.NAVER_RESTAURANTS = {
           "능이버섯전골(대)",
           "가마솥설렁탕(특)"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "20256405",
