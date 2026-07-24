@@ -30,7 +30,33 @@
         }));
     }
 
+    function ensureLoginDialog() {
+        var existing = document.getElementById("loginScreen");
+        if (existing) return existing;
+
+        var dialog = document.createElement("section");
+        dialog.id = "loginScreen";
+        dialog.className = "login-screen";
+        dialog.setAttribute("role", "dialog");
+        dialog.setAttribute("aria-modal", "true");
+        dialog.setAttribute("aria-labelledby", "loginTitle");
+        dialog.hidden = true;
+        dialog.innerHTML = [
+            '<div class="login-card">',
+            '<button id="loginCloseBtn" class="login-close" type="button" aria-label="로그인 창 닫기">×</button>',
+            '<div class="login-mark" aria-hidden="true">🔐</div>',
+            '<h1 id="loginTitle">참여하려면 카카오 로그인</h1>',
+            "<p>정보 열람은 로그인 없이 가능합니다.<br>평가와 정보 수정 요청에만 로그인이 필요해요.</p>",
+            '<button id="kakaoLoginBtn" type="button">카카오 로그인</button>',
+            '<p id="authStatus" class="auth-status" role="status" aria-live="polite"></p>',
+            "</div>"
+        ].join("");
+        document.body.insertBefore(dialog, document.body.firstChild);
+        return dialog;
+    }
+
     function elements() {
+        ensureLoginDialog();
         return {
             loginScreen: document.getElementById("loginScreen"),
             mainContent: document.getElementById("mainContent"),
