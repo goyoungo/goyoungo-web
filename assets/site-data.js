@@ -38,6 +38,55 @@ window.SITE_DATA = {
       "summary": "하이원 리조트 주변 맛집"
     },
     {
+      "id": "konjiam",
+      "icon": "🌲",
+      "title": "곤지암 맛집 리스트",
+      "href": "/konjiam-restaurants.html",
+      "summary": "곤지암리조트 주변 맛집 16곳"
+    },
+    {
+      "id": "jisan",
+      "icon": "🎿",
+      "title": "지산 맛집 리스트",
+      "href": "/jisan-restaurants.html",
+      "summary": "지산포레스트 주변 맛집 16곳"
+    },
+    {
+      "id": "o2",
+      "icon": "❄️",
+      "title": "오투 맛집 리스트",
+      "href": "/o2-restaurants.html",
+      "summary": "오투리조트 주변 맛집 12곳"
+    },
+    {
+      "id": "vivaldi",
+      "icon": "🏔️",
+      "title": "비발디 맛집 리스트",
+      "href": "/vivaldi-restaurants.html",
+      "summary": "비발디파크 주변 맛집 6곳"
+    },
+    {
+      "id": "yangji",
+      "icon": "📍",
+      "title": "양지파인 인근 맛집",
+      "href": "/yangji-restaurants.html",
+      "summary": "양지파인 인근 맛집 4곳"
+    },
+    {
+      "id": "elysian",
+      "icon": "🚠",
+      "title": "엘리시안 맛집 리스트",
+      "href": "/elysian-restaurants.html",
+      "summary": "엘리시안 강촌 주변 맛집 4곳"
+    },
+    {
+      "id": "muju",
+      "icon": "⛷️",
+      "title": "무주 맛집 리스트",
+      "href": "/muju-restaurants.html",
+      "summary": "무주덕유산리조트 주변 맛집 3곳"
+    },
+    {
       "id": "market",
       "icon": "💵",
       "title": "웰리휘리 거래 게시판",
@@ -1277,6 +1326,132 @@ window.SITE_DATA = {
       "title": "하이원 맛집 리스트",
       "icon": "✋",
       "subtitle": "하이원 리조트 주변 맛집 정보",
+      "sections": [
+        {
+          "id": "open",
+          "title": "운영중",
+          "items": []
+        },
+        {
+          "id": "closed",
+          "title": "아쉽지만 폐업",
+          "items": []
+        }
+      ]
+    },
+    "konjiam": {
+      "type": "restaurants",
+      "title": "곤지암 맛집 리스트",
+      "icon": "🌲",
+      "subtitle": "곤지암리조트 주변 맛집 정보",
+      "sections": [
+        {
+          "id": "open",
+          "title": "운영중",
+          "items": []
+        },
+        {
+          "id": "closed",
+          "title": "아쉽지만 폐업",
+          "items": []
+        }
+      ]
+    },
+    "jisan": {
+      "type": "restaurants",
+      "title": "지산 맛집 리스트",
+      "icon": "🎿",
+      "subtitle": "지산포레스트리조트 주변 맛집 정보",
+      "sections": [
+        {
+          "id": "open",
+          "title": "운영중",
+          "items": []
+        },
+        {
+          "id": "closed",
+          "title": "아쉽지만 폐업",
+          "items": []
+        }
+      ]
+    },
+    "o2": {
+      "type": "restaurants",
+      "title": "오투 맛집 리스트",
+      "icon": "❄️",
+      "subtitle": "오투리조트 주변 맛집 정보",
+      "sections": [
+        {
+          "id": "open",
+          "title": "운영중",
+          "items": []
+        },
+        {
+          "id": "closed",
+          "title": "아쉽지만 폐업",
+          "items": []
+        }
+      ]
+    },
+    "vivaldi": {
+      "type": "restaurants",
+      "title": "비발디 맛집 리스트",
+      "icon": "🏔️",
+      "subtitle": "비발디파크 주변 맛집 정보",
+      "sections": [
+        {
+          "id": "open",
+          "title": "운영중",
+          "items": []
+        },
+        {
+          "id": "closed",
+          "title": "아쉽지만 폐업",
+          "items": []
+        }
+      ]
+    },
+    "yangji": {
+      "type": "restaurants",
+      "title": "양지파인 인근 맛집",
+      "icon": "📍",
+      "subtitle": "동계 스키장 미운영 안내가 있는 양지파인 인근 맛집 정보",
+      "sections": [
+        {
+          "id": "open",
+          "title": "운영중",
+          "items": []
+        },
+        {
+          "id": "closed",
+          "title": "아쉽지만 폐업",
+          "items": []
+        }
+      ]
+    },
+    "elysian": {
+      "type": "restaurants",
+      "title": "엘리시안 맛집 리스트",
+      "icon": "🚠",
+      "subtitle": "엘리시안 강촌 주변 맛집 정보",
+      "sections": [
+        {
+          "id": "open",
+          "title": "운영중",
+          "items": []
+        },
+        {
+          "id": "closed",
+          "title": "아쉽지만 폐업",
+          "items": []
+        }
+      ]
+    },
+    "muju": {
+      "type": "restaurants",
+      "title": "무주 맛집 리스트",
+      "icon": "⛷️",
+      "subtitle": "무주덕유산리조트 주변 맛집 정보",
       "sections": [
         {
           "id": "open",

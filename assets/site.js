@@ -55,7 +55,14 @@
             welpark: "웰리힐리파크",
             phoenix: "휘닉스 평창",
             yongpyong: "모나 용평",
-            high1: "하이원리조트"
+            high1: "하이원리조트",
+            konjiam: "곤지암리조트",
+            jisan: "지산포레스트리조트",
+            o2: "오투리조트",
+            vivaldi: "비발디파크",
+            yangji: "양지파인",
+            elysian: "엘리시안 강촌",
+            muju: "무주덕유산리조트"
         };
 
         Object.keys(resortNames).forEach(function (pageId) {
@@ -215,6 +222,13 @@
             phoenix: "EAT",
             yongpyong: "EAT",
             high1: "EAT",
+            konjiam: "EAT",
+            jisan: "EAT",
+            o2: "EAT",
+            vivaldi: "EAT",
+            yangji: "EAT",
+            elysian: "EAT",
+            muju: "EAT",
             market: "MARKET",
             season: "STAY",
             partner: "BENEFIT",
@@ -233,9 +247,9 @@
             ].join("");
         }).join("");
 
-        var restaurantTotal = ["welpark", "phoenix", "yongpyong", "high1"].reduce(function (total, pageId) {
+        var restaurantTotal = Object.keys(data.pages).reduce(function (total, pageId) {
             var page = data.pages[pageId];
-            if (!page || !Array.isArray(page.sections)) return total;
+            if (!page || page.type !== "restaurants" || !Array.isArray(page.sections)) return total;
             return total + page.sections.reduce(function (sum, section) {
                 return sum + section.items.length;
             }, 0);
@@ -250,7 +264,7 @@
             '<div class="page-wrap home-page">',
             '<section class="home-hero" aria-labelledby="homeTitle">',
             '<div class="home-hero-main">',
-            '<p class="home-kicker">GANGWON SNOW DIRECTORY · 2026</p>',
+            '<p class="home-kicker">KOREA SNOW DIRECTORY · 2026</p>',
             '<h1 id="homeTitle">스키장 정보 공유</h1>',
             '<div class="home-hero-foot">',
             "<p>리조트 주변의 맛집부터 장비 거래, 시즌방, 제휴 혜택과 셔틀까지. 보더와 스키어가 직접 모은 로컬 정보를 한눈에 만나보세요.</p>",

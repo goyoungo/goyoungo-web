@@ -86,14 +86,18 @@ const places = Array.from(
       .map((place) => [String(place.naverId), place]),
   ).values(),
 );
+const refreshMissingOnly = process.argv.includes("--missing-only");
+const placesToFetch = refreshMissingOnly
+  ? places.filter((place) => !Array.isArray(place.menus) || !place.menus.length)
+  : places;
 const menuByPlace = new Map();
 const failures = [];
 let cursor = 0;
 let completed = 0;
 
 async function worker() {
-  while (cursor < places.length) {
-    const place = places[cursor];
+  while (cursor < placesToFetch.length) {
+    const place = placesToFetch[cursor];
     cursor += 1;
     try {
       menuByPlace.set(String(place.naverId), await fetchMenus(place.naverId));
@@ -106,24 +110,29 @@ async function worker() {
       });
     }
     completed += 1;
-    if (completed % 20 === 0 || completed === places.length) {
-      console.log(`메뉴 확인 ${completed}/${places.length}`);
+    if (completed % 20 === 0 || completed === placesToFetch.length) {
+      console.log(`메뉴 확인 ${completed}/${placesToFetch.length}`);
     }
-    await wait(220);
+    await wait(refreshMissingOnly ? 700 : 220);
   }
 }
 
-await Promise.all(Array.from({ length: 3 }, () => worker()));
+await Promise.all(
+  Array.from({ length: refreshMissingOnly ? 1 : 3 }, () => worker()),
+);
 
 for (const pagePlaces of Object.values(dataset.pages)) {
   for (const place of pagePlaces) {
-    place.menus = menuByPlace.get(String(place.naverId)) || [];
+    if (menuByPlace.has(String(place.naverId))) {
+      place.menus = menuByPlace.get(String(place.naverId));
+    }
   }
 }
 
-const placesWithMenus = Array.from(menuByPlace.values()).filter(
-  (menus) => menus.length > 0,
-).length;
+const placesWithMenus = Object.values(dataset.pages)
+  .flat()
+  .filter((place) => Array.isArray(place.menus) && place.menus.length > 0)
+  .length;
 dataset.source.menuSource = {
   title: "네이버 플레이스 메뉴판",
   snapshotDate,
@@ -143,6 +152,7 @@ console.log(
     {
       placesChecked: places.length,
       placesWithMenus,
+      placesRequested: placesToFetch.length,
       placesWithoutMenus: places.length - placesWithMenus,
       failures,
     },
