@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#F7F2E8">
-    <meta name="description" content="카카오 로그인 후 이용하는 스키장 맛집, 거래, 시즌방, 제휴 및 셔틀 정보 허브">
+    <meta name="description" content="로그인 없이 보는 강원 스키장 맛집, 거래, 시즌방, 제휴 및 셔틀 정보 허브">
     <meta property="og:title" content="스키장 정보 공유 - by @go.youngo">
-    <meta property="og:description" content="카카오 로그인 후 이용하는 스키장 맛집, 거래, 시즌방, 제휴 및 셔틀 정보 허브">
+    <meta property="og:description" content="로그인 없이 보는 강원 스키장 맛집, 거래, 시즌방, 제휴 및 셔틀 정보 허브">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://goyoungo.com/">
     <title>스키장 정보 공유 - by @go.youngo</title>
@@ -20,23 +20,24 @@
     <a class="skip-link" href="#main">콘텐츠로 건너뛰기</a>
     <noscript><div class="noscript">이 사이트를 이용하려면 브라우저에서 JavaScript를 켜 주세요.</div></noscript>
 
-    <section id="loginScreen" class="login-screen" aria-labelledby="loginTitle">
+    <section id="loginScreen" class="login-screen" role="dialog" aria-modal="true" aria-labelledby="loginTitle" hidden>
         <div class="login-card">
+            <button id="loginCloseBtn" class="login-close" type="button" aria-label="로그인 창 닫기">×</button>
             <div class="login-mark" aria-hidden="true">🔐</div>
-            <h1 id="loginTitle">카카오톡 인증 필요</h1>
-            <p>스키장 정보 공유 페이지를 이용하려면<br>카카오 로그인이 필요합니다.</p>
+            <h1 id="loginTitle">참여하려면 카카오 로그인</h1>
+            <p>정보 열람은 로그인 없이 가능합니다.<br>평가와 정보 수정 요청에만 로그인이 필요해요.</p>
             <button id="kakaoLoginBtn" type="button">카카오 로그인</button>
             <p id="authStatus" class="auth-status" role="status" aria-live="polite"></p>
         </div>
     </section>
 
-    <section id="mainContent" class="site-shell" hidden>
+    <section id="mainContent" class="site-shell">
         <header class="site-header">
             <a class="brand-link" href="/index.html">
                 <span class="brand-dot" aria-hidden="true"></span>
                 <span>GO.YOUNGO · 강원 스키 라이프</span>
             </a>
-            <button id="logoutBtn" type="button">로그아웃</button>
+            <button id="logoutBtn" type="button">로그인</button>
         </header>
         <main id="main" class="page-root" tabindex="-1">
             <div id="pageRoot"></div>

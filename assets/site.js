@@ -140,9 +140,129 @@
             "</div>",
             '<nav class="hub-grid" aria-label="스키장 정보 페이지">' + cards + "</nav>",
             "</section>",
+            '<section class="update-request" id="update" aria-labelledby="updateTitle">',
+            '<div class="update-request-intro">',
+            '<p class="eyebrow">COMMUNITY UPDATE</p>',
+            '<h2 id="updateTitle">달라진 정보를 발견했나요?</h2>',
+            "<p>영업시간, 휴무일, 위치처럼 달라진 내용을 알려주세요. 요청 작성과 제출에는 카카오 로그인이 필요합니다.</p>",
+            "</div>",
+            '<button class="update-request-button" id="openUpdateRequest" type="button">정보 수정 요청 →</button>',
+            '<form class="update-request-form" id="updateRequestForm" hidden>',
+            '<div class="update-form-grid">',
+            '<label><span>수정 유형</span><select name="category" required>',
+            '<option value="영업시간/휴무">영업시간/휴무</option>',
+            '<option value="위치/연락처">위치/연락처</option>',
+            '<option value="메뉴/가격">메뉴/가격</option>',
+            '<option value="폐업/신규">폐업/신규</option>',
+            '<option value="기타">기타</option>',
+            "</select></label>",
+            '<label><span>가게 또는 항목</span><input name="target" type="text" maxlength="100" placeholder="예: 고원곰탕" required></label>',
+            '<label class="update-form-detail"><span>달라진 내용</span>',
+            '<textarea name="details" rows="5" minlength="5" maxlength="1000" placeholder="확인한 변경 내용을 적어주세요." required></textarea></label>',
+            "</div>",
+            '<div class="update-form-actions">',
+            '<button class="action-link primary" type="submit">요청 보내기</button>',
+            '<span class="update-form-status" id="updateRequestStatus" role="status" aria-live="polite"></span>',
+            "</div>",
+            "</form>",
+            "</section>",
             footer(),
             "</div>"
         ].join("");
+        bindUpdateRequest();
+    }
+
+    function bindUpdateRequest() {
+        var trigger = document.getElementById("openUpdateRequest");
+        var form = document.getElementById("updateRequestForm");
+        var status = document.getElementById("updateRequestStatus");
+        if (!trigger || !form || !status) return;
+
+        function revealForm() {
+            form.hidden = false;
+            trigger.setAttribute("aria-expanded", "true");
+            var firstField = form.querySelector("select, input, textarea");
+            if (firstField) firstField.focus();
+        }
+
+        trigger.setAttribute("aria-expanded", "false");
+        trigger.addEventListener("click", function () {
+            if (!form.hidden) {
+                form.hidden = true;
+                trigger.setAttribute("aria-expanded", "false");
+                trigger.focus();
+                return;
+            }
+
+            if (getVoteToken()) {
+                revealForm();
+                return;
+            }
+
+            if (window.GoyoungoAuth && typeof window.GoyoungoAuth.requestLogin === "function") {
+                window.GoyoungoAuth.requestLogin(
+                    "정보 수정 요청을 작성하려면 카카오 로그인이 필요합니다.",
+                    revealForm
+                );
+            }
+        });
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            if (localPreview) {
+                status.textContent = "운영 사이트에서 로그인한 뒤 제출할 수 있습니다.";
+                return;
+            }
+
+            var token = getVoteToken();
+            if (!token) {
+                if (window.GoyoungoAuth && typeof window.GoyoungoAuth.requestLogin === "function") {
+                    window.GoyoungoAuth.requestLogin(
+                        "정보 수정 요청을 보내려면 카카오 로그인이 필요합니다.",
+                        function () { form.requestSubmit(); }
+                    );
+                }
+                return;
+            }
+
+            var submitButton = form.querySelector('button[type="submit"]');
+            var formData = new FormData(form);
+            submitButton.disabled = true;
+            status.textContent = "요청을 보내는 중…";
+
+            try {
+                var response = await fetch(voteApiUrl + "/suggestions", {
+                    method: "POST",
+                    headers: {
+                        Authorization: "Bearer " + token,
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "omit",
+                    body: JSON.stringify({
+                        category: formData.get("category"),
+                        target: formData.get("target"),
+                        details: formData.get("details"),
+                        pageUrl: window.location.pathname
+                    })
+                });
+                var payload = await response.json().catch(function () { return {}; });
+                if (!response.ok) {
+                    var error = new Error(payload.message || "요청을 저장하지 못했습니다.");
+                    error.status = response.status;
+                    throw error;
+                }
+
+                form.reset();
+                status.textContent = "정보 수정 요청을 보냈습니다. 확인 후 반영할게요.";
+            } catch (error) {
+                status.textContent = error.status === 401
+                    ? "로그인이 만료되었습니다. 다시 로그인해 주세요."
+                    : (error.message || "요청을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
     }
 
     function scoreHtml(item) {
@@ -234,7 +354,7 @@
             control.querySelectorAll("[data-vote-choice]").forEach(function (button) {
                 var selected = state.userChoice === button.dataset.voteChoice;
                 button.setAttribute("aria-pressed", selected ? "true" : "false");
-                button.disabled = state.loading || localPreview;
+                button.disabled = state.loading;
             });
         });
     }
@@ -320,6 +440,12 @@
         var token = getVoteToken();
         if (!token) {
             updateVoteState(venueId, { message: "카카오 로그인이 필요합니다." });
+            if (window.GoyoungoAuth && typeof window.GoyoungoAuth.requestLogin === "function") {
+                window.GoyoungoAuth.requestLogin(
+                    "추천·비추천 평가를 남기려면 카카오 로그인이 필요합니다.",
+                    function () { submitVote(venueId, choice); }
+                );
+            }
             return;
         }
 
