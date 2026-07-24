@@ -9,8 +9,10 @@
     var pendingAction = null;
     var returnFocus = null;
     var sdkReady = false;
+    var sessionInvalidated = false;
 
     function getAccessToken() {
+        if (sessionInvalidated) return null;
         try {
             return window.Kakao && Kakao.isInitialized()
                 ? Kakao.Auth.getAccessToken()
@@ -93,6 +95,12 @@
         updateAccountButton(ui);
     }
 
+    function invalidateSession(ui) {
+        sessionInvalidated = true;
+        if (ui) updateAccountButton(ui);
+        dispatchAuthChange(false);
+    }
+
     function closeLogin(ui, restoreFocus) {
         ui.loginScreen.hidden = true;
         document.body.removeAttribute("data-login-open");
@@ -133,6 +141,7 @@
     function finishLogin(ui) {
         var action = pendingAction;
         pendingAction = null;
+        sessionInvalidated = false;
         ui.loginScreen.hidden = true;
         document.body.removeAttribute("data-login-open");
         setStatus(ui, "");
@@ -184,11 +193,13 @@
 
         try {
             Kakao.Auth.logout(function () {
+                sessionInvalidated = false;
                 updateAccountButton(ui);
                 dispatchAuthChange(false);
                 ui.accountButton.focus();
             });
         } catch (error) {
+            sessionInvalidated = true;
             updateAccountButton(ui);
             dispatchAuthChange(false);
         }
@@ -207,6 +218,14 @@
         requestLogin: function (message, onSuccess) {
             if (!activeUi) return false;
             return openLogin(activeUi, message, onSuccess);
+        },
+        invalidateSession: function () {
+            invalidateSession(activeUi);
+        },
+        reauthenticate: function (message, onSuccess) {
+            if (!activeUi) return false;
+            invalidateSession(activeUi);
+            return openLogin(activeUi, message || "로그인이 만료되었습니다. 다시 로그인해 주세요.", onSuccess);
         }
     };
 
