@@ -134,6 +134,7 @@
                 title: imported.source.title,
                 url: imported.source.url,
                 importedCount: importedItems.length,
+                operatingCount: openSection.items.length,
                 routeBasis: imported.source.routeBasis,
                 menuSnapshotDate: imported.source.menuSource &&
                     imported.source.menuSource.snapshotDate,
@@ -1020,8 +1021,8 @@
         ].join("") : "";
         var sourceDisclosure = page.naverSource ? [
             '<aside class="restaurant-source-note">',
-            "<p><strong>네이버 지도</strong> 기준으로 이 리조트 주변 " +
-                esc(page.naverSource.importedCount) + "곳의 정보를 반영했습니다.</p>",
+            "<p><strong>네이버 지도</strong> 정보를 반영해 이 리조트 주변 운영 중 맛집 " +
+                esc(page.naverSource.operatingCount) + "곳을 정리했습니다.</p>",
             "<p>표시된 차량 시간은 " + esc(page.naverSource.routeBasis) +
                 "으로, 실제 교통 상황과 경로에 따라 달라질 수 있습니다. " +
                 externalLink(page.naverSource.url, "네이버 지도에서 확인", "text-link") + "</p>",
