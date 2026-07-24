@@ -1073,7 +1073,8 @@
                 '<div class="meta-row"><dt>판매/구매자</dt><dd>' + textOrDash(item.member) + "</dd></div>",
                 '<div class="meta-row"><dt>연락처</dt><dd>' + phoneLink(item.phone) + "</dd></div>",
                 "</dl>",
-                item.detailUrl ? '<div class="card-actions">' + externalLink(item.detailUrl, "상품 정보 보기", "action-link primary") + "</div>" : "",
+                item.detailUrl ? '<div class="card-actions">' +
+                    externalLink(item.detailUrl, item.detailLabel || "상품 정보 보기", "action-link primary") + "</div>" : "",
                 '<p class="updated-at">마지막 업데이트 · ' + esc(item.updatedAt) + "</p>",
                 "</article>"
             ].join("");

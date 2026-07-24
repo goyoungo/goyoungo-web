@@ -89,7 +89,7 @@ window.SITE_DATA = {
     {
       "id": "market",
       "icon": "💵",
-      "title": "웰리휘리 거래 게시판",
+      "title": "거래 게시판",
       "href": "/marketplace.html",
       "summary": "장비 판매·구매 게시글"
     },
@@ -1467,7 +1467,7 @@ window.SITE_DATA = {
     },
     "market": {
       "type": "market",
-      "title": "웰리휘리 거래 게시판",
+      "title": "거래 게시판",
       "icon": "💵",
       "subtitle": "웰팍·휘팍 이용자 장비 거래 정보",
       "items": [
@@ -1489,7 +1489,8 @@ window.SITE_DATA = {
           "member": "고융고",
           "phone": "010-7266-9005",
           "updatedAt": "2024년 9월 13일 오후 3:21",
-          "detailUrl": "https://www.sandyshapeskorea.com/product/ab292036-5900-4d15-a8d1-d109e0fefe28-51-126"
+          "detailUrl": "https://www.sandyshapeskorea.com/product/ab292036-5900-4d15-a8d1-d109e0fefe28-51-146",
+          "detailLabel": "제품 사양 참고 ↗"
         },
         {
           "id": "1000ef2b-60e3-8043-902d-dffe879e29d1",
