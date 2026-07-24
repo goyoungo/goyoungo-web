@@ -15,6 +15,104 @@
     var localPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname) &&
         new URLSearchParams(window.location.search).has("preview");
 
+    function normalizeVenueName(value) {
+        var aliases = {
+            "고향막국수": "봉평고향막국수",
+            "둔내웅이네": "웅이네",
+            "싼타클로스버거": "싼타버거",
+            "한우피아": "횡성한우피아",
+            "화이트크로우브루잉": "화이트크로우브루잉컴퍼니"
+        };
+        var normalized = String(value || "")
+            .toLocaleLowerCase("ko-KR")
+            .replace(/[\s·,().&/+-]/g, "")
+            .replace(/(본점|둔내점|봉평점|면온점|평창점|하이원점|용평리조트점)$/, "");
+        return aliases[normalized] || normalized;
+    }
+
+    function mergeImportedRestaurants() {
+        var imported = window.NAVER_RESTAURANTS;
+        if (!imported || !imported.pages) return;
+
+        var resortNames = {
+            welpark: "웰리힐리파크",
+            phoenix: "휘닉스 평창",
+            yongpyong: "모나 용평",
+            high1: "하이원리조트"
+        };
+
+        Object.keys(resortNames).forEach(function (pageId) {
+            var page = data.pages[pageId];
+            var importedItems = imported.pages[pageId];
+            if (!page || !Array.isArray(importedItems) || !Array.isArray(page.sections)) return;
+
+            var openSection = page.sections.find(function (section) {
+                return section.id === "open";
+            });
+            if (!openSection) return;
+
+            var allItems = page.sections.reduce(function (items, section) {
+                return items.concat(section.items || []);
+            }, []);
+
+            importedItems.forEach(function (sourceItem) {
+                var normalizedName = normalizeVenueName(sourceItem.name);
+                var existing = allItems.find(function (item) {
+                    return normalizeVenueName(item.name) === normalizedName;
+                });
+                var importedFields = {
+                    naverId: sourceItem.naverId,
+                    naverUrl: "https://map.naver.com/p/entry/place/" + sourceItem.naverId,
+                    driveFrom: resortNames[pageId],
+                    driveMinutes: sourceItem.driveMinutes,
+                    votingEnabled: Boolean(data.config && data.config.importedVotingEnabled)
+                };
+
+                if (existing) {
+                    delete importedFields.votingEnabled;
+                    Object.assign(existing, importedFields);
+                    if (!existing.address) existing.address = sourceItem.address;
+                    if (!existing.note && sourceItem.memo) existing.note = sourceItem.memo;
+                    return;
+                }
+
+                var newItem = Object.assign({
+                    id: "naver-" + sourceItem.naverId,
+                    name: sourceItem.name,
+                    menus: [],
+                    address: sourceItem.address,
+                    phone: "",
+                    recommenders: [],
+                    detractors: [],
+                    score: 0,
+                    note: sourceItem.memo || "네이버 공유 맛집 리스트 수록",
+                    hours: ""
+                }, importedFields);
+                openSection.items.push(newItem);
+                allItems.push(newItem);
+            });
+
+            page.naverSource = {
+                title: imported.source.title,
+                url: imported.source.url,
+                importedCount: importedItems.length,
+                routeBasis: imported.source.routeBasis
+            };
+
+            var total = page.sections.reduce(function (sum, section) {
+                return sum + section.items.length;
+            }, 0);
+            var navigationItem = data.navigation.find(function (item) {
+                return item.id === pageId;
+            });
+            if (navigationItem) {
+                navigationItem.summary = resortNames[pageId] + " 주변 맛집 " + total + "곳";
+            }
+        });
+    }
+
+    mergeImportedRestaurants();
+
     function esc(value) {
         return String(value == null ? "" : value).replace(/[&<>"']/g, function (character) {
             return {
@@ -104,7 +202,7 @@
             ].join("");
         }).join("");
 
-        var restaurantTotal = ["welpark", "phoenix"].reduce(function (total, pageId) {
+        var restaurantTotal = ["welpark", "phoenix", "yongpyong", "high1"].reduce(function (total, pageId) {
             var page = data.pages[pageId];
             if (!page || !Array.isArray(page.sections)) return total;
             return total + page.sections.reduce(function (sum, section) {
@@ -294,6 +392,16 @@
         var scoreClass = baseScore > 0 ? "positive" : baseScore < 0 ? "negative" : "";
         var prefix = baseScore > 0 ? "+" : "";
 
+        if (item.votingEnabled === false) {
+            return [
+                '<div class="vote-unavailable">',
+                '<span class="score">—</span>',
+                "<strong>평가 준비 중</strong>",
+                "<small>신규 등록 장소</small>",
+                "</div>"
+            ].join("");
+        }
+
         return [
             '<div class="vote-control" data-vote-control data-venue-id="' + esc(item.id) + '"',
             ' data-base-recommend="' + baseRecommend + '" data-base-not-recommend="' + baseNotRecommend + '">',
@@ -389,6 +497,16 @@
 
     async function loadVotes(venueIds) {
         if (!voteApiUrl || !venueIds.length || localPreview) return false;
+        if (venueIds.length > 50) {
+            var batches = [];
+            for (var offset = 0; offset < venueIds.length; offset += 50) {
+                batches.push(venueIds.slice(offset, offset + 50));
+            }
+            var batchResults = await Promise.all(batches.map(function (batch) {
+                return loadVotes(batch);
+            }));
+            return batchResults.some(Boolean);
+        }
 
         var requestId = ++voteReadSequence;
         var authEpoch = voteAuthEpoch;
@@ -566,7 +684,11 @@
 
     function bindVenueVoting(page) {
         voteVenueIds = Array.from(new Set(page.sections.reduce(function (ids, section) {
-            return ids.concat(section.items.map(function (item) { return item.id; }));
+            return ids.concat(section.items.filter(function (item) {
+                return item.votingEnabled !== false;
+            }).map(function (item) {
+                return item.id;
+            }));
         }, [])));
 
         voteVenueIds.forEach(function (venueId) {
@@ -613,12 +735,26 @@
         ].join(" ").toLocaleLowerCase("ko-KR");
     }
 
+    function restaurantAddressHtml(item) {
+        if (!item.address && !item.driveMinutes) return textOrDash("");
+        var address = item.address
+            ? (item.naverUrl
+                ? externalLink(item.naverUrl, item.address, "venue-map-link")
+                : esc(item.address))
+            : "";
+        var driveTime = item.driveMinutes
+            ? '<span class="drive-time-badge">' + esc(item.driveFrom || "리조트") +
+                "에서 차량 약 " + esc(item.driveMinutes) + "분</span>"
+            : "";
+        return '<span class="venue-address">' + address + "</span>" + driveTime;
+    }
+
     function restaurantRow(item) {
         return [
             '<tr data-venue="' + esc(item.id) + '" data-search="' + esc(restaurantSearchText(item)) + '">',
             '<td class="venue-name">' + esc(item.name) + "</td>",
             '<td class="menu-cell">' + tagsHtml(item.menus) + "</td>",
-            '<td class="address-cell">' + textOrDash(item.address) + "</td>",
+            '<td class="address-cell">' + restaurantAddressHtml(item) + "</td>",
             '<td class="phone-cell">' + phoneLink(item.phone) + "</td>",
             '<td class="score-cell">' + scoreHtml(item) + "</td>",
             '<td class="note-cell">' + textOrDash(item.note) + "</td>",
@@ -629,7 +765,10 @@
 
     function restaurantCard(item) {
         var meta = "";
-        if (item.address) meta += "<p>📍 " + esc(item.address) + "</p>";
+        if (item.address || item.driveMinutes) {
+            meta += '<p class="venue-address-line"><span aria-hidden="true">📍</span><span>' +
+                restaurantAddressHtml(item) + "</span></p>";
+        }
         if (item.phone) meta += "<p>☎️ " + phoneLink(item.phone) + "</p>";
         if (item.hours) meta += "<p>🕒 " + esc(item.hours) + "</p>";
         if (item.note) meta += "<p>💬 " + esc(item.note) + "</p>";
@@ -696,6 +835,17 @@
             return sum + section.items.length;
         }, 0);
         document.title = page.title + " - " + data.brand.title;
+        var sourceDisclosure = page.naverSource ? [
+            '<aside class="restaurant-source-note">',
+            "<p><strong>" + esc(page.naverSource.title) + "</strong>에서 이 리조트 주변 " +
+                esc(page.naverSource.importedCount) + "곳을 반영했습니다.</p>",
+            "<p>표시된 차량 시간은 " + esc(page.naverSource.routeBasis) +
+                "으로, 실제 교통 상황과 경로에 따라 달라질 수 있습니다. " +
+                externalLink(page.naverSource.url, "원본 목록 보기", "text-link") + "</p>",
+            data.config && data.config.importedVotingEnabled ? "" :
+                "<p>신규 등록 장소의 추천·비추천 평가는 서버 연동을 준비 중입니다.</p>",
+            "</aside>"
+        ].join("") : "";
 
         var content = total ? [
             '<div class="toolbar">',
@@ -704,6 +854,7 @@
             '<div class="result-count" id="resultCount" role="status" aria-live="polite"><strong>' +
                 total + "</strong> / " + total + "곳</div>",
             "</div>",
+            sourceDisclosure,
             page.sections.map(restaurantSection).join(""),
             '<div class="empty-state" id="searchEmpty" hidden>',
             '<span aria-hidden="true">🔎</span><h2>검색 결과가 없습니다</h2><p>다른 이름이나 메뉴로 검색해 보세요.</p>',
