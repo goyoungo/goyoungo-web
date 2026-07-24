@@ -35,7 +35,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "37084680",
         "name": "마루",
         "address": "강원 횡성군 고원로398번길 6-20",
-        "memo": "24.10.11 묵향님 단골 날치알쌈 포장 포차.",
+        "memo": "24.10.11 날치알쌈 포장 포차.",
         "driveMinutes": 3,
         "menus": [
           "가스통장작삼겹살",
@@ -44,7 +44,7 @@ window.NAVER_RESTAURANTS = {
           "뚝배기 김치찌개",
           "김치찌개"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "1315857249",
@@ -2914,7 +2914,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15570146",
         "name": "너라면나김밥",
         "address": "강원 정선군 고한5길 18",
-        "memo": "25.02.06 친절한무지씨님 단골 찌개류 맛집. 분식집 아님.",
+        "memo": "25.02.06 찌개류 맛집. 분식집 아님.",
         "driveMinutes": 3,
         "menus": [
           "동태찌개-중",
@@ -2923,7 +2923,7 @@ window.NAVER_RESTAURANTS = {
           "청국장",
           "김치찌개"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "1158228012",
@@ -3684,7 +3684,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "18049795",
         "name": "청산칼국수",
         "address": "경기 광주시 곤지암로50번길 11",
-        "memo": "24.12.08+ 덩치님 강추 전설급 맛집. ",
+        "memo": "24.12.08+ 전설급 맛집.",
         "driveMinutes": 10,
         "menus": [
           "칼국수",
@@ -3693,7 +3693,7 @@ window.NAVER_RESTAURANTS = {
           "떡국",
           "떡만두국"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 1
       },
       {
         "naverId": "18050259",
