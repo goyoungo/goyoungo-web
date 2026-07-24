@@ -256,9 +256,20 @@
                 form.reset();
                 status.textContent = "정보 수정 요청을 보냈습니다. 확인 후 반영할게요.";
             } catch (error) {
-                status.textContent = error.status === 401
-                    ? "로그인이 만료되었습니다. 다시 로그인해 주세요."
-                    : (error.message || "요청을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+                if (
+                    error.status === 401 &&
+                    window.GoyoungoAuth &&
+                    typeof window.GoyoungoAuth.reauthenticate === "function"
+                ) {
+                    status.textContent = "로그인이 만료되었습니다. 다시 로그인해 주세요.";
+                    window.GoyoungoAuth.reauthenticate(
+                        "정보 수정 요청을 보내려면 카카오 로그인을 다시 해주세요.",
+                        function () { form.requestSubmit(); }
+                    );
+                } else {
+                    status.textContent = error.message ||
+                        "요청을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+                }
             } finally {
                 submitButton.disabled = false;
             }
@@ -421,6 +432,16 @@
             return applied > 0;
         } catch (error) {
             if (authEpoch !== voteAuthEpoch) return false;
+            if (
+                error.status === 401 &&
+                token &&
+                window.GoyoungoAuth &&
+                typeof window.GoyoungoAuth.invalidateSession === "function"
+            ) {
+                window.GoyoungoAuth.invalidateSession();
+                window.setTimeout(function () { loadVotes(venueIds); }, 0);
+                return false;
+            }
             var message = error.status === 401
                 ? "로그인이 만료되었습니다. 다시 로그인해 주세요."
                 : "평가 정보를 불러오지 못했습니다.";
@@ -443,7 +464,10 @@
             if (window.GoyoungoAuth && typeof window.GoyoungoAuth.requestLogin === "function") {
                 window.GoyoungoAuth.requestLogin(
                     "추천·비추천 평가를 남기려면 카카오 로그인이 필요합니다.",
-                    function () { submitVote(venueId, choice); }
+                    function () {
+                        updateVoteState(venueId, { loading: false });
+                        submitVote(venueId, choice);
+                    }
                 );
             }
             return;
@@ -504,11 +528,27 @@
         } catch (error) {
             var latest = voteState.get(venueId) || defaultVoteState();
             if (authEpoch !== voteAuthEpoch || latest.revision !== writeRevision) return;
+            if (
+                error.status === 401 &&
+                window.GoyoungoAuth &&
+                typeof window.GoyoungoAuth.reauthenticate === "function"
+            ) {
+                updateVoteState(venueId, {
+                    loading: false,
+                    message: "로그인이 만료되었습니다. 다시 로그인해 주세요."
+                });
+                window.GoyoungoAuth.reauthenticate(
+                    "추천·비추천 평가를 남기려면 카카오 로그인을 다시 해주세요.",
+                    function () {
+                        updateVoteState(venueId, { loading: false });
+                        submitVote(venueId, choice);
+                    }
+                );
+                return;
+            }
             updateVoteState(venueId, {
                 loading: false,
-                message: error.status === 401
-                    ? "로그인이 만료되었습니다. 다시 로그인해 주세요."
-                    : "평가를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
+                message: "평가를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
             });
         }
     }
