@@ -140,13 +140,6 @@
             "</div>",
             '<nav class="hub-grid" aria-label="스키장 정보 페이지">' + cards + "</nav>",
             "</section>",
-            '<section class="comments-section" id="update" aria-labelledby="commentsTitle">',
-            '<div class="comments-heading"><div>',
-            '<p class="eyebrow">COMMUNITY UPDATE</p>',
-            '<h2 class="section-heading" id="commentsTitle">달라진 정보를 발견했나요?</h2>',
-            "</div><p>영업시간, 휴무일, 위치가 바뀌었다면 알려주세요. 확인 후 빠르게 반영할게요.</p></div>",
-            '<iframe class="comments-frame" src="https://apption.co/app_posts/667c8ee7" title="업데이트 요청 댓글" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>',
-            "</section>",
             footer(),
             "</div>"
         ].join("");

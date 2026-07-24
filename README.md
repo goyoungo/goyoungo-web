@@ -1,6 +1,6 @@
 # Goyoungo Web
 
-카카오 로그인 후 공개되는 스키장 정보 공유 사이트입니다. 기존 Notion의 문서와 데이터베이스를 외부 링크로 연결하지 않고, 자체 HTML 페이지와 정적 데이터로 재구성합니다.
+카카오 로그인 후 공개되는 스키장 정보 공유 사이트입니다. 외부 문서 화면을 연결하지 않고, 자체 HTML 페이지와 정적 데이터로 구성합니다.
 
 ## 기술 구성
 
@@ -21,7 +21,7 @@
 - `/board-cafe.html`
 - `/shuttle.html`
 
-공통 화면은 `assets/site.css`, `assets/site.js`, `assets/auth.js`를 사용하며, Notion에서 복사한 읽기 전용 스냅샷은 `assets/site-data.js`에 있습니다.
+공통 화면은 `assets/site.css`, `assets/site.js`, `assets/auth.js`를 사용하며, 읽기 전용 데이터 스냅샷은 `assets/site-data.js`에 있습니다.
 
 맛집 추천·비추천은 기존 스냅샷의 평가 수에 카카오 계정 기반 실시간 평가를 더해 표시합니다. 한 계정은 맛집마다 한 번 선택할 수 있고, 같은 선택을 다시 누르면 취소되며 반대 선택을 누르면 평가가 변경됩니다. API 구성과 운영 방법은 `backend/README.md`를 참고하세요.
 
