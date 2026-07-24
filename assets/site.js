@@ -143,14 +143,13 @@
                 }).length
             };
 
-            var total = page.sections.reduce(function (sum, section) {
-                return sum + section.items.length;
-            }, 0);
+            var operatingTotal = openSection.items.length;
             var navigationItem = data.navigation.find(function (item) {
                 return item.id === pageId;
             });
             if (navigationItem) {
-                navigationItem.summary = resortNames[pageId] + " 주변 맛집 " + total + "곳";
+                navigationItem.summary = resortNames[pageId] + " 주변 맛집 " +
+                    operatingTotal + "곳";
             }
         });
     }
