@@ -521,12 +521,67 @@ img {
     color: var(--muted);
 }
 
+.venue-address {
+    display: block;
+    line-height: 1.5;
+}
+
+.venue-map-link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.24);
+    text-underline-offset: 3px;
+}
+
+.venue-map-link:hover {
+    color: var(--accent);
+    text-decoration-color: currentColor;
+}
+
+.drive-time-badge {
+    display: inline-flex;
+    width: fit-content;
+    margin-top: 7px;
+    padding: 4px 8px;
+    border: 1px solid rgba(236, 168, 37, 0.34);
+    border-radius: 999px;
+    background: rgba(236, 168, 37, 0.09);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 760;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
 .phone-cell {
     white-space: nowrap;
 }
 
 .score-cell {
     min-width: 230px;
+}
+
+.vote-unavailable {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 2px 8px;
+    color: var(--muted);
+}
+
+.vote-unavailable .score {
+    grid-row: span 2;
+    color: var(--faint);
+}
+
+.vote-unavailable strong {
+    color: var(--text);
+    font-size: 12px;
+}
+
+.vote-unavailable small {
+    color: var(--faint);
+    font-size: 11px;
 }
 
 .note-cell {
@@ -553,6 +608,29 @@ img {
 
 .faint {
     color: var(--faint);
+}
+
+.restaurant-source-note {
+    margin: 0 0 24px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.025);
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.restaurant-source-note p {
+    margin: 0;
+}
+
+.restaurant-source-note p + p {
+    margin-top: 4px;
+}
+
+.restaurant-source-note strong {
+    color: var(--text);
 }
 
 .tag-list {
@@ -1099,6 +1177,17 @@ img {
     .venue-card .venue-meta p {
         margin: 0;
         white-space: pre-line;
+    }
+
+    .venue-card .venue-address-line {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: start;
+        gap: 6px;
+    }
+
+    .venue-card .drive-time-badge {
+        margin-top: 6px;
     }
 
     .venue-score {

@@ -1,11 +1,12 @@
 window.SITE_DATA = {
   "config": {
-    "voteApiUrl": "https://ndx4bl2obl.execute-api.ap-northeast-3.amazonaws.com"
+    "voteApiUrl": "https://ndx4bl2obl.execute-api.ap-northeast-3.amazonaws.com",
+    "importedVotingEnabled": false
   },
   "brand": {
     "title": "스키장 정보 공유",
     "byline": "by @go.youngo",
-    "snapshotDate": "2026-07-12"
+    "snapshotDate": "2026-07-24"
   },
   "navigation": [
     {
