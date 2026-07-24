@@ -83,7 +83,8 @@
                     naverUrl: "https://map.naver.com/p/entry/place/" + sourceItem.naverId,
                     driveFrom: resortNames[pageId],
                     driveMinutes: sourceItem.driveMinutes,
-                    votingEnabled: Boolean(data.config && data.config.importedVotingEnabled)
+                    votingEnabled: sourceItem.votingEnabled !== false &&
+                        Boolean(data.config && data.config.importedVotingEnabled)
                 };
 
                 if (existing) {
