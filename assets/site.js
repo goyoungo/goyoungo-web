@@ -122,7 +122,7 @@
             '<section class="home-hero" aria-labelledby="homeTitle">',
             '<div class="home-hero-main">',
             '<p class="home-kicker">GANGWON SNOW DIRECTORY · 2026</p>',
-            '<h1 id="homeTitle">강원 스키 라이프,<br>한 곳에서</h1>',
+            '<h1 id="homeTitle">스키장 정보 공유</h1>',
             '<div class="home-hero-foot">',
             "<p>리조트 주변의 맛집부터 장비 거래, 시즌방, 제휴 혜택과 셔틀까지. 보더와 스키어가 직접 모은 로컬 정보를 한눈에 만나보세요.</p>",
             '<a href="#directory">오늘의 디렉터리 보기 ↘</a>',
