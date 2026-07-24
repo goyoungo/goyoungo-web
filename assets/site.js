@@ -214,7 +214,7 @@
     function footer() {
         return [
             '<footer class="source-footer">',
-            "<strong>GO.YOUNGO</strong> · 보더와 스키어가 함께 정리한 강원 스키 라이프 정보입니다. ",
+            "<strong>GO.YOUNGO</strong> · 보더와 스키어가 함께 정리한 눈사람 라이프 정보입니다. ",
             "운영 정보는 달라질 수 있으니 방문 전 업체에 확인해 주세요.",
             "</footer>"
         ].join("");
