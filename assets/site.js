@@ -62,10 +62,10 @@
             '<a class="back-link" href="/index.html" aria-label="홈으로 돌아가기">← 전체 정보</a>',
             '<header class="page-hero">',
             '<div class="page-icon" aria-hidden="true">' + esc(page.icon) + "</div>",
-            '<p class="eyebrow">GO.YOUNGO COMMUNITY</p>',
+            '<p class="eyebrow">GO.YOUNGO · GANGWON</p>',
             "<h1>" + esc(page.title) + "</h1>",
             "<p>" + esc(page.subtitle || "") + "</p>",
-            '<p class="snapshot-note">Notion 원본에서 복사한 읽기 전용 데이터 · ' + esc(data.brand.snapshotDate) + "</p>",
+            '<p class="snapshot-note">마지막 정보 스냅샷 · ' + esc(data.brand.snapshotDate) + "</p>",
             "</header>"
         ].join("");
     }
@@ -73,7 +73,7 @@
     function footer() {
         return [
             '<footer class="source-footer">',
-            "이 페이지는 외부 Notion 화면을 연결하지 않고, 원본 데이터를 자체 홈페이지 형식으로 재구성했습니다. ",
+            "<strong>GO.YOUNGO</strong> · 보더와 스키어가 함께 정리한 강원 스키 라이프 정보입니다. ",
             "운영 정보는 달라질 수 있으니 방문 전 업체에 확인해 주세요.",
             "</footer>"
         ].join("");
@@ -81,31 +81,188 @@
 
     function renderHome() {
         document.title = data.brand.title + " - " + data.brand.byline;
-        var cards = data.navigation.map(function (item) {
+        var categories = {
+            welpark: "EAT",
+            phoenix: "EAT",
+            yongpyong: "EAT",
+            high1: "EAT",
+            market: "MARKET",
+            season: "STAY",
+            partner: "BENEFIT",
+            shuttle: "RIDE"
+        };
+        var cards = data.navigation.map(function (item, index) {
+            var featured = item.id === "welpark" || item.id === "phoenix";
             return [
-                '<a class="hub-card" href="' + esc(item.href) + '">',
-                '<span class="hub-card-icon" aria-hidden="true">' + esc(item.icon) + "</span>",
-                "<span><strong>" + esc(item.title) + "</strong><small>" + esc(item.summary) + "</small></span>",
-                '<span class="hub-arrow" aria-hidden="true">→</span>',
+                '<a class="hub-card ' + (featured ? "is-featured" : "") + '" href="' + esc(item.href) + '">',
+                '<span class="hub-index">' + String(index + 1).padStart(2, "0") + " · " +
+                    esc(categories[item.id] || "GUIDE") + "</span>",
+                '<span class="hub-arrow" aria-hidden="true">↗</span>',
+                "<strong>" + esc(item.title) + "</strong>",
+                "<small>" + esc(item.summary) + "</small>",
                 "</a>"
             ].join("");
         }).join("");
 
+        var restaurantTotal = ["welpark", "phoenix"].reduce(function (total, pageId) {
+            var page = data.pages[pageId];
+            if (!page || !Array.isArray(page.sections)) return total;
+            return total + page.sections.reduce(function (sum, section) {
+                return sum + section.items.length;
+            }, 0);
+        }, 0);
+        var snapshot = new Date(data.brand.snapshotDate);
+        var snapshotLabel = Number.isNaN(snapshot.getTime())
+            ? data.brand.snapshotDate
+            : String(snapshot.getMonth() + 1).padStart(2, "0") + "." +
+                String(snapshot.getDate()).padStart(2, "0");
+
         root.innerHTML = [
-            '<div class="page-wrap">',
-            '<header class="home-hero">',
-            '<p class="home-kicker">GO.YOUNGO COMMUNITY</p>',
-            "<h1>" + esc(data.brand.title) + "<br>" + esc(data.brand.byline) + "</h1>",
-            "<p>맛집, 장비 거래, 시즌방, 제휴 혜택과 셔틀 정보를 한곳에서 확인하세요. 모든 항목은 goyoungo.com 내부 자체 페이지로 열립니다.</p>",
-            "</header>",
+            '<div class="page-wrap home-page">',
+            '<section class="home-hero" aria-labelledby="homeTitle">',
+            '<div class="home-hero-main">',
+            '<p class="home-kicker">GANGWON SNOW DIRECTORY · 2026</p>',
+            '<h1 id="homeTitle">강원 스키 라이프,<br>한 곳에서</h1>',
+            '<div class="home-hero-foot">',
+            "<p>리조트 주변의 맛집부터 장비 거래, 시즌방, 제휴 혜택과 셔틀까지. 보더와 스키어가 직접 모은 로컬 정보를 한눈에 만나보세요.</p>",
+            '<a href="#directory">오늘의 디렉터리 보기 ↘</a>',
+            "</div></div>",
+            '<aside class="season-note" aria-label="이번 시즌 정보">',
+            '<div class="season-note-top"><span>SEASON NOTE</span><span>' + esc(snapshotLabel) + "</span></div>",
+            '<div><strong>' + restaurantTotal + "</strong>",
+            "<p>직접 모은 리조트 맛집을 담았습니다. 영업시간과 휴무일은 방문 전에 다시 확인해 주세요.</p></div>",
+            "</aside>",
+            "</section>",
+            '<section class="directory-section" id="directory" aria-labelledby="directoryTitle">',
+            '<div class="directory-heading">',
+            '<h2 id="directoryTitle">오늘 어디로 갈까요?</h2>',
+            "<p>지역과 필요한 정보를 골라 바로 시작하세요</p>",
+            "</div>",
             '<nav class="hub-grid" aria-label="스키장 정보 페이지">' + cards + "</nav>",
-            '<section class="comments-section" aria-labelledby="commentsTitle">',
-            '<h2 class="section-heading" id="commentsTitle">업데이트 요청</h2>',
-            '<iframe class="comments-frame" src="https://apption.co/app_posts/667c8ee7" title="업데이트 요청 댓글" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>',
+            "</section>",
+            '<section class="update-request" id="update" aria-labelledby="updateTitle">',
+            '<div class="update-request-intro">',
+            '<p class="eyebrow">COMMUNITY UPDATE</p>',
+            '<h2 id="updateTitle">달라진 정보를 발견했나요?</h2>',
+            "<p>영업시간, 휴무일, 위치처럼 달라진 내용을 알려주세요. 요청 작성과 제출에는 카카오 로그인이 필요합니다.</p>",
+            "</div>",
+            '<button class="update-request-button" id="openUpdateRequest" type="button">정보 수정 요청 →</button>',
+            '<form class="update-request-form" id="updateRequestForm" hidden>',
+            '<div class="update-form-grid">',
+            '<label><span>수정 유형</span><select name="category" required>',
+            '<option value="영업시간/휴무">영업시간/휴무</option>',
+            '<option value="위치/연락처">위치/연락처</option>',
+            '<option value="메뉴/가격">메뉴/가격</option>',
+            '<option value="폐업/신규">폐업/신규</option>',
+            '<option value="기타">기타</option>',
+            "</select></label>",
+            '<label><span>가게 또는 항목</span><input name="target" type="text" maxlength="100" placeholder="예: 고원곰탕" required></label>',
+            '<label class="update-form-detail"><span>달라진 내용</span>',
+            '<textarea name="details" rows="5" minlength="5" maxlength="1000" placeholder="확인한 변경 내용을 적어주세요." required></textarea></label>',
+            "</div>",
+            '<div class="update-form-actions">',
+            '<button class="action-link primary" type="submit">요청 보내기</button>',
+            '<span class="update-form-status" id="updateRequestStatus" role="status" aria-live="polite"></span>',
+            "</div>",
+            "</form>",
             "</section>",
             footer(),
             "</div>"
         ].join("");
+        bindUpdateRequest();
+    }
+
+    function bindUpdateRequest() {
+        var trigger = document.getElementById("openUpdateRequest");
+        var form = document.getElementById("updateRequestForm");
+        var status = document.getElementById("updateRequestStatus");
+        if (!trigger || !form || !status) return;
+
+        function revealForm() {
+            form.hidden = false;
+            trigger.setAttribute("aria-expanded", "true");
+            var firstField = form.querySelector("select, input, textarea");
+            if (firstField) firstField.focus();
+        }
+
+        trigger.setAttribute("aria-expanded", "false");
+        trigger.addEventListener("click", function () {
+            if (!form.hidden) {
+                form.hidden = true;
+                trigger.setAttribute("aria-expanded", "false");
+                trigger.focus();
+                return;
+            }
+
+            if (getVoteToken()) {
+                revealForm();
+                return;
+            }
+
+            if (window.GoyoungoAuth && typeof window.GoyoungoAuth.requestLogin === "function") {
+                window.GoyoungoAuth.requestLogin(
+                    "정보 수정 요청을 작성하려면 카카오 로그인이 필요합니다.",
+                    revealForm
+                );
+            }
+        });
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            if (localPreview) {
+                status.textContent = "운영 사이트에서 로그인한 뒤 제출할 수 있습니다.";
+                return;
+            }
+
+            var token = getVoteToken();
+            if (!token) {
+                if (window.GoyoungoAuth && typeof window.GoyoungoAuth.requestLogin === "function") {
+                    window.GoyoungoAuth.requestLogin(
+                        "정보 수정 요청을 보내려면 카카오 로그인이 필요합니다.",
+                        function () { form.requestSubmit(); }
+                    );
+                }
+                return;
+            }
+
+            var submitButton = form.querySelector('button[type="submit"]');
+            var formData = new FormData(form);
+            submitButton.disabled = true;
+            status.textContent = "요청을 보내는 중…";
+
+            try {
+                var response = await fetch(voteApiUrl + "/suggestions", {
+                    method: "POST",
+                    headers: {
+                        Authorization: "Bearer " + token,
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "omit",
+                    body: JSON.stringify({
+                        category: formData.get("category"),
+                        target: formData.get("target"),
+                        details: formData.get("details"),
+                        pageUrl: window.location.pathname
+                    })
+                });
+                var payload = await response.json().catch(function () { return {}; });
+                if (!response.ok) {
+                    var error = new Error(payload.message || "요청을 저장하지 못했습니다.");
+                    error.status = response.status;
+                    throw error;
+                }
+
+                form.reset();
+                status.textContent = "정보 수정 요청을 보냈습니다. 확인 후 반영할게요.";
+            } catch (error) {
+                status.textContent = error.status === 401
+                    ? "로그인이 만료되었습니다. 다시 로그인해 주세요."
+                    : (error.message || "요청을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
     }
 
     function scoreHtml(item) {
@@ -197,7 +354,7 @@
             control.querySelectorAll("[data-vote-choice]").forEach(function (button) {
                 var selected = state.userChoice === button.dataset.voteChoice;
                 button.setAttribute("aria-pressed", selected ? "true" : "false");
-                button.disabled = state.loading || localPreview;
+                button.disabled = state.loading;
             });
         });
     }
@@ -283,6 +440,12 @@
         var token = getVoteToken();
         if (!token) {
             updateVoteState(venueId, { message: "카카오 로그인이 필요합니다." });
+            if (window.GoyoungoAuth && typeof window.GoyoungoAuth.requestLogin === "function") {
+                window.GoyoungoAuth.requestLogin(
+                    "추천·비추천 평가를 남기려면 카카오 로그인이 필요합니다.",
+                    function () { submitVote(venueId, choice); }
+                );
+            }
             return;
         }
 

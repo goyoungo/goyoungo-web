@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#171717">
+    <meta name="theme-color" content="#F7F2E8">
     <meta name="description" content="시즌방과 주주 모집 정보">
     <meta property="og:title" content="시즌방/주주 구해요 - by @go.youngo">
     <meta property="og:description" content="시즌방과 주주 모집 정보">
@@ -14,29 +14,19 @@
     <script defer src="https://t1.kakaocdn.net/kakao_js_sdk/v1/kakao.min.js"></script>
     <script defer src="/assets/site-data.js"></script>
     <script defer src="/assets/site.js"></script>
-    <script defer src="/assets/auth.js"></script>
+    <script defer src="/assets/auth.js?v=20260724-public"></script>
 </head>
 <body data-page="season">
     <a class="skip-link" href="#main">콘텐츠로 건너뛰기</a>
     <noscript><div class="noscript">이 사이트를 이용하려면 브라우저에서 JavaScript를 켜 주세요.</div></noscript>
 
-    <section id="loginScreen" class="login-screen" aria-labelledby="loginTitle">
-        <div class="login-card">
-            <div class="login-mark" aria-hidden="true">🔐</div>
-            <h1 id="loginTitle">카카오톡 인증 필요</h1>
-            <p>스키장 정보 공유 페이지를 이용하려면<br>카카오 로그인이 필요합니다.</p>
-            <button id="kakaoLoginBtn" type="button">카카오 로그인</button>
-            <p id="authStatus" class="auth-status" role="status" aria-live="polite"></p>
-        </div>
-    </section>
-
-    <section id="mainContent" class="site-shell" hidden>
+    <section id="mainContent" class="site-shell">
         <header class="site-header">
             <a class="brand-link" href="/index.html">
                 <span class="brand-dot" aria-hidden="true"></span>
-                <span>스키장 정보 공유 · @go.youngo</span>
+                <span>GO.YOUNGO · 강원 스키 라이프</span>
             </a>
-            <button id="logoutBtn" type="button">로그아웃</button>
+            <button id="logoutBtn" type="button">로그인</button>
         </header>
         <main id="main" class="page-root" tabindex="-1">
             <div id="pageRoot"></div>

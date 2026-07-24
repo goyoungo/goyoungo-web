@@ -112,6 +112,7 @@ Resources:
             DynamoDBDocumentClient,
             BatchGetCommand,
             GetCommand,
+            PutCommand,
             TransactWriteCommand
           } = require("@aws-sdk/lib-dynamodb");
 
@@ -433,6 +434,63 @@ Resources:
             });
           }
 
+          async function writeSuggestion(event) {
+            const token = bearerToken(event, true);
+            const kakaoUserId = await verifyKakaoToken(token);
+            const hashedUserId = pseudonymousUserId(kakaoUserId);
+
+            let body;
+            try {
+              const source = event.isBase64Encoded
+                ? Buffer.from(event.body || "", "base64").toString("utf8")
+                : (event.body || "{}");
+              body = JSON.parse(source);
+            } catch (error) {
+              throw new HttpError(400, "요청 형식이 올바르지 않습니다.");
+            }
+
+            const category = String(body.category || "").trim();
+            const target = String(body.target || "").trim();
+            const details = String(body.details || "").trim();
+            const pageUrl = String(body.pageUrl || "").trim();
+            if (!category || category.length > 30) {
+              throw new HttpError(400, "수정 유형을 확인해 주세요.");
+            }
+            if (!target || target.length > 100) {
+              throw new HttpError(400, "가게 또는 항목 이름을 100자 이하로 입력해 주세요.");
+            }
+            if (details.length < 5 || details.length > 1000) {
+              throw new HttpError(400, "달라진 내용을 5자 이상 1,000자 이하로 입력해 주세요.");
+            }
+            if (pageUrl.length > 500) {
+              throw new HttpError(400, "페이지 주소가 너무 깁니다.");
+            }
+
+            const suggestionId = crypto.randomUUID();
+            const now = new Date().toISOString();
+            await documentClient.send(new PutCommand({
+              TableName: tableName,
+              Item: {
+                pk: "SUGGESTION#" + suggestionId,
+                sk: "SUBMISSION",
+                suggestionId,
+                userId: hashedUserId,
+                category,
+                target,
+                details,
+                pageUrl,
+                status: "new",
+                createdAt: now
+              },
+              ConditionExpression: "attribute_not_exists(pk)"
+            }));
+
+            return response(201, {
+              suggestionId,
+              message: "정보 수정 요청을 저장했습니다."
+            });
+          }
+
           exports.handler = async (event) => {
             try {
               const method = event.requestContext && event.requestContext.http
@@ -444,11 +502,14 @@ Resources:
               if (method === "PUT" && event.pathParameters && event.pathParameters.venueId) {
                 return await writeVote(event);
               }
+              if (method === "POST" && event.rawPath === "/suggestions") {
+                return await writeSuggestion(event);
+              }
               return response(404, { message: "요청한 기능을 찾을 수 없습니다." });
             } catch (error) {
               const statusCode = error instanceof HttpError ? error.statusCode : 500;
               if (statusCode >= 500) {
-                console.error("Vote API error", {
+                console.error("Goyoungo API error", {
                   name: error && error.name,
                   message: error && error.message
                 });
@@ -456,7 +517,7 @@ Resources:
               return response(statusCode, {
                 message: error instanceof HttpError
                   ? error.message
-                  : "평가 처리 중 오류가 발생했습니다."
+                  : "요청 처리 중 오류가 발생했습니다."
               });
             }
           };
@@ -473,6 +534,7 @@ Resources:
           - "https://test.goyoungo.com"
         AllowMethods:
           - GET
+          - POST
           - PUT
           - OPTIONS
         AllowHeaders:
@@ -504,6 +566,16 @@ Resources:
     Properties:
       ApiId: !Ref VoteApi
       RouteKey: "PUT /votes/{venueId}"
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref VoteIntegration
+
+  WriteSuggestionRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref VoteApi
+      RouteKey: "POST /suggestions"
       Target: !Join
         - /
         - - integrations
