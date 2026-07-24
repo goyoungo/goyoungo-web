@@ -144,7 +144,7 @@
             '<div class="update-request-intro">',
             '<p class="eyebrow">COMMUNITY UPDATE</p>',
             '<h2 id="updateTitle">달라진 정보를 발견했나요?</h2>',
-            "<p>영업시간, 휴무일, 위치처럼 달라진 내용을 알려주세요. 요청 작성과 제출에는 카카오 로그인이 필요합니다.</p>",
+            "<p>영업시간, 휴무일, 위치처럼 달라진 내용을 알려주세요. 작성한 내용을 복사해 @go.youngo 인스타그램 DM으로 보내며, 카카오 로그인이 필요합니다.</p>",
             "</div>",
             '<button class="update-request-button" id="openUpdateRequest" type="button">정보 수정 요청 →</button>',
             '<form class="update-request-form" id="updateRequestForm" hidden>',
@@ -161,7 +161,8 @@
             '<textarea name="details" rows="5" minlength="5" maxlength="1000" placeholder="확인한 변경 내용을 적어주세요." required></textarea></label>',
             "</div>",
             '<div class="update-form-actions">',
-            '<button class="action-link primary" type="submit">요청 보내기</button>',
+            '<button class="action-link primary" type="submit">내용 복사하고 인스타그램 열기</button>',
+            '<a class="action-link" href="https://www.instagram.com/go.youngo/" target="_blank" rel="noopener noreferrer">@go.youngo 프로필 ↗</a>',
             '<span class="update-form-status" id="updateRequestStatus" role="status" aria-live="polite"></span>',
             "</div>",
             "</form>",
@@ -207,6 +208,33 @@
             }
         });
 
+        function copyRequestText(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(text);
+            }
+
+            return new Promise(function (resolve, reject) {
+                var helper = document.createElement("textarea");
+                helper.value = text;
+                helper.setAttribute("readonly", "");
+                helper.style.position = "fixed";
+                helper.style.opacity = "0";
+                document.body.appendChild(helper);
+                helper.select();
+
+                try {
+                    if (!document.execCommand("copy")) {
+                        throw new Error("copy_failed");
+                    }
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                } finally {
+                    helper.remove();
+                }
+            });
+        }
+
         form.addEventListener("submit", async function (event) {
             event.preventDefault();
 
@@ -220,7 +248,10 @@
                 if (window.GoyoungoAuth && typeof window.GoyoungoAuth.requestLogin === "function") {
                     window.GoyoungoAuth.requestLogin(
                         "정보 수정 요청을 보내려면 카카오 로그인이 필요합니다.",
-                        function () { form.requestSubmit(); }
+                        function () {
+                            status.textContent = "로그인되었습니다. 버튼을 다시 눌러 인스타그램을 열어주세요.";
+                            form.querySelector('button[type="submit"]').focus();
+                        }
                     );
                 }
                 return;
@@ -229,47 +260,27 @@
             var submitButton = form.querySelector('button[type="submit"]');
             var formData = new FormData(form);
             submitButton.disabled = true;
-            status.textContent = "요청을 보내는 중…";
+            status.textContent = "요청 내용을 복사하는 중…";
+
+            var requestText = [
+                "[고영고 정보 수정 요청]",
+                "수정 유형: " + formData.get("category"),
+                "가게 또는 항목: " + formData.get("target"),
+                "달라진 내용: " + formData.get("details"),
+                "페이지: " + window.location.origin + window.location.pathname
+            ].join("\n");
+            var copyPromise = copyRequestText(requestText);
+            window.open(
+                "https://www.instagram.com/go.youngo/",
+                "_blank",
+                "noopener,noreferrer"
+            );
 
             try {
-                var response = await fetch(voteApiUrl + "/suggestions", {
-                    method: "POST",
-                    headers: {
-                        Authorization: "Bearer " + token,
-                        "Content-Type": "application/json"
-                    },
-                    credentials: "omit",
-                    body: JSON.stringify({
-                        category: formData.get("category"),
-                        target: formData.get("target"),
-                        details: formData.get("details"),
-                        pageUrl: window.location.pathname
-                    })
-                });
-                var payload = await response.json().catch(function () { return {}; });
-                if (!response.ok) {
-                    var error = new Error(payload.message || "요청을 저장하지 못했습니다.");
-                    error.status = response.status;
-                    throw error;
-                }
-
-                form.reset();
-                status.textContent = "정보 수정 요청을 보냈습니다. 확인 후 반영할게요.";
+                await copyPromise;
+                status.textContent = "요청 내용을 복사했어요. 열린 @go.youngo 프로필에서 메시지를 눌러 붙여넣어 주세요.";
             } catch (error) {
-                if (
-                    error.status === 401 &&
-                    window.GoyoungoAuth &&
-                    typeof window.GoyoungoAuth.reauthenticate === "function"
-                ) {
-                    status.textContent = "로그인이 만료되었습니다. 다시 로그인해 주세요.";
-                    window.GoyoungoAuth.reauthenticate(
-                        "정보 수정 요청을 보내려면 카카오 로그인을 다시 해주세요.",
-                        function () { form.requestSubmit(); }
-                    );
-                } else {
-                    status.textContent = error.message ||
-                        "요청을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.";
-                }
+                status.textContent = "자동 복사가 차단되었습니다. 입력 내용을 직접 복사해 @go.youngo DM으로 보내주세요.";
             } finally {
                 submitButton.disabled = false;
             }
