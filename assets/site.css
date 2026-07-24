@@ -2272,4 +2272,160 @@ body[data-login-open="true"] {
     }
 }
 
+/* Public restaurant rankings */
+.restaurant-rankings {
+    margin: 0 0 34px;
+    padding: 24px;
+    border: 1px solid var(--text);
+    background: rgba(255, 252, 245, 0.78);
+}
+
+.ranking-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 18px;
+}
+
+.ranking-heading h2,
+.ranking-heading p {
+    margin: 0;
+}
+
+.ranking-heading h2 {
+    margin-top: 4px;
+    font-size: clamp(24px, 3vw, 34px);
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+}
+
+.ranking-heading p {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.ranking-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.ranking-panel {
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.42);
+}
+
+.ranking-panel.is-recommend {
+    box-shadow: inset 4px 0 0 #249a67;
+}
+
+.ranking-panel.is-not-recommend {
+    box-shadow: inset 4px 0 0 #cf5d4f;
+}
+
+.ranking-panel h3 {
+    margin: 0 0 12px;
+    font-size: 17px;
+}
+
+.ranking-list {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ranking-item {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 42px;
+    padding: 7px 8px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ranking-item:hover,
+.ranking-item:focus-visible {
+    background: rgba(26, 24, 20, 0.06);
+    outline: none;
+}
+
+.ranking-position {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--text);
+    color: var(--background);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.ranking-name {
+    overflow: hidden;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ranking-count {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.ranking-empty {
+    margin: 0;
+    padding: 20px 8px;
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+}
+
+.ranking-target {
+    animation: ranking-target-pulse 1.6s ease-out;
+}
+
+@keyframes ranking-target-pulse {
+    0%,
+    40% {
+        outline: 3px solid var(--accent);
+        outline-offset: 4px;
+    }
+    100% {
+        outline-color: transparent;
+        outline-offset: 10px;
+    }
+}
+
+@media (max-width: 760px) {
+    .restaurant-rankings {
+        padding: 18px;
+    }
+
+    .ranking-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .ranking-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 

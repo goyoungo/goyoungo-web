@@ -12,6 +12,8 @@
     var voteVenueIds = [];
     var voteReadSequence = 0;
     var voteAuthEpoch = 0;
+    var rankingPage = null;
+    var rankingRenderPending = false;
     var localPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname) &&
         new URLSearchParams(window.location.search).has("preview");
 
@@ -28,6 +30,21 @@
             .replace(/[\s·,().&/+-]/g, "")
             .replace(/(본점|둔내점|봉평점|면온점|평창점|하이원점|용평리조트점)$/, "");
         return aliases[normalized] || normalized;
+    }
+
+    function mergeMenuTags(primary, secondary) {
+        var merged = [];
+        var seen = new Set();
+        [primary, secondary].forEach(function (items) {
+            (Array.isArray(items) ? items : []).forEach(function (item) {
+                var value = String(item || "").replace(/\s+/g, " ").trim();
+                var key = value.toLocaleLowerCase("ko-KR");
+                if (!value || seen.has(key) || merged.length >= 5) return;
+                seen.add(key);
+                merged.push(value);
+            });
+        });
+        return merged;
     }
 
     function mergeImportedRestaurants() {
@@ -57,6 +74,7 @@
 
             importedItems.forEach(function (sourceItem) {
                 var normalizedName = normalizeVenueName(sourceItem.name);
+                var sourceMenus = mergeMenuTags(sourceItem.menus, []);
                 var existing = allItems.find(function (item) {
                     return normalizeVenueName(item.name) === normalizedName;
                 });
@@ -71,6 +89,7 @@
                 if (existing) {
                     delete importedFields.votingEnabled;
                     Object.assign(existing, importedFields);
+                    existing.menus = mergeMenuTags(sourceMenus, existing.menus);
                     if (!existing.address) existing.address = sourceItem.address;
                     if (!existing.note && sourceItem.memo) existing.note = sourceItem.memo;
                     return;
@@ -79,7 +98,7 @@
                 var newItem = Object.assign({
                     id: "naver-" + sourceItem.naverId,
                     name: sourceItem.name,
-                    menus: [],
+                    menus: sourceMenus,
                     address: sourceItem.address,
                     phone: "",
                     recommenders: [],
@@ -92,11 +111,22 @@
                 allItems.push(newItem);
             });
 
+            page.sections.forEach(function (section) {
+                (section.items || []).forEach(function (item) {
+                    item.menus = mergeMenuTags(item.menus, []);
+                });
+            });
+
             page.naverSource = {
                 title: imported.source.title,
                 url: imported.source.url,
                 importedCount: importedItems.length,
-                routeBasis: imported.source.routeBasis
+                routeBasis: imported.source.routeBasis,
+                menuSnapshotDate: imported.source.menuSource &&
+                    imported.source.menuSource.snapshotDate,
+                menuPlacesWithMenus: importedItems.filter(function (item) {
+                    return Array.isArray(item.menus) && item.menus.length > 0;
+                }).length
             };
 
             var total = page.sections.reduce(function (sum, section) {
@@ -449,6 +479,96 @@
         };
     }
 
+    function restaurantVoteTotals(item) {
+        var live = voteState.get(item.id) || defaultVoteState();
+        var recommend = (Array.isArray(item.recommenders) ? item.recommenders.length : 0) +
+            numberOrZero(live.recommend);
+        var notRecommend = (Array.isArray(item.detractors) ? item.detractors.length : 0) +
+            numberOrZero(live.notRecommend);
+        return {
+            recommend: recommend,
+            notRecommend: notRecommend,
+            score: recommend - notRecommend
+        };
+    }
+
+    function rankedRestaurants(page, type) {
+        return page.sections.reduce(function (items, section) {
+            return items.concat(section.items || []);
+        }, []).map(function (item) {
+            return { item: item, totals: restaurantVoteTotals(item) };
+        }).filter(function (entry) {
+            return entry.totals[type] > 0;
+        }).sort(function (left, right) {
+            var countDifference = right.totals[type] - left.totals[type];
+            if (countDifference) return countDifference;
+            var scoreDifference = type === "recommend"
+                ? right.totals.score - left.totals.score
+                : left.totals.score - right.totals.score;
+            if (scoreDifference) return scoreDifference;
+            return left.item.name.localeCompare(right.item.name, "ko-KR");
+        }).slice(0, 10);
+    }
+
+    function rankingListHtml(entries, type) {
+        if (!entries.length) {
+            return '<p class="ranking-empty">아직 집계된 평가가 없습니다.</p>';
+        }
+        var label = type === "recommend" ? "추천" : "비추천";
+        return '<ol class="ranking-list">' + entries.map(function (entry, index) {
+            return [
+                "<li>",
+                '<button type="button" class="ranking-item" data-ranking-venue="' +
+                    esc(entry.item.id) + '">',
+                '<span class="ranking-position">' + (index + 1) + "</span>",
+                '<span class="ranking-name">' + esc(entry.item.name) + "</span>",
+                '<span class="ranking-count">' + entry.totals[type] + " " + label + "</span>",
+                "</button>",
+                "</li>"
+            ].join("");
+        }).join("") + "</ol>";
+    }
+
+    function restaurantRankingsHtml(page) {
+        return [
+            '<section class="restaurant-rankings" data-restaurant-rankings aria-labelledby="rankingTitle">',
+            '<div class="ranking-heading">',
+            '<div><span class="eyebrow">LIVE RANKING</span>',
+            '<h2 id="rankingTitle">맛집 추천·비추천 순위</h2></div>',
+            "<p>현재 페이지의 평가를 실시간으로 집계한 TOP 10입니다.</p>",
+            "</div>",
+            '<div class="ranking-grid">',
+            '<article class="ranking-panel is-recommend">',
+            "<h3><span aria-hidden=\"true\">👍</span> 추천 순위</h3>",
+            rankingListHtml(rankedRestaurants(page, "recommend"), "recommend"),
+            "</article>",
+            '<article class="ranking-panel is-not-recommend">',
+            "<h3><span aria-hidden=\"true\">👎</span> 비추천 순위</h3>",
+            rankingListHtml(rankedRestaurants(page, "notRecommend"), "notRecommend"),
+            "</article>",
+            "</div>",
+            "</section>"
+        ].join("");
+    }
+
+    function renderRestaurantRankings() {
+        if (!rankingPage) return;
+        var current = root.querySelector("[data-restaurant-rankings]");
+        if (!current) return;
+        var holder = document.createElement("div");
+        holder.innerHTML = restaurantRankingsHtml(rankingPage);
+        current.replaceWith(holder.firstElementChild);
+    }
+
+    function scheduleRankingRender() {
+        if (!rankingPage || rankingRenderPending) return;
+        rankingRenderPending = true;
+        window.setTimeout(function () {
+            rankingRenderPending = false;
+            renderRestaurantRankings();
+        }, 0);
+    }
+
     function voteStatusMessage(state) {
         if (state.message) return state.message;
         if (state.userChoice === "recommend") return "추천했습니다 · 다시 누르면 취소";
@@ -493,6 +613,7 @@
         var current = voteState.get(venueId) || defaultVoteState();
         voteState.set(venueId, Object.assign({}, current, values));
         renderVoteState(venueId);
+        scheduleRankingRender();
     }
 
     async function loadVotes(venueIds) {
@@ -830,11 +951,45 @@
         });
     }
 
+    function bindRankingNavigation() {
+        root.addEventListener("click", function (event) {
+            var button = event.target.closest("[data-ranking-venue]");
+            if (!button || !root.contains(button)) return;
+            var venueId = button.dataset.rankingVenue;
+            var input = document.getElementById("venueSearch");
+            if (input && input.value) {
+                input.value = "";
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+            window.setTimeout(function () {
+                var targets = Array.from(root.querySelectorAll("[data-venue]")).filter(function (element) {
+                    return element.dataset.venue === venueId;
+                });
+                var target = targets.find(function (element) {
+                    return !element.hidden && element.offsetParent !== null;
+                }) || targets[0];
+                if (!target) return;
+                target.scrollIntoView({ behavior: "smooth", block: "center" });
+                target.classList.add("ranking-target");
+                window.setTimeout(function () {
+                    target.classList.remove("ranking-target");
+                }, 1_600);
+            }, 0);
+        });
+    }
+
     function renderRestaurants(page) {
         var total = page.sections.reduce(function (sum, section) {
             return sum + section.items.length;
         }, 0);
+        rankingPage = total ? page : null;
         document.title = page.title + " - " + data.brand.title;
+        var menuDisclosure = page.naverSource && page.naverSource.menuSnapshotDate ? [
+            "<p><strong>네이버 플레이스 메뉴판</strong>을 ",
+            esc(page.naverSource.menuSnapshotDate) + " 기준으로 확인해 ",
+            esc(page.naverSource.menuPlacesWithMenus) + "곳의 대표 메뉴를 최대 5개까지 반영했습니다. ",
+            "메뉴와 가격은 매장 사정에 따라 달라질 수 있습니다.</p>"
+        ].join("") : "";
         var sourceDisclosure = page.naverSource ? [
             '<aside class="restaurant-source-note">',
             "<p><strong>" + esc(page.naverSource.title) + "</strong>에서 이 리조트 주변 " +
@@ -842,6 +997,7 @@
             "<p>표시된 차량 시간은 " + esc(page.naverSource.routeBasis) +
                 "으로, 실제 교통 상황과 경로에 따라 달라질 수 있습니다. " +
                 externalLink(page.naverSource.url, "원본 목록 보기", "text-link") + "</p>",
+            menuDisclosure,
             data.config && data.config.importedVotingEnabled ? "" :
                 "<p>신규 등록 장소의 추천·비추천 평가는 서버 연동을 준비 중입니다.</p>",
             "</aside>"
@@ -855,6 +1011,7 @@
                 total + "</strong> / " + total + "곳</div>",
             "</div>",
             sourceDisclosure,
+            restaurantRankingsHtml(page),
             page.sections.map(restaurantSection).join(""),
             '<div class="empty-state" id="searchEmpty" hidden>',
             '<span aria-hidden="true">🔎</span><h2>검색 결과가 없습니다</h2><p>다른 이름이나 메뉴로 검색해 보세요.</p>',
@@ -869,6 +1026,7 @@
 
         root.innerHTML = '<div class="page-wrap">' + hero(page) + content + footer() + "</div>";
         bindRestaurantSearch(total);
+        bindRankingNavigation();
         if (total) bindVenueVoting(page);
     }
 
