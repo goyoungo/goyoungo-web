@@ -1,10 +1,10 @@
 window.NAVER_RESTAURANTS = {
   "source": {
-    "title": "STARK 스키장 주변 맛집 리스트",
+    "title": "네이버 지도 맛집 정보",
     "url": "https://naver.me/GWi3KVln",
     "fetchedAt": "2026-07-24",
     "totalSharedPlaces": 302,
-    "importedPlaces": 239,
+    "importedPlaces": 240,
     "routeBasis": "리조트와 장소 좌표 간 거리 기준 예상 차량시간",
     "menuSource": {
       "title": "네이버 플레이스 메뉴판",
@@ -2629,6 +2629,16 @@ window.NAVER_RESTAURANTS = {
       }
     ],
     "high1": [
+      {
+        "naverId": "1267120049",
+        "name": "더커피",
+        "address": "강원 정선군 고한읍 고한로 83",
+        "memo": "태코 추천 딸기라떼 맛집(기다리는 동안 얌전한 리트리버 쭈무르기 가넝)",
+        "driveMinutes": 3,
+        "menus": [
+          "딸기라떼"
+        ]
+      },
       {
         "naverId": "35487835",
         "name": "교동짬뽕",

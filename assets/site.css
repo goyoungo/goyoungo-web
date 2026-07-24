@@ -527,15 +527,23 @@ img {
 }
 
 .venue-map-link {
-    color: inherit;
-    text-decoration: underline;
-    text-decoration-color: rgba(255, 255, 255, 0.24);
-    text-underline-offset: 3px;
+    color: var(--accent);
+    font-weight: 760;
+    text-decoration: none;
 }
 
 .venue-map-link:hover {
-    color: var(--accent);
-    text-decoration-color: currentColor;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.venue-map-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    width: fit-content;
+    margin-top: 5px;
+    font-size: 12px;
 }
 
 .drive-time-badge {

@@ -104,7 +104,7 @@
                     recommenders: [],
                     detractors: [],
                     score: 0,
-                    note: sourceItem.memo || "네이버 공유 맛집 리스트 수록",
+                    note: sourceItem.memo || "네이버 지도 등록 업체",
                     hours: ""
                 }, importedFields);
                 openSection.items.push(newItem);
@@ -856,18 +856,25 @@
         ].join(" ").toLocaleLowerCase("ko-KR");
     }
 
+    function restaurantMapUrl(item) {
+        if (item.naverUrl) return item.naverUrl;
+        var query = [item.name, item.address].filter(Boolean).join(" ");
+        return "https://map.naver.com/p/search/" + encodeURIComponent(query);
+    }
+
     function restaurantAddressHtml(item) {
-        if (!item.address && !item.driveMinutes) return textOrDash("");
-        var address = item.address
-            ? (item.naverUrl
-                ? externalLink(item.naverUrl, item.address, "venue-map-link")
-                : esc(item.address))
-            : "";
+        var address = item.address ? esc(item.address) : '<span class="faint">주소 미등록</span>';
+        var mapLink = externalLink(
+            restaurantMapUrl(item),
+            "네이버지도",
+            "venue-map-link"
+        );
         var driveTime = item.driveMinutes
             ? '<span class="drive-time-badge">' + esc(item.driveFrom || "리조트") +
                 "에서 차량 약 " + esc(item.driveMinutes) + "분</span>"
             : "";
-        return '<span class="venue-address">' + address + "</span>" + driveTime;
+        return '<span class="venue-address">' + address + "</span>" +
+            '<span class="venue-map-action">📍 ' + mapLink + "</span>" + driveTime;
     }
 
     function restaurantRow(item) {
@@ -992,11 +999,11 @@
         ].join("") : "";
         var sourceDisclosure = page.naverSource ? [
             '<aside class="restaurant-source-note">',
-            "<p><strong>" + esc(page.naverSource.title) + "</strong>에서 이 리조트 주변 " +
-                esc(page.naverSource.importedCount) + "곳을 반영했습니다.</p>",
+            "<p><strong>네이버 지도</strong> 기준으로 이 리조트 주변 " +
+                esc(page.naverSource.importedCount) + "곳의 정보를 반영했습니다.</p>",
             "<p>표시된 차량 시간은 " + esc(page.naverSource.routeBasis) +
                 "으로, 실제 교통 상황과 경로에 따라 달라질 수 있습니다. " +
-                externalLink(page.naverSource.url, "원본 목록 보기", "text-link") + "</p>",
+                externalLink(page.naverSource.url, "네이버 지도에서 확인", "text-link") + "</p>",
             menuDisclosure,
             data.config && data.config.importedVotingEnabled ? "" :
                 "<p>신규 등록 장소의 추천·비추천 평가는 서버 연동을 준비 중입니다.</p>",
