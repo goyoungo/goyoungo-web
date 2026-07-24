@@ -2635,7 +2635,6 @@ window.NAVER_RESTAURANTS = {
         "address": "강원 정선군 고한읍 고한로 83",
         "memo": "태코 추천 딸기라떼 맛집(기다리는 동안 얌전한 리트리버 쭈무르기 가넝)",
         "driveMinutes": 3,
-        "votingEnabled": false,
         "menus": [
           "딸기라떼"
         ]
