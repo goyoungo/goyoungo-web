@@ -1,6 +1,6 @@
 # 카카오 계정 평가 API
 
-`voting-stack.yaml`은 맛집별 추천·비추천과 정보 수정 요청을 저장하는 AWS CloudFormation 템플릿입니다.
+`voting-stack.yaml`은 맛집별 추천·비추천을 저장하는 AWS CloudFormation 템플릿입니다.
 
 ## 구성
 
@@ -15,9 +15,17 @@
 
 - `GET /votes?venueIds=<id,id,...>`: 공개 집계 조회. 로그인 토큰이 있으면 현재 계정의 선택도 반환합니다.
 - `PUT /votes/{venueId}`: 로그인 계정의 평가 저장. 본문 `choice`는 `recommend`, `not_recommend`, `null` 중 하나입니다.
-- `POST /suggestions`: 로그인 계정의 정보 수정 요청 저장. `category`, `target`, `details`, `pageUrl`을 받습니다.
-
 한 계정은 맛집마다 한 표만 가질 수 있습니다. 같은 선택을 다시 저장하면 그대로 유지되고, `null`은 취소입니다.
+
+정보 수정 요청은 사이트에서 인스타그램 DM 안내로 처리하므로 API에 별도로 저장하지 않습니다.
+
+## 보안 설정
+
+- 허용된 운영·테스트 Origin만 CORS로 접근할 수 있습니다.
+- 투표 본문은 256바이트로 제한하고, 비정상 Authorization 헤더와 과도하게 긴 토큰을 거부합니다.
+- Lambda 동시 실행 수와 API Gateway 요청률을 제한해 비용 폭주와 단순 자동화 공격의 영향을 줄입니다.
+- API 응답은 캐시를 금지하고 MIME 스니핑을 차단합니다.
+- API Gateway 접근 로그는 인증 헤더와 본문을 제외한 최소 정보만 14일간 보관합니다.
 
 ## 배포
 

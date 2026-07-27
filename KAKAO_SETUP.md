@@ -31,3 +31,5 @@ AWS Amplify의 임시 주소에서도 확인해야 한다면 해당 HTTPS 주소
 현재 인증 흐름은 Kakao JavaScript SDK v1 콜백 방식입니다. SDK 파일은 카카오 공식 Legacy CDN 주소인 `https://t1.kakaocdn.net/kakao_js_sdk/v1/kakao.min.js`에서 불러옵니다. 광고·추적 차단 기능을 사용한다면 `t1.kakaocdn.net`을 허용해야 합니다.
 
 Legacy v1은 2026년 12월 31일 지원 종료 예정이므로, 그 전에 v2의 `Kakao.Auth.authorize()`와 서버 측 인가 코드·토큰 교환 방식으로 전환해야 합니다.
+
+전환할 때는 로그인 요청마다 예측할 수 없는 `state` 값을 발급·검증하고, 카카오 REST API 키와 Client Secret은 브라우저 코드가 아닌 서버 환경변수에만 보관합니다. 카카오 액세스 토큰을 브라우저 저장소에 장기간 보관하지 말고, 서버에서 짧은 수명의 서비스 세션으로 교환하는 구성을 권장합니다.

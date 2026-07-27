@@ -1562,11 +1562,11 @@ window.SITE_DATA = {
           "contact": "방장 연락처 010-2781-4709",
           "sns": "카톡 s2park28",
           "gender": [],
-          "details": "서관까지 도보 7분거리 시즌방\n남 3 여 1 (인원은 일단 문의 주세요~)\n더 자세한 내용은 헝그리보더 게시글 링크를 확인해주세요\nhttp://www.hungryboarder.com/index.php?mid=Society&document_srl=51151993",
+          "details": "서관까지 도보 7분거리 시즌방\n남 3 여 1 (인원은 일단 문의 주세요~)\n더 자세한 내용은 헝그리보더 게시글 링크를 확인해주세요\nhttps://www.hungryboarder.com/index.php?mid=Society&document_srl=51151993",
           "price": "주중 50\n주말 70\n풀상 80",
           "updatedAt": "2024년 10월 28일 14:22",
           "links": [
-            "http://www.hungryboarder.com/index.php?mid=Society&document_srl=51151993"
+            "https://www.hungryboarder.com/index.php?mid=Society&document_srl=51151993"
           ]
         },
         {
