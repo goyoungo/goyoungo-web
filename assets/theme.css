@@ -1,0 +1,174 @@
+:root {
+    --theme-control-bg: var(--surface);
+    --theme-control-border: var(--line-strong);
+}
+
+html {
+    color-scheme: light;
+}
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #171512;
+    --surface: #211e19;
+    --surface-2: #2c2721;
+    --surface-3: #383129;
+    --text: #f6eee4;
+    --muted: #c2b5a8;
+    --faint: #968a7e;
+    --line: rgba(246, 238, 228, 0.17);
+    --line-strong: #89796a;
+    --accent: #ff7650;
+    --accent-soft: rgba(255, 118, 80, 0.16);
+    --accent-text: #21130e;
+    --danger: #ff8b82;
+    --success: #ff7650;
+    --shadow: 0 22px 64px rgba(0, 0, 0, 0.3);
+    --theme-control-bg: #2c2721;
+    --theme-control-border: #89796a;
+}
+
+.site-header-actions {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.theme-mode-select {
+    min-height: 40px;
+    width: 96px;
+    padding: 6px 26px 6px 9px;
+    border: 1px solid var(--theme-control-border);
+    border-radius: 0;
+    background: var(--theme-control-bg);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 780;
+    line-height: 1;
+}
+
+.theme-mode-select:hover {
+    border-color: var(--accent);
+}
+
+.theme-mode-select:focus-visible {
+    border-color: var(--accent);
+}
+
+html[data-theme="dark"],
+html[data-theme="dark"] body {
+    background: var(--bg);
+    color: var(--text);
+}
+
+html[data-theme="dark"] body {
+    background:
+        linear-gradient(180deg, rgba(255, 118, 80, 0.07), transparent 360px),
+        linear-gradient(90deg, transparent calc(100% - 1px), rgba(246, 238, 228, 0.035) 1px) 0 0 / 72px 100%,
+        var(--bg);
+}
+
+html[data-theme="dark"] .site-header {
+    border-bottom-color: var(--line-strong);
+    background: rgba(23, 21, 18, 0.94);
+}
+
+html[data-theme="dark"] .login-screen {
+    background:
+        linear-gradient(90deg, transparent calc(100% - 1px), rgba(246, 238, 228, 0.035) 1px) 0 0 / 80px 100%,
+        rgba(23, 21, 18, 0.96);
+}
+
+html[data-theme="dark"] .hub-card,
+html[data-theme="dark"] .hub-card.is-featured,
+html[data-theme="dark"] .utility-grid .hub-card,
+html[data-theme="dark"] .data-table-wrap,
+html[data-theme="dark"] .content-card,
+html[data-theme="dark"] .company-card,
+html[data-theme="dark"] .product-card,
+html[data-theme="dark"] .shuttle-item,
+html[data-theme="dark"] .empty-state,
+html[data-theme="dark"] .venue-card,
+html[data-theme="dark"] .restaurant-rankings,
+html[data-theme="dark"] .ranking-panel {
+    background: rgba(33, 30, 25, 0.88);
+}
+
+html[data-theme="dark"] .hub-card:hover,
+html[data-theme="dark"] .hub-card:focus-visible {
+    border-color: var(--accent);
+    background: var(--surface-3);
+    color: var(--text);
+}
+
+html[data-theme="dark"] .hub-card:hover small,
+html[data-theme="dark"] .hub-card:focus-visible small {
+    color: var(--muted);
+}
+
+html[data-theme="dark"] .data-table th {
+    background: var(--surface-3);
+    color: var(--text);
+}
+
+html[data-theme="dark"] .data-table tbody tr:hover td,
+html[data-theme="dark"] .ranking-item:hover,
+html[data-theme="dark"] .ranking-item:focus-visible {
+    background: var(--accent-soft);
+}
+
+html[data-theme="dark"] .action-link:hover,
+html[data-theme="dark"] .action-link:focus-visible,
+html[data-theme="dark"] .update-request-button:hover,
+html[data-theme="dark"] .update-request-button:focus-visible,
+html[data-theme="dark"] .update-request-button[aria-expanded="true"] {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fffaf0;
+}
+
+html[data-theme="dark"] .ranking-position {
+    background: var(--accent);
+    color: #fffaf0;
+}
+
+html[data-theme="dark"] .comments-frame,
+html[data-theme="dark"] .shuttle-image {
+    background: var(--surface);
+}
+
+@media (max-width: 720px) {
+    .site-header {
+        gap: 8px;
+    }
+
+    .site-header-actions {
+        flex: none;
+        gap: 6px;
+    }
+
+    .theme-mode-select {
+        min-height: 36px;
+        width: 86px;
+        padding-left: 7px;
+        font-size: 11px;
+    }
+
+    #logoutBtn {
+        min-height: 36px;
+        padding-right: 9px;
+        padding-left: 9px;
+    }
+}
+
+@media (max-width: 420px) {
+    .brand-link span:last-child {
+        max-width: 132px;
+    }
+
+    .theme-mode-select {
+        width: 78px;
+    }
+}
