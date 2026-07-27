@@ -35,9 +35,21 @@ html[data-theme="dark"] {
     gap: 8px;
 }
 
+.site-header-actions #logoutBtn,
 .theme-mode-select {
     min-height: 40px;
     width: 96px;
+}
+
+.site-header-actions #logoutBtn {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 9px;
+}
+
+.theme-mode-select {
     padding: 6px 26px 6px 9px;
     border: 1px solid var(--theme-control-border);
     border-radius: 0;
@@ -156,8 +168,9 @@ html[data-theme="dark"] .shuttle-image {
         font-size: 11px;
     }
 
-    #logoutBtn {
+    .site-header-actions #logoutBtn {
         min-height: 36px;
+        width: 86px;
         padding-right: 9px;
         padding-left: 9px;
     }
@@ -169,6 +182,10 @@ html[data-theme="dark"] .shuttle-image {
     }
 
     .theme-mode-select {
+        width: 78px;
+    }
+
+    .site-header-actions #logoutBtn {
         width: 78px;
     }
 }
