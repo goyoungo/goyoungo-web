@@ -203,7 +203,7 @@
             '<a class="back-link" href="/index.html" aria-label="홈으로 돌아가기">← 전체 정보</a>',
             '<header class="page-hero">',
             '<div class="page-icon" aria-hidden="true">' + esc(page.icon) + "</div>",
-            '<p class="eyebrow">GO.YOUNGO · GANGWON</p>',
+            '<p class="eyebrow">GO.YOUNGO</p>',
             "<h1>" + esc(page.title) + "</h1>",
             "<p>" + esc(page.subtitle || "") + "</p>",
             '<p class="snapshot-note">마지막 정보 스냅샷 · ' + esc(data.brand.snapshotDate) + "</p>",
