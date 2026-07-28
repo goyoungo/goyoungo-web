@@ -372,6 +372,42 @@ select:focus {
     gap: 12px;
 }
 
+.goal-time-field {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.goal-time-field legend {
+    margin: 0 0 7px;
+    padding: 0;
+    color: var(--run-muted);
+    font-size: 10px;
+    font-weight: 850;
+}
+
+.goal-time-inputs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.goal-time-inputs label {
+    gap: 5px;
+    text-align: center;
+}
+
+.goal-time-inputs label span {
+    font-size: 9px;
+}
+
+.goal-time-inputs input {
+    min-width: 0;
+    padding: 0 4px;
+    text-align: center;
+}
+
 .condition-fields {
     margin: 4px 0 0;
     padding: 14px;

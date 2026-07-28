@@ -440,7 +440,7 @@ Resources:
               distanceKm > 100 ||
               (goalTimeSeconds != null && (!Number.isFinite(goalTimeSeconds) || goalTimeSeconds < 300 || goalTimeSeconds > 86400)) ||
               !Number.isInteger(daysPerWeek) ||
-              daysPerWeek < 2 ||
+              daysPerWeek < 1 ||
               daysPerWeek > 7
             ) {
               throw new HttpError(400, "목표 레이스 정보를 확인해 주세요.", "invalid_profile");

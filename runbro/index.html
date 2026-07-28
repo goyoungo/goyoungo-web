@@ -19,7 +19,7 @@
     <link rel="canonical" href="https://goyoungo.com/runbro/">
     <title>RUNBRO · GO.YOUNGO</title>
     <link rel="stylesheet" href="/assets/theme.css?v=20260728-theme2">
-    <link rel="stylesheet" href="/assets/runbro.css?v=20260729-runbro2">
+    <link rel="stylesheet" href="/assets/runbro.css?v=20260729-runbro3">
 </head>
 <body>
     <a class="skip-link" href="#mainContent">콘텐츠로 건너뛰기</a>
@@ -100,17 +100,36 @@
                             </label>
                         </div>
                         <div class="field-pair">
-                            <label>
-                                <span>목표 기록</span>
-                                <input id="goalTime" name="goalTime" type="time" step="1" value="00:55:00">
-                            </label>
+                            <fieldset class="goal-time-field">
+                                <legend>목표 기록</legend>
+                                <div class="goal-time-inputs" aria-label="목표 기록 시간 분 초">
+                                    <label>
+                                        <span>시간</span>
+                                        <input id="goalHours" name="goalHours" type="number" min="0" max="23"
+                                            step="1" inputmode="numeric" value="0" required>
+                                    </label>
+                                    <label>
+                                        <span>분</span>
+                                        <input id="goalMinutes" name="goalMinutes" type="number" min="0" max="59"
+                                            step="1" inputmode="numeric" value="55" required>
+                                    </label>
+                                    <label>
+                                        <span>초</span>
+                                        <input id="goalSeconds" name="goalSeconds" type="number" min="0" max="59"
+                                            step="1" inputmode="numeric" value="0" required>
+                                    </label>
+                                </div>
+                            </fieldset>
                             <label>
                                 <span>주간 훈련 가능일</span>
                                 <select id="daysPerWeek" name="daysPerWeek">
+                                    <option value="1">주 1일</option>
+                                    <option value="2">주 2일</option>
                                     <option value="3">주 3일</option>
                                     <option value="4" selected>주 4일</option>
                                     <option value="5">주 5일</option>
                                     <option value="6">주 6일</option>
+                                    <option value="7">주 7일</option>
                                 </select>
                             </label>
                         </div>
@@ -331,6 +350,6 @@
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/v1/kakao.min.js"></script>
     <script src="/assets/auth.js?v=20260728-auth3"></script>
     <script src="/assets/runbro-config.js?v=20260728-runbro1"></script>
-    <script src="/assets/runbro.js?v=20260728-garmin1"></script>
+    <script src="/assets/runbro.js?v=20260729-goal1"></script>
 </body>
 </html>

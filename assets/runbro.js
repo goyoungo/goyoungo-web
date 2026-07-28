@@ -70,21 +70,32 @@
         }).join(":");
     }
 
-    function goalTimeToSeconds(value) {
-        var parts = String(value || "").split(":").map(Number);
-        if (parts.length < 2 || parts.some(function (part) { return !Number.isFinite(part); })) return null;
-        if (parts.length === 2) parts.push(0);
-        return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    function goalTimeFromFields() {
+        var hours = Number(el("goalHours").value);
+        var minutes = Number(el("goalMinutes").value);
+        var seconds = Number(el("goalSeconds").value);
+        if (
+            !Number.isInteger(hours) ||
+            !Number.isInteger(minutes) ||
+            !Number.isInteger(seconds) ||
+            hours < 0 ||
+            hours > 23 ||
+            minutes < 0 ||
+            minutes > 59 ||
+            seconds < 0 ||
+            seconds > 59
+        ) {
+            return null;
+        }
+        var total = hours * 3600 + minutes * 60 + seconds;
+        return total > 0 ? total : null;
     }
 
-    function secondsToTimeInput(seconds) {
+    function fillGoalTimeFields(seconds) {
         var safe = Math.max(0, Math.round(Number(seconds || 0)));
-        var hours = Math.floor(safe / 3600);
-        var minutes = Math.floor((safe % 3600) / 60);
-        var secs = safe % 60;
-        return [hours, minutes, secs].map(function (part) {
-            return String(part).padStart(2, "0");
-        }).join(":");
+        el("goalHours").value = String(Math.floor(safe / 3600));
+        el("goalMinutes").value = String(Math.floor((safe % 3600) / 60));
+        el("goalSeconds").value = String(safe % 60);
     }
 
     function getAccessToken() {
@@ -148,7 +159,7 @@
             raceName: el("raceName").value.trim(),
             raceDate: el("raceDate").value,
             distanceKm: Number(el("raceDistance").value),
-            goalTimeSeconds: goalTimeToSeconds(el("goalTime").value),
+            goalTimeSeconds: goalTimeFromFields(),
             daysPerWeek: Number(el("daysPerWeek").value),
             condition: {
                 sleepHours: el("sleepHours").value === "" ? null : Number(el("sleepHours").value),
@@ -163,7 +174,7 @@
         if (profile.raceName) el("raceName").value = profile.raceName;
         if (profile.raceDate) el("raceDate").value = profile.raceDate;
         if (profile.distanceKm) el("raceDistance").value = String(profile.distanceKm);
-        if (profile.goalTimeSeconds) el("goalTime").value = secondsToTimeInput(profile.goalTimeSeconds);
+        if (profile.goalTimeSeconds) fillGoalTimeFields(profile.goalTimeSeconds);
         if (profile.daysPerWeek) el("daysPerWeek").value = String(profile.daysPerWeek);
         if (profile.condition) {
             if (profile.condition.sleepHours != null) el("sleepHours").value = profile.condition.sleepHours;
@@ -294,18 +305,34 @@
         var easyPace = targetPace ? targetPace + 65 : null;
         var keyPace = targetPace ? Math.max(210, targetPace - (phase === "SHARPEN" ? 5 : -10)) : null;
         var longKm = Math.max(Number(profile.distanceKm) * (phase === "TAPER" ? 0.45 : 0.72), baseDistance * 0.34);
-        var templates = [
-            { type: "REST", title: "완전 휴식", detail: "가벼운 스트레칭", rest: true },
+        var trainingTemplates = [
+            { type: "EASY", title: "회복 조깅", detail: "20~30분 아주 편안하게" },
             { type: "EASY", title: "이지런 " + formatDistance(baseDistance * 0.2) + "km", detail: easyPace ? formatPace(easyPace) + "/km" : "대화 가능한 강도" },
-            { type: "REST", title: "회복 또는 근력", detail: "코어 20분", rest: true },
+            { type: "EASY", title: "가벼운 조깅 " + formatDistance(baseDistance * 0.14) + "km", detail: "회복 강도" },
             { type: "KEY", title: phase === "BASE" ? "템포런 20분" : "목표 페이스 반복", detail: keyPace ? formatPace(keyPace) + "/km" : "RPE 7/10", key: true },
-            { type: "REST", title: "완전 휴식", detail: "수면 우선", rest: true },
+            { type: "EASY", title: "짧은 이지런", detail: "30분 이내" },
             { type: "EASY", title: "회복런 " + formatDistance(baseDistance * 0.16) + "km", detail: "아주 편안하게" },
             { type: "LONG", title: "롱런 " + formatDistance(longKm) + "km", detail: "마지막 10분만 점진 가속", key: true }
         ];
-        if (days <= 3) templates[5] = { type: "REST", title: "완전 휴식", detail: "산책 20분", rest: true };
-        if (days >= 5) templates[2] = { type: "EASY", title: "가벼운 조깅 " + formatDistance(baseDistance * 0.14) + "km", detail: "회복 강도" };
-        if (days >= 6) templates[4] = { type: "EASY", title: "짧은 이지런", detail: "30분 이내" };
+        var activeDaysByCount = {
+            1: [6],
+            2: [3, 6],
+            3: [1, 3, 6],
+            4: [1, 3, 5, 6],
+            5: [1, 2, 3, 5, 6],
+            6: [0, 1, 2, 3, 5, 6],
+            7: [0, 1, 2, 3, 4, 5, 6]
+        };
+        var activeDays = activeDaysByCount[clamp(days, 1, 7)] || activeDaysByCount[4];
+        var templates = trainingTemplates.map(function (template, index) {
+            if (activeDays.includes(index)) return template;
+            return {
+                type: "REST",
+                title: index === 2 ? "회복 또는 근력" : "완전 휴식",
+                detail: index === 2 ? "코어 20분" : "가벼운 스트레칭",
+                rest: true
+            };
+        });
         if (score < 60) {
             templates[3] = { type: "REST", title: "훈련 대신 회복", detail: "컨디션 회복 후 재배치", rest: true };
         }
@@ -541,6 +568,10 @@
         var profile = profileFromForm();
         if (!profile.raceName || !profile.raceDate || !profile.distanceKm) {
             setFormStatus("레이스 이름, 날짜, 거리를 확인해 주세요.", true);
+            return;
+        }
+        if (!profile.goalTimeSeconds || profile.goalTimeSeconds < 300 || profile.goalTimeSeconds >= 86400) {
+            setFormStatus("목표 기록을 시간·분·초로 정확하게 입력해 주세요.", true);
             return;
         }
         if (new Date(profile.raceDate + "T23:59:59").getTime() < Date.now()) {
