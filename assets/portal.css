@@ -1,0 +1,416 @@
+:root {
+    --bg: #f5f1ea;
+    --surface: #fffcf7;
+    --surface-2: #ece5da;
+    --surface-3: #e2d8ca;
+    --text: #26231f;
+    --muted: #756e65;
+    --faint: #8a8076;
+    --line: rgba(72, 61, 50, 0.18);
+    --line-strong: #48403a;
+    --accent: #e05a3f;
+    --accent-soft: rgba(224, 90, 63, 0.1);
+    --accent-text: #ffffff;
+    --success: #e05a3f;
+    --shadow: 0 22px 64px rgba(72, 61, 50, 0.1);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-width: 320px;
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    background:
+        linear-gradient(180deg, rgba(224, 90, 63, 0.06), transparent 340px),
+        linear-gradient(90deg, transparent calc(100% - 1px), rgba(72, 61, 50, 0.04) 1px) 0 0 / 72px 100%,
+        var(--bg);
+    color: var(--text);
+    font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: inherit;
+}
+
+.skip-link {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 100;
+    padding: 10px 14px;
+    transform: translateY(-160%);
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    font-size: 13px;
+}
+
+.skip-link:focus {
+    transform: translateY(0);
+}
+
+.portal-shell {
+    min-height: 100vh;
+}
+
+.site-header {
+    min-height: 54px;
+    padding: 0 clamp(16px, 3vw, 42px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255, 252, 247, 0.94);
+    backdrop-filter: blur(16px);
+}
+
+.brand-link,
+.instagram-header-link {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.brand-link {
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 850;
+    letter-spacing: -0.02em;
+}
+
+.brand-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.instagram-header-link {
+    min-height: 34px;
+    gap: 7px;
+    padding: 6px 10px;
+    border: 1px solid var(--line-strong);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+}
+
+.instagram-header-link:hover,
+.instagram-header-link:focus-visible {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+}
+
+.instagram-mini-mark {
+    font-size: 17px;
+    line-height: 1;
+}
+
+.portal-main {
+    min-height: calc(100vh - 54px);
+    padding: clamp(22px, 4vw, 52px) 16px 64px;
+    display: grid;
+    place-items: start center;
+}
+
+.portal-card {
+    width: min(100%, 720px);
+    border: 1px solid var(--line-strong);
+    background: rgba(255, 252, 247, 0.92);
+    box-shadow: var(--shadow);
+}
+
+.portal-profile {
+    padding: clamp(28px, 6vw, 52px);
+    text-align: center;
+}
+
+.profile-mark {
+    position: relative;
+    width: 94px;
+    height: 94px;
+    margin: 0 auto 24px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 0 0 8px var(--accent-soft);
+    transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.profile-mark:hover,
+.profile-mark:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 0 0 8px var(--accent-soft), 0 14px 28px rgba(224, 90, 63, 0.22);
+}
+
+.profile-wordmark {
+    font-size: 32px;
+    font-weight: 950;
+    letter-spacing: -0.08em;
+}
+
+.profile-instagram {
+    position: absolute;
+    right: -5px;
+    bottom: 4px;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border: 3px solid var(--surface);
+    border-radius: 50%;
+    background: var(--text);
+    color: var(--surface);
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.portal-kicker {
+    margin: 0 0 14px;
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+}
+
+.portal-profile h1 {
+    margin: 0;
+    font-size: clamp(54px, 11vw, 88px);
+    font-weight: 950;
+    line-height: 0.84;
+    letter-spacing: -0.09em;
+}
+
+.portal-intro {
+    margin: 24px auto 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.portal-services {
+    display: grid;
+    border-top: 1px solid var(--line-strong);
+}
+
+.portal-service {
+    position: relative;
+    min-height: 152px;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--text);
+    text-decoration: none;
+}
+
+.portal-service::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: var(--accent);
+}
+
+.portal-service.is-live {
+    transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.portal-service.is-live:hover,
+.portal-service.is-live:focus-visible {
+    z-index: 1;
+    background: var(--accent);
+    color: #fff;
+    transform: translateX(4px);
+}
+
+.portal-service.is-live:hover::before,
+.portal-service.is-live:focus-visible::before {
+    background: var(--text);
+}
+
+.service-meta,
+.service-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.service-meta {
+    color: var(--accent);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.09em;
+}
+
+.portal-service.is-live:hover .service-meta,
+.portal-service.is-live:focus-visible .service-meta {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.service-status {
+    padding: 4px 6px;
+    border: 1px solid currentColor;
+}
+
+.service-main {
+    margin-top: auto;
+}
+
+.service-main strong {
+    font-size: clamp(33px, 7vw, 48px);
+    font-weight: 950;
+    line-height: 1;
+    letter-spacing: -0.06em;
+}
+
+.service-arrow {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: 1px solid currentColor;
+    font-size: 18px;
+}
+
+.portal-service small {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.portal-service.is-live:hover small,
+.portal-service.is-live:focus-visible small {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.portal-service.is-coming {
+    background:
+        repeating-linear-gradient(-45deg, transparent, transparent 9px, rgba(72, 61, 50, 0.025) 9px, rgba(72, 61, 50, 0.025) 18px),
+        var(--surface-2);
+    color: var(--faint);
+}
+
+.portal-service.is-coming::before {
+    background: var(--line-strong);
+}
+
+.portal-service.is-coming .service-meta,
+.portal-service.is-coming small {
+    color: var(--faint);
+}
+
+.portal-footer {
+    min-height: 58px;
+    padding: 0 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+}
+
+.portal-footer a {
+    text-underline-offset: 3px;
+}
+
+.portal-footer a:hover,
+.portal-footer a:focus-visible {
+    color: var(--accent);
+}
+
+html[data-theme="dark"] .portal-card,
+html[data-theme="dark"] .portal-service {
+    background-color: rgba(33, 30, 25, 0.94);
+}
+
+html[data-theme="dark"] .profile-instagram {
+    border-color: var(--surface);
+    background: var(--text);
+    color: var(--surface);
+}
+
+html[data-theme="dark"] .portal-service.is-coming {
+    background:
+        repeating-linear-gradient(-45deg, transparent, transparent 9px, rgba(246, 238, 228, 0.025) 9px, rgba(246, 238, 228, 0.025) 18px),
+        var(--surface-2);
+}
+
+@media (max-width: 620px) {
+    .site-header {
+        min-height: 56px;
+        padding: 0 14px;
+    }
+
+    .instagram-header-link span:last-child {
+        display: none;
+    }
+
+    .instagram-header-link {
+        width: 38px;
+        padding: 5px;
+        justify-content: center;
+    }
+
+    .portal-main {
+        min-height: calc(100vh - 56px);
+        padding: 14px 14px 42px;
+    }
+
+    .portal-profile {
+        padding: 30px 20px 34px;
+    }
+
+    .profile-mark {
+        width: 82px;
+        height: 82px;
+        margin-bottom: 22px;
+    }
+
+    .profile-wordmark {
+        font-size: 28px;
+    }
+
+    .portal-intro {
+        font-size: 12px;
+    }
+
+    .portal-service {
+        min-height: 138px;
+        padding: 18px;
+    }
+
+    .service-main strong {
+        font-size: 36px;
+    }
+
+    .portal-footer {
+        padding: 0 18px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        scroll-behavior: auto !important;
+        transition: none !important;
+    }
+}

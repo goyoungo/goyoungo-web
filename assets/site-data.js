@@ -13,105 +13,105 @@ window.SITE_DATA = {
       "id": "welpark",
       "icon": "🦝",
       "title": "웰팍 맛집 리스트",
-      "href": "/welpark-restaurants.html",
+      "href": "/snowbro/welpark-restaurants.html",
       "summary": "웰리힐리파크 주변 맛집 35곳"
     },
     {
       "id": "phoenix",
       "icon": "🐦",
       "title": "휘팍 맛집 리스트",
-      "href": "/phoenix-restaurants.html",
+      "href": "/snowbro/phoenix-restaurants.html",
       "summary": "휘닉스 파크 주변 맛집 30곳"
     },
     {
       "id": "yongpyong",
       "icon": "🐉",
       "title": "용평 맛집 리스트",
-      "href": "/yongpyong-restaurants.html",
+      "href": "/snowbro/yongpyong-restaurants.html",
       "summary": "용평 리조트 주변 맛집"
     },
     {
       "id": "high1",
       "icon": "✋",
       "title": "하이원 맛집 리스트",
-      "href": "/high1-restaurants.html",
+      "href": "/snowbro/high1-restaurants.html",
       "summary": "하이원 리조트 주변 맛집"
     },
     {
       "id": "konjiam",
       "icon": "🌲",
       "title": "곤지암 맛집 리스트",
-      "href": "/konjiam-restaurants.html",
+      "href": "/snowbro/konjiam-restaurants.html",
       "summary": "곤지암리조트 주변 맛집 16곳"
     },
     {
       "id": "jisan",
       "icon": "🎿",
       "title": "지산 맛집 리스트",
-      "href": "/jisan-restaurants.html",
+      "href": "/snowbro/jisan-restaurants.html",
       "summary": "지산포레스트 주변 맛집 16곳"
     },
     {
       "id": "o2",
       "icon": "❄️",
       "title": "오투 맛집 리스트",
-      "href": "/o2-restaurants.html",
+      "href": "/snowbro/o2-restaurants.html",
       "summary": "오투리조트 주변 맛집 12곳"
     },
     {
       "id": "vivaldi",
       "icon": "🏔️",
       "title": "비발디 맛집 리스트",
-      "href": "/vivaldi-restaurants.html",
+      "href": "/snowbro/vivaldi-restaurants.html",
       "summary": "비발디파크 주변 맛집 6곳"
     },
     {
       "id": "yangji",
       "icon": "📍",
       "title": "양지파인 인근 맛집",
-      "href": "/yangji-restaurants.html",
+      "href": "/snowbro/yangji-restaurants.html",
       "summary": "양지파인 인근 맛집 4곳"
     },
     {
       "id": "elysian",
       "icon": "🚠",
       "title": "엘리시안 맛집 리스트",
-      "href": "/elysian-restaurants.html",
+      "href": "/snowbro/elysian-restaurants.html",
       "summary": "엘리시안 강촌 주변 맛집 4곳"
     },
     {
       "id": "muju",
       "icon": "⛷️",
       "title": "무주 맛집 리스트",
-      "href": "/muju-restaurants.html",
+      "href": "/snowbro/muju-restaurants.html",
       "summary": "무주덕유산리조트 주변 맛집 3곳"
     },
     {
       "id": "market",
       "icon": "💵",
       "title": "거래 게시판",
-      "href": "/marketplace.html",
+      "href": "/snowbro/marketplace.html",
       "summary": "장비 판매·구매 게시글"
     },
     {
       "id": "season",
       "icon": "🏠",
       "title": "시즌방/주주 구해요",
-      "href": "/season-room.html",
+      "href": "/snowbro/season-room.html",
       "summary": "시즌방과 주주 모집 정보"
     },
     {
       "id": "partner",
       "icon": "🤝",
       "title": "제휴 업체 · 보드카페",
-      "href": "/board-cafe.html",
+      "href": "/snowbro/board-cafe.html",
       "summary": "렌탈·엣징·왁싱 제휴 혜택"
     },
     {
       "id": "shuttle",
       "icon": "🚌",
       "title": "24/25 스키장 셔틀",
-      "href": "/shuttle.html",
+      "href": "/snowbro/shuttle.html",
       "summary": "X5+·용평 셔틀 안내"
     }
   ],

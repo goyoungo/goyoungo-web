@@ -200,7 +200,7 @@
 
     function hero(page) {
         return [
-            '<a class="back-link" href="/index.html" aria-label="홈으로 돌아가기">← 전체 정보</a>',
+            '<a class="back-link" href="/snowbro/" aria-label="스노우브로 홈으로 돌아가기">← 전체 정보</a>',
             '<header class="page-hero">',
             '<div class="page-icon" aria-hidden="true">' + esc(page.icon) + "</div>",
             '<p class="eyebrow">GO.YOUNGO</p>',
@@ -1177,7 +1177,7 @@
         document.title = "페이지를 찾을 수 없습니다 - " + data.brand.title;
         root.innerHTML = [
             '<div class="page-wrap narrow">',
-            '<a class="back-link" href="/index.html">← 홈으로</a>',
+            '<a class="back-link" href="/snowbro/">← 홈으로</a>',
             '<div class="empty-state"><span aria-hidden="true">🏔️</span>',
             "<h1>페이지를 찾을 수 없습니다</h1><p>홈에서 원하는 정보를 다시 선택해 주세요.</p></div>",
             "</div>"
