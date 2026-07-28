@@ -907,7 +907,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref RunbroFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${RunbroApi}/*/*/*"
+      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${RunbroApi}/*"
 
 Outputs:
   ApiEndpoint:

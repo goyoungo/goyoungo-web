@@ -1,4 +1,4 @@
 window.RUNBRO_CONFIG = Object.freeze({
-    apiBase: "",
+    apiBase: "https://jf95ergsm9.execute-api.ap-northeast-3.amazonaws.com",
     environment: "production"
 });
