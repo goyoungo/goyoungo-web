@@ -929,12 +929,13 @@ th:nth-child(n+3) {
 
 .login-card h1 {
     margin: 0;
+    color: var(--run-text);
     font-size: 24px;
 }
 
 .login-card p {
     color: var(--run-muted);
-    font-size: 11px;
+    font-size: 14px;
     line-height: 1.65;
 }
 
@@ -949,6 +950,8 @@ th:nth-child(n+3) {
 
 .auth-status {
     min-height: 18px;
+    color: var(--run-text);
+    font-size: 13px;
 }
 
 .garmin-dialog {
@@ -1056,6 +1059,21 @@ th:nth-child(n+3) {
 
 body:has(.garmin-dialog[open]) {
     overflow: hidden;
+}
+
+html[data-theme="dark"] {
+    --run-bg: #171512;
+    --run-surface: #211e19;
+    --run-surface-2: #2c2721;
+    --run-text: #f6eee4;
+    --run-muted: #c9bdb0;
+    --run-line: #89796a;
+    --run-line-soft: rgba(246, 238, 228, 0.17);
+    --run-accent: #ff7650;
+    --run-accent-soft: rgba(255, 118, 80, 0.16);
+    --run-green: #74cda0;
+    --run-yellow: #f2c94c;
+    --run-shadow: 0 22px 64px rgba(0, 0, 0, 0.3);
 }
 
 html[data-theme="dark"] body {
