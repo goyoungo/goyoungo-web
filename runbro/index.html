@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f1ea">
+    <script src="/assets/theme.js?v=20260728-theme1"></script>
+    <meta name="google-adsense-account" content="ca-pub-2744661683121980">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2744661683121980"
+        crossorigin="anonymous"></script>
+    <meta name="description" content="목표 레이스와 러닝 기록을 연결해 현재 상태를 분석하고 주간 훈련 계획을 제안하는 GO.YOUNGO RUNBRO">
+    <meta property="og:title" content="RUNBRO · Race Training Companion">
+    <meta property="og:description" content="Garmin과 Strava 기록을 바탕으로 목표 레이스까지의 훈련 방향을 확인하세요.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://goyoungo.com/runbro/">
+    <meta property="og:image" content="https://goyoungo.com/assets/images/goyoungo-og-runbro.png">
+    <meta property="og:image:alt" content="GO.YOUNGO RUNBRO 러닝 훈련 분석">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="canonical" href="https://goyoungo.com/runbro/">
+    <title>RUNBRO · GO.YOUNGO</title>
+    <link rel="stylesheet" href="/assets/theme.css?v=20260728-theme2">
+    <link rel="stylesheet" href="/assets/runbro.css?v=20260728-runbro1">
+</head>
+<body>
+    <a class="skip-link" href="#mainContent">콘텐츠로 건너뛰기</a>
+
+    <header class="run-header">
+        <a class="run-brand" href="/" aria-label="GO.YOUNGO 메인">
+            <span class="run-brand-dot" aria-hidden="true"></span>
+            <span>GO.YOUNGO</span>
+        </a>
+        <div class="header-actions">
+            <button id="themeButton" class="quiet-button" type="button" aria-label="화면 모드 변경">
+                <span aria-hidden="true">◐</span>
+                <span id="themeLabel">시스템</span>
+            </button>
+            <button id="logoutBtn" class="quiet-button account-button" type="button">로그인</button>
+        </div>
+    </header>
+
+    <main id="mainContent" tabindex="-1">
+        <section class="run-hero">
+            <div class="hero-copy">
+                <p class="eyebrow">02 · RUN LIFE</p>
+                <h1>RUN<br>BRO</h1>
+                <p class="hero-lead">레이스 날짜를 정하면, 지금까지 달린 기록이 다음 훈련의 기준이 됩니다.</p>
+                <div class="hero-tags" aria-label="주요 기능">
+                    <span>RACE GOAL</span>
+                    <span>TRAINING LOAD</span>
+                    <span>WEEKLY PLAN</span>
+                </div>
+            </div>
+            <div class="hero-progress" aria-label="목표 레이스 요약">
+                <div class="progress-orbit" aria-hidden="true">
+                    <span id="heroDays">D−---</span>
+                </div>
+                <div>
+                    <p id="heroRace">목표 레이스를 설정해 주세요</p>
+                    <strong id="heroDistance">— KM</strong>
+                    <small id="heroDate">날짜와 거리를 정하면 계획이 시작됩니다.</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="notice-strip" aria-label="서비스 안내">
+            <span class="live-dot" aria-hidden="true"></span>
+            <p><strong>RUNBRO BETA</strong> 분석 결과는 의료 진단이 아니며, 통증이나 이상 증상이 있으면 운동을 중단하고 전문가와 상담하세요.</p>
+        </section>
+
+        <div class="run-layout">
+            <aside class="setup-column" aria-label="레이스와 데이터 설정">
+                <section class="panel goal-panel">
+                    <div class="section-heading">
+                        <div>
+                            <p class="section-index">01 · TARGET</p>
+                            <h2>목표 레이스</h2>
+                        </div>
+                        <span id="goalState" class="status-chip">미설정</span>
+                    </div>
+
+                    <form id="raceForm">
+                        <label>
+                            <span>레이스 이름</span>
+                            <input id="raceName" name="raceName" type="text" maxlength="60"
+                                placeholder="예: 서울마라톤 10K" autocomplete="off" required>
+                        </label>
+                        <div class="field-pair">
+                            <label>
+                                <span>레이스 날짜</span>
+                                <input id="raceDate" name="raceDate" type="date" required>
+                            </label>
+                            <label>
+                                <span>목표 거리</span>
+                                <select id="raceDistance" name="distanceKm" required>
+                                    <option value="5">5K</option>
+                                    <option value="10" selected>10K</option>
+                                    <option value="21.0975">하프 마라톤</option>
+                                    <option value="42.195">풀 마라톤</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="field-pair">
+                            <label>
+                                <span>목표 기록</span>
+                                <input id="goalTime" name="goalTime" type="time" step="1" value="00:55:00">
+                            </label>
+                            <label>
+                                <span>주간 훈련 가능일</span>
+                                <select id="daysPerWeek" name="daysPerWeek">
+                                    <option value="3">주 3일</option>
+                                    <option value="4" selected>주 4일</option>
+                                    <option value="5">주 5일</option>
+                                    <option value="6">주 6일</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <fieldset class="condition-fields">
+                            <legend>오늘의 컨디션 <small>선택 입력</small></legend>
+                            <label>
+                                <span>수면</span>
+                                <input id="sleepHours" name="sleepHours" type="number" min="0" max="14" step="0.5" value="7">
+                                <small>시간</small>
+                            </label>
+                            <label>
+                                <span>안정 심박</span>
+                                <input id="restingHr" name="restingHr" type="number" min="30" max="160" step="1" placeholder="—">
+                                <small>bpm</small>
+                            </label>
+                            <label>
+                                <span>피로도</span>
+                                <select id="fatigue" name="fatigue">
+                                    <option value="1">1 · 가벼움</option>
+                                    <option value="2" selected>2 · 보통</option>
+                                    <option value="3">3 · 약간 피곤</option>
+                                    <option value="4">4 · 피곤함</option>
+                                    <option value="5">5 · 매우 피곤</option>
+                                </select>
+                            </label>
+                        </fieldset>
+
+                        <button class="primary-button" type="submit">목표 저장하고 분석하기</button>
+                        <p id="formStatus" class="form-status" role="status" aria-live="polite"></p>
+                    </form>
+                </section>
+
+                <section class="panel source-panel">
+                    <div class="section-heading">
+                        <div>
+                            <p class="section-index">02 · DATA</p>
+                            <h2>러닝 기록 연결</h2>
+                        </div>
+                    </div>
+
+                    <article class="source-card strava-card">
+                        <div class="source-logo" aria-hidden="true">S</div>
+                        <div class="source-copy">
+                            <strong>STRAVA</strong>
+                            <span id="stravaStatus">연결되지 않음</span>
+                        </div>
+                        <button class="source-button" type="button" data-provider="strava">연결</button>
+                    </article>
+
+                    <article class="source-card garmin-card">
+                        <div class="source-logo" aria-hidden="true">G</div>
+                        <div class="source-copy">
+                            <strong>GARMIN CONNECT</strong>
+                            <span id="garminStatus">개발자 승인 후 연결</span>
+                        </div>
+                        <button class="source-button" type="button" data-provider="garmin">연결</button>
+                    </article>
+
+                    <button id="syncButton" class="secondary-button" type="button">최신 기록 동기화</button>
+                    <p class="source-note"><strong>연결 범위:</strong> 최근 러닝의 날짜, 거리, 시간, 고도, 평균·최대 심박을 가져옵니다. 경로 좌표와 활동 설명은 저장하지 않으며, AI 해설에는 계정 정보와 개별 활동 원본 대신 4주 집계만 전달합니다.</p>
+                    <p class="source-note">Garmin 직접 연동이 열리기 전에는 Garmin Connect에서 Strava 자동 공유를 켜고 Strava를 연결하면 같은 러닝 기록을 가져올 수 있습니다.</p>
+                </section>
+            </aside>
+
+            <div class="dashboard-column">
+                <section class="panel readiness-panel">
+                    <div class="section-heading">
+                        <div>
+                            <p class="section-index">03 · READINESS</p>
+                            <h2>현재 러닝 상태</h2>
+                        </div>
+                        <button id="refreshAnalysis" class="text-button" type="button">다시 분석</button>
+                    </div>
+
+                    <div class="readiness-grid">
+                        <article class="readiness-score">
+                            <span>오늘의 준비도</span>
+                            <strong><span id="readinessScore">—</span><small>/100</small></strong>
+                            <p id="readinessLabel">기록을 연결하면 계산됩니다.</p>
+                        </article>
+                        <article class="metric-card">
+                            <span>최근 7일</span>
+                            <strong id="weekKm">— km</strong>
+                            <small id="weekChange">이전 주 대비 —</small>
+                        </article>
+                        <article class="metric-card">
+                            <span>평균 페이스</span>
+                            <strong id="averagePace">—′—″</strong>
+                            <small>/km · 최근 28일</small>
+                        </article>
+                        <article class="metric-card">
+                            <span>예상 완주</span>
+                            <strong id="prediction">—:—:—</strong>
+                            <small id="predictionDistance">목표 거리 기준</small>
+                        </article>
+                    </div>
+
+                    <div class="load-chart" aria-labelledby="loadTitle">
+                        <div class="chart-copy">
+                            <strong id="loadTitle">4주 러닝 볼륨</strong>
+                            <span>주간 거리 · km</span>
+                        </div>
+                        <div id="volumeBars" class="volume-bars" role="img" aria-label="최근 4주 러닝 거리"></div>
+                    </div>
+
+                    <div class="analysis-copy">
+                        <p class="analysis-label">RUNBRO ANALYSIS</p>
+                        <h3 id="analysisTitle">목표와 기록을 연결해 주세요.</h3>
+                        <p id="analysisSummary">최근 훈련량, 페이스 변화, 회복 정보를 함께 비교해 오늘의 상태와 다음 훈련 방향을 제안합니다.</p>
+                        <ul id="analysisPoints">
+                            <li>최근 4주 훈련 일관성</li>
+                            <li>급격한 거리 증가와 회복 균형</li>
+                            <li>목표 기록에 필요한 평균 페이스</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section class="panel plan-panel">
+                    <div class="section-heading">
+                        <div>
+                            <p class="section-index">04 · THIS WEEK</p>
+                            <h2>이번 주 훈련 스케줄</h2>
+                        </div>
+                        <span id="planPhase" class="status-chip accent-chip">BASE</span>
+                    </div>
+                    <div id="trainingPlan" class="training-plan">
+                        <p class="empty-state">목표 레이스를 저장하면 이번 주 계획이 표시됩니다.</p>
+                    </div>
+                </section>
+
+                <section class="panel activity-panel">
+                    <div class="section-heading">
+                        <div>
+                            <p class="section-index">05 · ACTIVITY</p>
+                            <h2>최근 러닝 기록</h2>
+                        </div>
+                        <span id="activityCount" class="status-chip">0 RUNS</span>
+                    </div>
+                    <div class="activity-table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th scope="col">날짜</th>
+                                    <th scope="col">러닝</th>
+                                    <th scope="col">거리</th>
+                                    <th scope="col">페이스</th>
+                                    <th scope="col">심박</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityRows">
+                                <tr>
+                                    <td colspan="5" class="empty-cell">연결된 기록이 없습니다.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="privacy-panel">
+                    <strong>개인 데이터 보호</strong>
+                    <p>연결 토큰과 러닝 원본은 브라우저에 저장하지 않습니다. 서비스 연결 해제 시 저장된 연결 정보와 동기화 기록을 삭제할 수 있도록 구성합니다.</p>
+                    <button id="disconnectButton" class="text-button danger-button" type="button">연결 및 기록 삭제 요청</button>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer class="run-footer">
+        <a href="/">GO.YOUNGO</a>
+        <span>RUNBRO · BETA 2026</span>
+        <a href="https://www.instagram.com/go.youngo/" target="_blank" rel="noopener noreferrer">@go.youngo</a>
+    </footer>
+
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/v1/kakao.min.js"></script>
+    <script src="/assets/auth.js?v=20260728-auth2"></script>
+    <script src="/assets/runbro-config.js?v=20260728-runbro1"></script>
+    <script src="/assets/runbro.js?v=20260728-runbro1"></script>
+</body>
+</html>

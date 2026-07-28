@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#f5f1ea">
+    <title>RUNBRO 연결 중</title>
+    <link rel="stylesheet" href="/assets/runbro.css?v=20260728-runbro1">
+</head>
+<body>
+    <main class="oauth-callback" aria-live="polite">
+        <section class="oauth-card">
+            <p class="section-index">RUNBRO · CONNECTION</p>
+            <h1 id="callbackTitle">러닝 기록을 연결하고 있습니다.</h1>
+            <p id="callbackStatus">이 창을 닫지 말고 잠시 기다려 주세요.</p>
+            <a id="callbackLink" class="primary-button callback-link" href="/runbro/" hidden>RUNBRO로 돌아가기</a>
+        </section>
+    </main>
+    <script src="/assets/runbro-config.js?v=20260728-runbro1"></script>
+    <script>
+        (function () {
+            "use strict";
+            var title = document.getElementById("callbackTitle");
+            var status = document.getElementById("callbackStatus");
+            var link = document.getElementById("callbackLink");
+            var apiBase = String((window.RUNBRO_CONFIG && window.RUNBRO_CONFIG.apiBase) || "").replace(/\/+$/, "");
+            var query = new URLSearchParams(window.location.search);
+
+            function fail(message) {
+                title.textContent = "연결을 완료하지 못했습니다.";
+                status.textContent = message;
+                link.hidden = false;
+            }
+
+            if (!apiBase) {
+                fail("RUNBRO 데이터 서버 연결을 준비 중입니다.");
+                return;
+            }
+            if (query.get("error")) {
+                fail("서비스 연결이 취소되었습니다.");
+                return;
+            }
+            if (!query.get("code") || !query.get("state")) {
+                fail("연결 응답에 필요한 정보가 없습니다.");
+                return;
+            }
+
+            fetch(apiBase + "/oauth/strava/callback", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    code: query.get("code"),
+                    state: query.get("state"),
+                    scope: query.get("scope") || ""
+                })
+            }).then(function (response) {
+                return response.json().catch(function () { return {}; }).then(function (body) {
+                    if (!response.ok) throw new Error(body.message || "연결 정보를 저장하지 못했습니다.");
+                    window.location.replace("/runbro/?connected=strava");
+                });
+            }).catch(function (error) {
+                fail(error.message || "잠시 후 다시 연결해 주세요.");
+            });
+        })();
+    </script>
+</body>
+</html>

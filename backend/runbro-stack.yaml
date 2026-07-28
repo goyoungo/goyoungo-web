@@ -1,0 +1,921 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Secure personal running data, Strava OAuth and training analysis API for GO.YOUNGO RUNBRO
+
+Parameters:
+  KakaoAppId:
+    Type: String
+    Default: "1470643"
+    AllowedPattern: "^[0-9]+$"
+    Description: Numeric Kakao application ID expected in verified access tokens
+  UserHmacSecret:
+    Type: String
+    NoEcho: true
+    MinLength: 32
+    Description: Random secret used to pseudonymize Kakao user IDs
+  OAuthStateSecret:
+    Type: String
+    NoEcho: true
+    MinLength: 32
+    Description: Random secret used to sign short-lived OAuth state values
+  StravaClientId:
+    Type: String
+    Default: ""
+    Description: Strava API application client ID
+  StravaClientSecret:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: Strava API application client secret
+  GeminiApiKey:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: Optional Gemini API key for narrative analysis; deterministic analysis remains available without it
+
+Resources:
+  RunbroTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub "${AWS::StackName}-data"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      Tags:
+        - Key: Application
+          Value: goyoungo
+        - Key: Purpose
+          Value: runbro-personal-running-data
+
+  RunbroTokenKey:
+    Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: Encrypts RUNBRO external provider tokens
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: RootAdministration
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+
+  RunbroTokenKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-tokens"
+      TargetKeyId: !Ref RunbroTokenKey
+
+  RunbroFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-lambda-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: RunbroDataAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:BatchWriteItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                  - dynamodb:UpdateItem
+                Resource: !GetAtt RunbroTable.Arn
+              - Effect: Allow
+                Action:
+                  - kms:Encrypt
+                  - kms:Decrypt
+                Resource: !GetAtt RunbroTokenKey.Arn
+        - PolicyName: RunbroLogs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-api:*"
+
+  RunbroFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-api"
+      RetentionInDays: 14
+
+  RunbroFunction:
+    Type: AWS::Lambda::Function
+    DependsOn:
+      - RunbroFunctionLogGroup
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-api"
+      Description: RUNBRO profile, Strava sync and privacy-preserving training analysis
+      Runtime: nodejs22.x
+      Architectures:
+        - arm64
+      Handler: index.handler
+      MemorySize: 256
+      Timeout: 24
+      ReservedConcurrentExecutions: 15
+      Role: !GetAtt RunbroFunctionRole.Arn
+      Environment:
+        Variables:
+          RUNBRO_TABLE_NAME: !Ref RunbroTable
+          RUNBRO_TOKEN_KEY_ID: !GetAtt RunbroTokenKey.Arn
+          KAKAO_APP_ID: !Ref KakaoAppId
+          USER_HMAC_SECRET: !Ref UserHmacSecret
+          OAUTH_STATE_SECRET: !Ref OAuthStateSecret
+          STRAVA_CLIENT_ID: !Ref StravaClientId
+          STRAVA_CLIENT_SECRET: !Ref StravaClientSecret
+          GEMINI_API_KEY: !Ref GeminiApiKey
+      Code:
+        ZipFile: |
+          "use strict";
+
+          const crypto = require("node:crypto");
+          const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+          const {
+            DynamoDBDocumentClient,
+            BatchWriteCommand,
+            PutCommand,
+            QueryCommand
+          } = require("@aws-sdk/lib-dynamodb");
+          const {
+            KMSClient,
+            EncryptCommand,
+            DecryptCommand
+          } = require("@aws-sdk/client-kms");
+
+          const tableName = process.env.RUNBRO_TABLE_NAME;
+          const tokenKeyId = process.env.RUNBRO_TOKEN_KEY_ID;
+          const kakaoAppId = String(process.env.KAKAO_APP_ID || "");
+          const userHmacSecret = process.env.USER_HMAC_SECRET || "";
+          const oauthStateSecret = process.env.OAUTH_STATE_SECRET || "";
+          const stravaClientId = String(process.env.STRAVA_CLIENT_ID || "");
+          const stravaClientSecret = process.env.STRAVA_CLIENT_SECRET || "";
+          const geminiApiKey = process.env.GEMINI_API_KEY || "";
+          const callbackUrl = "https://goyoungo.com/runbro/callback.html";
+          const allowedOrigins = new Set([
+            "https://goyoungo.com",
+            "https://www.goyoungo.com",
+            "https://test.goyoungo.com"
+          ]);
+
+          if (
+            !tableName ||
+            !tokenKeyId ||
+            !/^\d+$/.test(kakaoAppId) ||
+            userHmacSecret.length < 32 ||
+            oauthStateSecret.length < 32
+          ) {
+            throw new Error("RUNBRO API configuration is invalid.");
+          }
+
+          const documentClient = DynamoDBDocumentClient.from(
+            new DynamoDBClient({}),
+            { marshallOptions: { removeUndefinedValues: true } }
+          );
+          const kmsClient = new KMSClient({});
+
+          class HttpError extends Error {
+            constructor(statusCode, message, code) {
+              super(message);
+              this.statusCode = statusCode;
+              this.code = code;
+            }
+          }
+
+          function response(statusCode, body) {
+            return {
+              statusCode,
+              headers: {
+                "content-type": "application/json; charset=utf-8",
+                "cache-control": "no-store",
+                "x-content-type-options": "nosniff",
+                "referrer-policy": "no-referrer"
+              },
+              body: JSON.stringify(body)
+            };
+          }
+
+          function parseBody(event, maxBytes) {
+            const source = event.isBase64Encoded
+              ? Buffer.from(event.body || "", "base64").toString("utf8")
+              : (event.body || "");
+            if (Buffer.byteLength(source, "utf8") > maxBytes) {
+              throw new HttpError(413, "요청 내용이 너무 큽니다.", "payload_too_large");
+            }
+            try {
+              const body = JSON.parse(source || "{}");
+              if (!body || Array.isArray(body) || typeof body !== "object") throw new Error("object required");
+              return body;
+            } catch (error) {
+              throw new HttpError(400, "요청 형식이 올바르지 않습니다.", "invalid_json");
+            }
+          }
+
+          function bearerToken(event) {
+            const value = (event.headers && (event.headers.authorization || event.headers.Authorization)) || "";
+            const match = /^Bearer\s+(\S+)$/i.exec(value);
+            if (!match || match[1].length < 20 || match[1].length > 2048) {
+              throw new HttpError(401, "카카오 로그인이 필요합니다.", "login_required");
+            }
+            return match[1];
+          }
+
+          async function verifyKakaoUser(event) {
+            const token = bearerToken(event);
+            let kakaoResponse;
+            try {
+              kakaoResponse = await fetch("https://kapi.kakao.com/v1/user/access_token_info", {
+                headers: { Authorization: "Bearer " + token },
+                signal: AbortSignal.timeout(4500)
+              });
+            } catch (error) {
+              throw new HttpError(503, "카카오 인증 서버에 연결하지 못했습니다.", "auth_unavailable");
+            }
+            const source = await kakaoResponse.text();
+            let tokenInfo;
+            try {
+              tokenInfo = JSON.parse(source);
+            } catch (error) {
+              throw new HttpError(503, "카카오 인증 응답을 확인하지 못했습니다.", "auth_unavailable");
+            }
+            if (!kakaoResponse.ok) {
+              throw new HttpError(401, "카카오 로그인이 만료되었습니다.", "login_expired");
+            }
+            const numericId = /"id"\s*:\s*(\d+)/.exec(source);
+            const kakaoUserId = numericId ? numericId[1] : null;
+            if (
+              String(tokenInfo.app_id || "") !== kakaoAppId ||
+              Number(tokenInfo.expires_in || 0) <= 0 ||
+              !kakaoUserId
+            ) {
+              throw new HttpError(401, "이 서비스에서 발급한 로그인이 아닙니다.", "invalid_login");
+            }
+            const hash = crypto
+              .createHmac("sha256", userHmacSecret)
+              .update(kakaoAppId + ":" + kakaoUserId)
+              .digest("hex");
+            return "USER#" + hash;
+          }
+
+          function signState(payload) {
+            const encoded = Buffer.from(JSON.stringify(payload)).toString("base64url");
+            const signature = crypto
+              .createHmac("sha256", oauthStateSecret)
+              .update(encoded)
+              .digest("base64url");
+            return encoded + "." + signature;
+          }
+
+          function verifyState(value) {
+            const parts = String(value || "").split(".");
+            if (parts.length !== 2 || parts[0].length > 2048 || parts[1].length > 128) {
+              throw new HttpError(400, "연결 정보가 올바르지 않습니다.", "invalid_oauth_state");
+            }
+            const expected = crypto
+              .createHmac("sha256", oauthStateSecret)
+              .update(parts[0])
+              .digest();
+            let provided;
+            try {
+              provided = Buffer.from(parts[1], "base64url");
+            } catch (error) {
+              throw new HttpError(400, "연결 정보가 올바르지 않습니다.", "invalid_oauth_state");
+            }
+            if (provided.length !== expected.length || !crypto.timingSafeEqual(provided, expected)) {
+              throw new HttpError(400, "연결 정보가 올바르지 않습니다.", "invalid_oauth_state");
+            }
+            let payload;
+            try {
+              payload = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
+            } catch (error) {
+              throw new HttpError(400, "연결 정보가 올바르지 않습니다.", "invalid_oauth_state");
+            }
+            if (
+              !payload ||
+              payload.provider !== "strava" ||
+              !/^USER#[a-f0-9]{64}$/.test(payload.userPk || "") ||
+              Number(payload.expiresAt || 0) < Date.now()
+            ) {
+              throw new HttpError(400, "연결 요청이 만료되었습니다. 다시 시도해 주세요.", "expired_oauth_state");
+            }
+            return payload;
+          }
+
+          async function encryptTokens(userPk, provider, value) {
+            const result = await kmsClient.send(new EncryptCommand({
+              KeyId: tokenKeyId,
+              Plaintext: Buffer.from(JSON.stringify(value), "utf8"),
+              EncryptionContext: { userPk, provider }
+            }));
+            return Buffer.from(result.CiphertextBlob).toString("base64");
+          }
+
+          async function decryptTokens(userPk, provider, ciphertext) {
+            const result = await kmsClient.send(new DecryptCommand({
+              CiphertextBlob: Buffer.from(ciphertext, "base64"),
+              EncryptionContext: { userPk, provider }
+            }));
+            return JSON.parse(Buffer.from(result.Plaintext).toString("utf8"));
+          }
+
+          function validateProfile(body) {
+            const raceName = String(body.raceName || "").trim();
+            const raceDate = String(body.raceDate || "");
+            const distanceKm = Number(body.distanceKm);
+            const goalTimeSeconds = body.goalTimeSeconds == null ? null : Number(body.goalTimeSeconds);
+            const daysPerWeek = Number(body.daysPerWeek || 4);
+            if (
+              raceName.length < 1 ||
+              raceName.length > 60 ||
+              !/^\d{4}-\d{2}-\d{2}$/.test(raceDate) ||
+              new Date(raceDate + "T23:59:59Z").getTime() < Date.now() ||
+              new Date(raceDate + "T00:00:00Z").getTime() > Date.now() + 3 * 365 * 86400000 ||
+              !Number.isFinite(distanceKm) ||
+              distanceKm < 1 ||
+              distanceKm > 100 ||
+              (goalTimeSeconds != null && (!Number.isFinite(goalTimeSeconds) || goalTimeSeconds < 300 || goalTimeSeconds > 86400)) ||
+              !Number.isInteger(daysPerWeek) ||
+              daysPerWeek < 2 ||
+              daysPerWeek > 7
+            ) {
+              throw new HttpError(400, "목표 레이스 정보를 확인해 주세요.", "invalid_profile");
+            }
+            const conditionSource = body.condition && typeof body.condition === "object" ? body.condition : {};
+            const sleepHours = conditionSource.sleepHours == null ? null : Number(conditionSource.sleepHours);
+            const restingHr = conditionSource.restingHr == null ? null : Number(conditionSource.restingHr);
+            const fatigue = conditionSource.fatigue == null ? 2 : Number(conditionSource.fatigue);
+            if (
+              (sleepHours != null && (!Number.isFinite(sleepHours) || sleepHours < 0 || sleepHours > 14)) ||
+              (restingHr != null && (!Number.isFinite(restingHr) || restingHr < 30 || restingHr > 160)) ||
+              !Number.isInteger(fatigue) ||
+              fatigue < 1 ||
+              fatigue > 5
+            ) {
+              throw new HttpError(400, "오늘의 컨디션 입력값을 확인해 주세요.", "invalid_condition");
+            }
+            return {
+              raceName,
+              raceDate,
+              distanceKm,
+              goalTimeSeconds,
+              daysPerWeek,
+              condition: { sleepHours, restingHr, fatigue }
+            };
+          }
+
+          async function queryUserItems(userPk) {
+            const items = [];
+            let lastKey;
+            do {
+              const result = await documentClient.send(new QueryCommand({
+                TableName: tableName,
+                KeyConditionExpression: "pk = :pk",
+                ExpressionAttributeValues: { ":pk": userPk },
+                ExclusiveStartKey: lastKey,
+                Limit: 100
+              }));
+              items.push(...(result.Items || []));
+              lastKey = result.LastEvaluatedKey;
+            } while (lastKey && items.length < 500);
+            return items;
+          }
+
+          function publicDashboard(items) {
+            const profileItem = items.find((item) => item.sk === "PROFILE");
+            const connections = {};
+            const activities = [];
+            for (const item of items) {
+              if (item.sk === "CONNECTION#STRAVA") {
+                connections.strava = {
+                  connected: true,
+                  lastSyncAt: item.lastSyncAt || null,
+                  scope: item.scope || ""
+                };
+              } else if (item.sk === "CONNECTION#GARMIN") {
+                connections.garmin = {
+                  connected: true,
+                  lastSyncAt: item.lastSyncAt || null
+                };
+              } else if (item.sk.startsWith("ACTIVITY#")) {
+                activities.push({
+                  id: item.providerActivityId,
+                  provider: item.provider,
+                  date: item.date,
+                  name: item.name,
+                  distanceKm: item.distanceKm,
+                  movingSeconds: item.movingSeconds,
+                  elapsedSeconds: item.elapsedSeconds,
+                  elevationGain: item.elevationGain,
+                  averageHr: item.averageHr,
+                  maxHr: item.maxHr
+                });
+              }
+            }
+            activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+            return {
+              profile: profileItem ? profileItem.profile : null,
+              connections,
+              activities: activities.slice(0, 120)
+            };
+          }
+
+          async function dashboardFor(userPk) {
+            return publicDashboard(await queryUserItems(userPk));
+          }
+
+          async function putProfile(event) {
+            const userPk = await verifyKakaoUser(event);
+            const profile = validateProfile(parseBody(event, 2048));
+            await documentClient.send(new PutCommand({
+              TableName: tableName,
+              Item: {
+                pk: userPk,
+                sk: "PROFILE",
+                profile,
+                updatedAt: new Date().toISOString()
+              }
+            }));
+            return response(200, { profile });
+          }
+
+          async function startOAuth(event, provider) {
+            const userPk = await verifyKakaoUser(event);
+            parseBody(event, 512);
+            if (provider === "garmin") {
+              throw new HttpError(
+                503,
+                "Garmin Connect 개발자 프로그램 승인 후 직접 연결할 수 있습니다.",
+                "provider_not_configured"
+              );
+            }
+            if (provider !== "strava" || !/^\d+$/.test(stravaClientId) || stravaClientSecret.length < 8) {
+              throw new HttpError(503, "Strava 앱 연결 설정이 필요합니다.", "provider_not_configured");
+            }
+            const state = signState({
+              provider: "strava",
+              userPk,
+              nonce: crypto.randomBytes(18).toString("base64url"),
+              expiresAt: Date.now() + 10 * 60 * 1000
+            });
+            const authorize = new URL("https://www.strava.com/oauth/authorize");
+            authorize.searchParams.set("client_id", stravaClientId);
+            authorize.searchParams.set("redirect_uri", callbackUrl);
+            authorize.searchParams.set("response_type", "code");
+            authorize.searchParams.set("approval_prompt", "auto");
+            authorize.searchParams.set("scope", "read,activity:read_all");
+            authorize.searchParams.set("state", state);
+            return response(200, { authorizationUrl: authorize.toString() });
+          }
+
+          async function completeStravaOAuth(event) {
+            if (!/^\d+$/.test(stravaClientId) || stravaClientSecret.length < 8) {
+              throw new HttpError(503, "Strava 앱 연결 설정이 필요합니다.", "provider_not_configured");
+            }
+            const body = parseBody(event, 4096);
+            const state = verifyState(body.state);
+            const code = String(body.code || "");
+            if (!/^[A-Za-z0-9_-]{8,512}$/.test(code)) {
+              throw new HttpError(400, "Strava 연결 코드를 확인해 주세요.", "invalid_oauth_code");
+            }
+            const tokenBody = new URLSearchParams({
+              client_id: stravaClientId,
+              client_secret: stravaClientSecret,
+              code,
+              grant_type: "authorization_code"
+            });
+            let tokenResponse;
+            try {
+              tokenResponse = await fetch("https://www.strava.com/api/v3/oauth/token", {
+                method: "POST",
+                headers: { "content-type": "application/x-www-form-urlencoded" },
+                body: tokenBody,
+                signal: AbortSignal.timeout(7000)
+              });
+            } catch (error) {
+              throw new HttpError(503, "Strava 연결 서버에 접속하지 못했습니다.", "provider_unavailable");
+            }
+            const tokenData = await tokenResponse.json().catch(() => ({}));
+            if (
+              !tokenResponse.ok ||
+              !tokenData.access_token ||
+              !tokenData.refresh_token ||
+              !Number.isFinite(Number(tokenData.expires_at))
+            ) {
+              throw new HttpError(400, "Strava 연결을 완료하지 못했습니다.", "oauth_exchange_failed");
+            }
+            const grantedScope = String(tokenData.scope || body.scope || "");
+            const grantedScopes = new Set(grantedScope.split(/[\s,]+/).filter(Boolean));
+            if (!grantedScopes.has("activity:read") && !grantedScopes.has("activity:read_all")) {
+              throw new HttpError(
+                400,
+                "러닝 기록 읽기 권한이 허용되지 않았습니다. 다시 연결해 주세요.",
+                "activity_scope_required"
+              );
+            }
+            const encryptedTokens = await encryptTokens(state.userPk, "strava", {
+              accessToken: tokenData.access_token,
+              refreshToken: tokenData.refresh_token,
+              expiresAt: Number(tokenData.expires_at)
+            });
+            await documentClient.send(new PutCommand({
+              TableName: tableName,
+              Item: {
+                pk: state.userPk,
+                sk: "CONNECTION#STRAVA",
+                provider: "strava",
+                providerUserId: String(tokenData.athlete && tokenData.athlete.id || ""),
+                scope: grantedScope,
+                encryptedTokens,
+                connectedAt: new Date().toISOString()
+              }
+            }));
+            return response(200, { connected: true, provider: "strava" });
+          }
+
+          async function refreshStravaTokenIfNeeded(userPk, connection) {
+            let tokens = await decryptTokens(userPk, "strava", connection.encryptedTokens);
+            if (Number(tokens.expiresAt || 0) > Math.floor(Date.now() / 1000) + 3600) {
+              return { tokens, encryptedTokens: connection.encryptedTokens };
+            }
+            const refreshBody = new URLSearchParams({
+              client_id: stravaClientId,
+              client_secret: stravaClientSecret,
+              grant_type: "refresh_token",
+              refresh_token: tokens.refreshToken
+            });
+            const result = await fetch("https://www.strava.com/api/v3/oauth/token", {
+              method: "POST",
+              headers: { "content-type": "application/x-www-form-urlencoded" },
+              body: refreshBody,
+              signal: AbortSignal.timeout(7000)
+            });
+            const refreshed = await result.json().catch(() => ({}));
+            if (!result.ok || !refreshed.access_token || !refreshed.refresh_token) {
+              throw new HttpError(401, "Strava 연결이 만료되었습니다. 다시 연결해 주세요.", "provider_login_expired");
+            }
+            tokens = {
+              accessToken: refreshed.access_token,
+              refreshToken: refreshed.refresh_token,
+              expiresAt: Number(refreshed.expires_at)
+            };
+            return {
+              tokens,
+              encryptedTokens: await encryptTokens(userPk, "strava", tokens)
+            };
+          }
+
+          async function syncStrava(userPk, connection) {
+            const tokenState = await refreshStravaTokenIfNeeded(userPk, connection);
+            const after = Math.floor((Date.now() - 120 * 86400000) / 1000);
+            const activitiesUrl = new URL("https://www.strava.com/api/v3/athlete/activities");
+            activitiesUrl.searchParams.set("after", String(after));
+            activitiesUrl.searchParams.set("page", "1");
+            activitiesUrl.searchParams.set("per_page", "100");
+            let activitiesResponse;
+            try {
+              activitiesResponse = await fetch(activitiesUrl, {
+                headers: { Authorization: "Bearer " + tokenState.tokens.accessToken },
+                signal: AbortSignal.timeout(9000)
+              });
+            } catch (error) {
+              throw new HttpError(503, "Strava 기록을 가져오지 못했습니다.", "provider_unavailable");
+            }
+            const providerActivities = await activitiesResponse.json().catch(() => []);
+            if (!activitiesResponse.ok || !Array.isArray(providerActivities)) {
+              throw new HttpError(502, "Strava 기록 응답을 확인하지 못했습니다.", "provider_error");
+            }
+            const runTypes = new Set(["Run", "TrailRun", "VirtualRun"]);
+            const now = new Date().toISOString();
+            const writes = providerActivities
+              .filter((activity) => runTypes.has(String(activity.sport_type || activity.type || "")))
+              .slice(0, 100)
+              .map((activity) => {
+                const date = String(activity.start_date || "");
+                return {
+                  PutRequest: {
+                    Item: {
+                      pk: userPk,
+                      sk: "ACTIVITY#" + date + "#STRAVA#" + String(activity.id),
+                      provider: "strava",
+                      providerActivityId: String(activity.id),
+                      date,
+                      name: String(activity.name || "Strava 러닝").slice(0, 120),
+                      distanceKm: Math.round(Number(activity.distance || 0)) / 1000,
+                      movingSeconds: Number(activity.moving_time || 0),
+                      elapsedSeconds: Number(activity.elapsed_time || 0),
+                      elevationGain: Number(activity.total_elevation_gain || 0),
+                      averageHr: activity.average_heartrate == null ? null : Number(activity.average_heartrate),
+                      maxHr: activity.max_heartrate == null ? null : Number(activity.max_heartrate),
+                      syncedAt: now
+                    }
+                  }
+                };
+              });
+            for (let index = 0; index < writes.length; index += 25) {
+              await documentClient.send(new BatchWriteCommand({
+                RequestItems: { [tableName]: writes.slice(index, index + 25) }
+              }));
+            }
+            await documentClient.send(new PutCommand({
+              TableName: tableName,
+              Item: {
+                ...connection,
+                encryptedTokens: tokenState.encryptedTokens,
+                lastSyncAt: now
+              }
+            }));
+            return writes.length;
+          }
+
+          async function syncActivities(event) {
+            const userPk = await verifyKakaoUser(event);
+            parseBody(event, 256);
+            const items = await queryUserItems(userPk);
+            const stravaConnection = items.find((item) => item.sk === "CONNECTION#STRAVA");
+            if (!stravaConnection) {
+              throw new HttpError(409, "먼저 Strava를 연결해 주세요.", "provider_not_connected");
+            }
+            await syncStrava(userPk, stravaConnection);
+            return response(200, await dashboardFor(userPk));
+          }
+
+          function aggregateForAnalysis(dashboard) {
+            const now = Date.now();
+            const weeks = [0, 0, 0, 0];
+            let totalDistance = 0;
+            let totalSeconds = 0;
+            for (const activity of dashboard.activities) {
+              const age = Math.floor((now - new Date(activity.date).getTime()) / 86400000);
+              if (age >= 0 && age < 28) {
+                weeks[Math.min(3, Math.floor(age / 7))] += Number(activity.distanceKm || 0);
+                totalDistance += Number(activity.distanceKm || 0);
+                totalSeconds += Number(activity.movingSeconds || 0);
+              }
+            }
+            return {
+              race: dashboard.profile ? {
+                date: dashboard.profile.raceDate,
+                distanceKm: dashboard.profile.distanceKm,
+                goalTimeSeconds: dashboard.profile.goalTimeSeconds,
+                daysPerWeek: dashboard.profile.daysPerWeek
+              } : null,
+              condition: dashboard.profile && dashboard.profile.condition,
+              runCount28Days: dashboard.activities.filter((activity) =>
+                now - new Date(activity.date).getTime() <= 28 * 86400000
+              ).length,
+              weeklyDistanceKmOldestToNewest: weeks.slice().reverse(),
+              averagePaceSecondsPerKm: totalDistance ? Math.round(totalSeconds / totalDistance) : null
+            };
+          }
+
+          async function geminiAnalysis(dashboard) {
+            if (!geminiApiKey || !dashboard.profile || dashboard.activities.length < 2) return null;
+            const aggregate = aggregateForAnalysis(dashboard);
+            const prompt = [
+              "당신은 러닝 훈련 데이터 해설 도우미입니다.",
+              "의료 진단을 하지 말고, 통증이나 이상 증상은 전문가 상담을 권고하세요.",
+              "개인 식별정보나 경로정보가 제거된 아래 집계만 사용하세요.",
+              "과훈련을 조장하지 말고 주간 거리 급증을 경고하세요.",
+              "반드시 JSON 객체만 반환하세요.",
+              '형식: {"title":"한국어 35자 이내","summary":"한국어 160자 이내","points":["구체적 권고 1","구체적 권고 2","구체적 권고 3"]}',
+              JSON.stringify(aggregate)
+            ].join("\n");
+            let result;
+            try {
+              result = await fetch(
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
+                  encodeURIComponent(geminiApiKey),
+                {
+                  method: "POST",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                      temperature: 0.2,
+                      responseMimeType: "application/json",
+                      maxOutputTokens: 450
+                    }
+                  }),
+                  signal: AbortSignal.timeout(12000)
+                }
+              );
+            } catch (error) {
+              return null;
+            }
+            if (!result.ok) return null;
+            const body = await result.json().catch(() => ({}));
+            const source = body.candidates && body.candidates[0] &&
+              body.candidates[0].content && body.candidates[0].content.parts &&
+              body.candidates[0].content.parts[0] && body.candidates[0].content.parts[0].text;
+            if (!source || source.length > 3000) return null;
+            try {
+              const analysis = JSON.parse(source);
+              if (
+                typeof analysis.title !== "string" ||
+                typeof analysis.summary !== "string" ||
+                !Array.isArray(analysis.points)
+              ) return null;
+              return {
+                title: analysis.title.slice(0, 80),
+                summary: analysis.summary.slice(0, 320),
+                points: analysis.points.slice(0, 3).map((point) => String(point).slice(0, 140))
+              };
+            } catch (error) {
+              return null;
+            }
+          }
+
+          async function analyze(event) {
+            const userPk = await verifyKakaoUser(event);
+            parseBody(event, 256);
+            const dashboard = await dashboardFor(userPk);
+            const analysis = await geminiAnalysis(dashboard);
+            return response(200, { ...dashboard, analysis });
+          }
+
+          async function deleteAccount(event) {
+            const userPk = await verifyKakaoUser(event);
+            const items = await queryUserItems(userPk);
+            const stravaConnection = items.find((item) => item.sk === "CONNECTION#STRAVA");
+            if (stravaConnection && stravaClientId && stravaClientSecret) {
+              try {
+                const tokens = await decryptTokens(userPk, "strava", stravaConnection.encryptedTokens);
+                const basic = Buffer.from(stravaClientId + ":" + stravaClientSecret).toString("base64");
+                await fetch("https://www.strava.com/oauth/revoke", {
+                  method: "POST",
+                  headers: {
+                    authorization: "Basic " + basic,
+                    "content-type": "application/x-www-form-urlencoded"
+                  },
+                  body: new URLSearchParams({
+                    token: tokens.refreshToken || tokens.accessToken,
+                    token_type_hint: tokens.refreshToken ? "refresh_token" : "access_token"
+                  }),
+                  signal: AbortSignal.timeout(5000)
+                });
+              } catch (error) {
+                console.error("Strava revocation failed", { name: error && error.name });
+              }
+            }
+            const deletes = items.map((item) => ({
+              DeleteRequest: { Key: { pk: item.pk, sk: item.sk } }
+            }));
+            for (let index = 0; index < deletes.length; index += 25) {
+              await documentClient.send(new BatchWriteCommand({
+                RequestItems: { [tableName]: deletes.slice(index, index + 25) }
+              }));
+            }
+            return response(200, { deleted: true });
+          }
+
+          exports.handler = async (event) => {
+            try {
+              const origin = String(event.headers && (event.headers.origin || event.headers.Origin) || "");
+              if (origin && !allowedOrigins.has(origin)) {
+                throw new HttpError(403, "허용되지 않은 요청입니다.", "origin_not_allowed");
+              }
+              const method = event.requestContext && event.requestContext.http
+                ? event.requestContext.http.method
+                : "";
+              const path = event.rawPath || "";
+              if (method === "GET" && path === "/dashboard") {
+                const userPk = await verifyKakaoUser(event);
+                return response(200, await dashboardFor(userPk));
+              }
+              if (method === "PUT" && path === "/profile") return await putProfile(event);
+              if (method === "POST" && path === "/sync") return await syncActivities(event);
+              if (method === "POST" && path === "/analyze") return await analyze(event);
+              if (method === "DELETE" && path === "/account") return await deleteAccount(event);
+              const startMatch = /^\/oauth\/(strava|garmin)\/start$/.exec(path);
+              if (method === "POST" && startMatch) return await startOAuth(event, startMatch[1]);
+              if (method === "POST" && path === "/oauth/strava/callback") {
+                return await completeStravaOAuth(event);
+              }
+              return response(404, { message: "요청한 기능을 찾을 수 없습니다.", code: "not_found" });
+            } catch (error) {
+              const statusCode = error instanceof HttpError ? error.statusCode : 500;
+              if (statusCode >= 500) {
+                console.error("RUNBRO API error", {
+                  name: error && error.name,
+                  message: error && error.message
+                });
+              }
+              return response(statusCode, {
+                message: error instanceof HttpError
+                  ? error.message
+                  : "요청 처리 중 오류가 발생했습니다.",
+                code: error instanceof HttpError ? error.code : "internal_error"
+              });
+            }
+          };
+
+  RunbroApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub "${AWS::StackName}-http-api"
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowOrigins:
+          - "https://goyoungo.com"
+          - "https://www.goyoungo.com"
+          - "https://test.goyoungo.com"
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        AllowHeaders:
+          - authorization
+          - content-type
+        MaxAge: 300
+
+  RunbroIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref RunbroApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt RunbroFunction.Arn
+      PayloadFormatVersion: "2.0"
+      TimeoutInMillis: 29000
+
+  RunbroDefaultRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref RunbroApi
+      RouteKey: "$default"
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref RunbroIntegration
+
+  RunbroApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/${AWS::StackName}-http-api"
+      RetentionInDays: 14
+
+  RunbroStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref RunbroApi
+      StageName: "$default"
+      AutoDeploy: true
+      AccessLogSettings:
+        DestinationArn: !GetAtt RunbroApiLogGroup.Arn
+        Format: '{"requestId":"$context.requestId","sourceIp":"$context.identity.sourceIp","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","routeKey":"$context.routeKey","status":"$context.status","responseLength":"$context.responseLength","integrationError":"$context.integrationErrorMessage"}'
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 15
+        ThrottlingRateLimit: 8
+
+  RunbroInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref RunbroFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${RunbroApi}/*/*/*"
+
+Outputs:
+  ApiEndpoint:
+    Description: Base URL for the RUNBRO API
+    Value: !GetAtt RunbroApi.ApiEndpoint
+  DataTableName:
+    Description: DynamoDB table that stores pseudonymous profiles and running data
+    Value: !Ref RunbroTable
+  TokenKeyArn:
+    Description: KMS key used to encrypt external provider OAuth tokens
+    Value: !GetAtt RunbroTokenKey.Arn
