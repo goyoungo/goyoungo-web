@@ -10,7 +10,7 @@
         crossorigin="anonymous"></script>
     <meta name="description" content="목표 레이스와 러닝 기록을 연결해 현재 상태를 분석하고 주간 훈련 계획을 제안하는 GO.YOUNGO RUNBRO">
     <meta property="og:title" content="RUNBRO · Race Training Companion">
-    <meta property="og:description" content="Garmin과 Strava 기록을 바탕으로 목표 레이스까지의 훈련 방향을 확인하세요.">
+    <meta property="og:description" content="Garmin 기록을 바탕으로 목표 레이스까지의 현재 상태와 훈련 방향을 확인하세요.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://goyoungo.com/runbro/">
     <meta property="og:image" content="https://goyoungo.com/assets/images/goyoungo-og-runbro.png">
@@ -19,7 +19,7 @@
     <link rel="canonical" href="https://goyoungo.com/runbro/">
     <title>RUNBRO · GO.YOUNGO</title>
     <link rel="stylesheet" href="/assets/theme.css?v=20260728-theme2">
-    <link rel="stylesheet" href="/assets/runbro.css?v=20260729-dual1">
+    <link rel="stylesheet" href="/assets/runbro.css?v=20260729-detail1">
 </head>
 <body>
     <a class="skip-link" href="#mainContent">콘텐츠로 건너뛰기</a>
@@ -69,10 +69,32 @@
 
         <div class="run-layout">
             <aside class="setup-column" aria-label="레이스와 데이터 설정">
+                <section class="panel source-panel">
+                    <div class="section-heading">
+                        <div>
+                            <p class="section-index">01 · DATA</p>
+                            <h2>러닝 기록 연결</h2>
+                        </div>
+                    </div>
+
+                    <article class="source-card garmin-card">
+                        <div class="source-logo" aria-hidden="true">G</div>
+                        <div class="source-copy">
+                            <strong>GARMIN CONNECT</strong>
+                            <span id="garminStatus">연결되지 않음</span>
+                        </div>
+                        <button class="source-button" type="button" data-provider="garmin">연결</button>
+                    </article>
+
+                    <button id="syncButton" class="secondary-button" type="button">최신 기록 동기화</button>
+                    <p class="source-note"><strong>Garmin 연결 범위:</strong> 최근 러닝의 날짜, 거리, 시간, 고도, 심박과 수면·HRV·훈련 준비도를 가져옵니다. 경로 좌표와 활동 설명은 저장하지 않으며, 토큰과 데이터는 S3에서 KMS로 암호화합니다.</p>
+                    <p class="source-note">Garmin 비밀번호는 최초 로그인 요청에만 사용하고 저장하지 않습니다. 보안 코드는 Garmin이 2단계 인증을 요구할 때만 다음 단계에서 입력합니다.</p>
+                </section>
+
                 <section class="panel goal-panel">
                     <div class="section-heading">
                         <div>
-                            <p class="section-index">01 · TARGET</p>
+                            <p class="section-index">02 · TARGET</p>
                             <h2>목표 레이스</h2>
                         </div>
                         <span id="goalState" class="status-chip">미설정</span>
@@ -134,64 +156,9 @@
                             </label>
                         </div>
 
-                        <fieldset class="condition-fields">
-                            <legend>오늘의 컨디션 <small>선택 입력</small></legend>
-                            <label>
-                                <span>수면</span>
-                                <input id="sleepHours" name="sleepHours" type="number" min="0" max="14" step="0.5" value="7">
-                                <small>시간</small>
-                            </label>
-                            <label>
-                                <span>안정 심박</span>
-                                <input id="restingHr" name="restingHr" type="number" min="30" max="160" step="1" placeholder="—">
-                                <small>bpm</small>
-                            </label>
-                            <label>
-                                <span>피로도</span>
-                                <select id="fatigue" name="fatigue">
-                                    <option value="1">1 · 가벼움</option>
-                                    <option value="2" selected>2 · 보통</option>
-                                    <option value="3">3 · 약간 피곤</option>
-                                    <option value="4">4 · 피곤함</option>
-                                    <option value="5">5 · 매우 피곤</option>
-                                </select>
-                            </label>
-                        </fieldset>
-
                         <button class="primary-button" type="submit">목표 저장하고 분석하기</button>
                         <p id="formStatus" class="form-status" role="status" aria-live="polite"></p>
                     </form>
-                </section>
-
-                <section class="panel source-panel">
-                    <div class="section-heading">
-                        <div>
-                            <p class="section-index">02 · DATA</p>
-                            <h2>러닝 기록 연결</h2>
-                        </div>
-                    </div>
-
-                    <article class="source-card strava-card">
-                        <div class="source-logo" aria-hidden="true">S</div>
-                        <div class="source-copy">
-                            <strong>STRAVA</strong>
-                            <span id="stravaStatus">연결되지 않음</span>
-                        </div>
-                        <button class="source-button" type="button" data-provider="strava">연결</button>
-                    </article>
-
-                    <article class="source-card garmin-card">
-                        <div class="source-logo" aria-hidden="true">G</div>
-                        <div class="source-copy">
-                            <strong>GARMIN CONNECT</strong>
-                            <span id="garminStatus">연결되지 않음</span>
-                        </div>
-                        <button class="source-button" type="button" data-provider="garmin">연결</button>
-                    </article>
-
-                    <button id="syncButton" class="secondary-button" type="button">최신 기록 동기화</button>
-                    <p class="source-note"><strong>Garmin 연결 범위:</strong> 최근 러닝의 날짜, 거리, 시간, 고도, 심박과 오늘의 수면·HRV·훈련 준비도를 가져옵니다. 경로 좌표와 활동 설명은 저장하지 않으며, 토큰과 데이터는 S3에서 KMS로 암호화합니다.</p>
-                    <p class="source-note">Garmin 비밀번호는 최초 로그인 요청에만 사용하고 저장하지 않습니다. 이 기능은 Garmin의 비공식 연동 방식이므로 Garmin 정책이나 로그인 방식 변경 시 일시 중단될 수 있습니다.</p>
                 </section>
             </aside>
 
@@ -235,7 +202,16 @@
                         </div>
                         <div id="volumeBars" class="volume-bars" role="img" aria-label="최근 4주 러닝 거리"></div>
                     </div>
+                    <div id="statusBreakdown" class="status-breakdown" aria-label="현재 상태 상세 지표"></div>
+                </section>
 
+                <section class="panel analysis-panel">
+                    <div class="section-heading">
+                        <div>
+                            <p class="section-index">04 · ANALYSIS</p>
+                            <h2>러닝 상세 분석</h2>
+                        </div>
+                    </div>
                     <div class="analysis-copy">
                         <div class="analysis-label-row">
                             <p class="analysis-label">RUNBRO ANALYSIS</p>
@@ -249,16 +225,18 @@
                             <li>목표 기록에 필요한 평균 페이스</li>
                         </ul>
                     </div>
+                    <div id="analysisEvidence" class="analysis-evidence" aria-label="분석 근거"></div>
                 </section>
 
                 <section class="panel plan-panel">
                     <div class="section-heading">
                         <div>
-                            <p class="section-index">04 · THIS WEEK</p>
+                            <p class="section-index">05 · THIS WEEK</p>
                             <h2>이번 주 훈련 스케줄</h2>
                         </div>
                         <span id="planPhase" class="status-chip accent-chip">BASE</span>
                     </div>
+                    <div id="planOverview" class="plan-overview" aria-label="주간 훈련 계획 요약"></div>
                     <div id="trainingPlan" class="training-plan">
                         <p class="empty-state">목표 레이스를 저장하면 이번 주 계획이 표시됩니다.</p>
                     </div>
@@ -267,7 +245,7 @@
                 <section class="panel activity-panel">
                     <div class="section-heading">
                         <div>
-                            <p class="section-index">05 · ACTIVITY</p>
+                            <p class="section-index">06 · ACTIVITY</p>
                             <h2>최근 러닝 기록</h2>
                         </div>
                         <span id="activityCount" class="status-chip">0 RUNS</span>
@@ -336,7 +314,7 @@
         </form>
 
         <form id="garminMfaForm" class="garmin-auth-form" hidden>
-            <p class="dialog-copy">Garmin에서 전송한 일회용 인증 코드를 입력해 주세요. 인증 요청은 5분 후 만료됩니다.</p>
+            <p class="dialog-copy">이 계정은 Garmin의 추가 인증이 필요합니다. Garmin에서 전송한 일회용 코드를 입력해 주세요. 인증 요청은 5분 후 만료됩니다.</p>
             <label>
                 <span>일회용 인증 코드</span>
                 <input id="garminMfaCode" type="text" minlength="4" maxlength="10" inputmode="numeric"
@@ -353,6 +331,6 @@
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/v1/kakao.min.js"></script>
     <script src="/assets/auth.js?v=20260728-auth3"></script>
     <script src="/assets/runbro-config.js?v=20260728-runbro1"></script>
-    <script src="/assets/runbro.js?v=20260729-dual1"></script>
+    <script src="/assets/runbro.js?v=20260729-detail1"></script>
 </body>
 </html>

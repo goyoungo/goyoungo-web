@@ -408,39 +408,6 @@ select:focus {
     text-align: center;
 }
 
-.condition-fields {
-    margin: 4px 0 0;
-    padding: 14px;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-    border: 1px solid var(--run-line-soft);
-}
-
-.condition-fields legend {
-    padding: 0 7px;
-    color: var(--run-text);
-    font-size: 10px;
-    font-weight: 900;
-}
-
-.condition-fields legend small {
-    color: var(--run-muted);
-    font-weight: 650;
-}
-
-.condition-fields label {
-    position: relative;
-}
-
-.condition-fields label > small {
-    position: absolute;
-    right: 8px;
-    bottom: 14px;
-    color: var(--run-muted);
-    font-size: 8px;
-}
-
 .primary-button,
 .secondary-button,
 .source-button {
@@ -500,11 +467,6 @@ select:focus {
     border: 1px solid currentColor;
     font-size: 22px;
     font-weight: 950;
-}
-
-.strava-card .source-logo {
-    background: #fc4c02;
-    color: #fff;
 }
 
 .garmin-card .source-logo {
@@ -638,6 +600,44 @@ select:focus {
     border: 1px solid var(--run-line-soft);
 }
 
+.status-breakdown {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid var(--run-line);
+    border-left: 1px solid var(--run-line);
+}
+
+.status-detail-card {
+    min-height: 122px;
+    padding: 16px;
+    display: grid;
+    align-content: space-between;
+    gap: 10px;
+    border-right: 1px solid var(--run-line);
+    border-bottom: 1px solid var(--run-line);
+}
+
+.status-detail-card > span,
+.plan-overview span {
+    color: var(--run-muted);
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+}
+
+.status-detail-card strong {
+    font-size: 18px;
+    letter-spacing: -0.035em;
+}
+
+.status-detail-card small {
+    color: var(--run-muted);
+    font-size: 8px;
+    line-height: 1.55;
+    word-break: keep-all;
+}
+
 .chart-copy {
     display: grid;
     gap: 5px;
@@ -689,7 +689,7 @@ select:focus {
 }
 
 .analysis-copy {
-    margin-top: 34px;
+    margin-top: 0;
     padding: 24px;
     border-left: 4px solid var(--run-accent);
     background: var(--run-accent-soft);
@@ -766,6 +766,54 @@ select:focus {
     background: var(--run-accent);
 }
 
+.analysis-evidence {
+    margin-top: 18px;
+    border: 1px solid var(--run-line);
+}
+
+.evidence-title {
+    margin: 0;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--run-line);
+    background: var(--run-text);
+    color: var(--run-surface);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+}
+
+.evidence-row {
+    min-height: 74px;
+    padding: 13px 16px;
+    display: grid;
+    grid-template-columns: 96px minmax(140px, 0.7fr) minmax(220px, 1.3fr);
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid var(--run-line-soft);
+}
+
+.evidence-row:last-child {
+    border-bottom: 0;
+}
+
+.evidence-row span {
+    color: var(--run-muted);
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+}
+
+.evidence-row strong {
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.evidence-row small {
+    color: var(--run-muted);
+    font-size: 9px;
+    line-height: 1.55;
+}
+
 @media (max-width: 520px) {
     .analysis-label-row {
         align-items: flex-start;
@@ -777,24 +825,60 @@ select:focus {
     }
 }
 
+.plan-overview {
+    margin-bottom: 18px;
+    display: grid;
+    grid-template-columns: 0.8fr 0.8fr 1.4fr;
+    border-top: 1px solid var(--run-line);
+    border-left: 1px solid var(--run-line);
+}
+
+.plan-overview article {
+    min-height: 94px;
+    padding: 15px;
+    display: grid;
+    align-content: space-between;
+    gap: 8px;
+    border-right: 1px solid var(--run-line);
+    border-bottom: 1px solid var(--run-line);
+}
+
+.plan-overview strong {
+    font-size: 18px;
+    letter-spacing: -0.035em;
+}
+
+.plan-overview small {
+    color: var(--run-muted);
+    font-size: 8px;
+    line-height: 1.5;
+}
+
 .training-plan {
     display: grid;
-    grid-template-columns: repeat(7, minmax(92px, 1fr));
-    overflow-x: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     border: 1px solid var(--run-line);
 }
 
 .plan-day {
-    min-width: 92px;
-    min-height: 164px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    border-left: 1px solid var(--run-line);
+    min-width: 0;
+    min-height: 220px;
+    padding: 18px;
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    border-right: 1px solid var(--run-line);
+    border-bottom: 1px solid var(--run-line);
 }
 
-.plan-day:first-child {
-    border-left: 0;
+.plan-day:nth-child(2n) {
+    border-right: 0;
+}
+
+.plan-day:last-child {
+    grid-column: 1 / -1;
+    border-right: 0;
+    border-bottom: 0;
 }
 
 .plan-day.is-key {
@@ -807,23 +891,58 @@ select:focus {
     color: var(--run-muted);
 }
 
-.plan-day time {
+.plan-day-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.plan-day time,
+.plan-type {
     font-size: 8px;
     font-weight: 900;
     letter-spacing: 0.08em;
 }
 
+.plan-type {
+    padding: 4px 6px;
+    border: 1px solid currentColor;
+}
+
 .plan-day strong {
-    margin-top: auto;
-    font-size: 12px;
+    font-size: 16px;
     line-height: 1.4;
     word-break: keep-all;
 }
 
-.plan-day small {
-    margin-top: 8px;
+.plan-target {
+    margin: -4px 0 0;
+    font-size: 11px;
+    font-weight: 850;
+}
+
+.plan-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.plan-meta span {
+    padding: 5px 7px;
+    border: 1px solid currentColor;
     font-size: 8px;
+    font-weight: 850;
+}
+
+.plan-note {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid currentColor;
+    opacity: 0.78;
+    font-size: 9px;
     line-height: 1.45;
+    word-break: keep-all;
 }
 
 .empty-state {
@@ -1201,6 +1320,10 @@ html[data-theme="dark"] .plan-day.is-rest {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .status-breakdown {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .metric-card:nth-child(3) {
         border-left: 0;
         border-top: 1px solid var(--run-line);
@@ -1273,6 +1396,14 @@ html[data-theme="dark"] .plan-day.is-rest {
     .privacy-panel {
         grid-template-columns: 1fr;
     }
+
+    .evidence-row {
+        grid-template-columns: 90px 1fr;
+    }
+
+    .evidence-row small {
+        grid-column: 1 / -1;
+    }
 }
 
 @media (max-width: 520px) {
@@ -1281,10 +1412,6 @@ html[data-theme="dark"] .plan-day.is-rest {
     }
 
     .field-pair {
-        grid-template-columns: 1fr;
-    }
-
-    .condition-fields {
         grid-template-columns: 1fr;
     }
 
@@ -1310,6 +1437,33 @@ html[data-theme="dark"] .plan-day.is-rest {
 
     .readiness-grid {
         grid-template-columns: 1fr;
+    }
+
+    .status-breakdown,
+    .plan-overview,
+    .training-plan {
+        grid-template-columns: 1fr;
+    }
+
+    .plan-day,
+    .plan-day:nth-child(2n),
+    .plan-day:last-child {
+        grid-column: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--run-line);
+    }
+
+    .plan-day:last-child {
+        border-bottom: 0;
+    }
+
+    .evidence-row {
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+
+    .evidence-row small {
+        grid-column: auto;
     }
 
     .metric-card {
