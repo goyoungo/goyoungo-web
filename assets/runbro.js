@@ -402,6 +402,21 @@
         el("analysisPoints").innerHTML = (analysis && analysis.points || []).map(function (point) {
             return "<li>" + escapeHtml(point) + "</li>";
         }).join("");
+        var verification = analysis && analysis.verification;
+        var badge = el("analysisVerification");
+        if (!verification || !verification.status) {
+            badge.hidden = true;
+            badge.textContent = "";
+            badge.removeAttribute("title");
+            return;
+        }
+        badge.hidden = false;
+        badge.classList.toggle("is-adjusted", verification.verdict === "adjusted");
+        badge.classList.toggle("is-single", verification.status !== "cross_checked");
+        badge.textContent = verification.status === "cross_checked"
+            ? "GEMINI 3.6 FLASH × GPT-5.6 SOL"
+            : "단일 모델 분석";
+        badge.title = verification.note || "";
     }
 
     function renderPlan(plan) {
@@ -533,9 +548,88 @@
         return merged;
     }
 
+    function analysisInputForDashboard(dashboard) {
+        var now = Date.now();
+        var dayMs = 86400000;
+        var weeks = [0, 0, 0, 0];
+        var totalDistance = 0;
+        var totalSeconds = 0;
+        var totalHeartRate = 0;
+        var heartRateCount = 0;
+        var runCount = 0;
+        (dashboard && dashboard.activities || []).forEach(function (activity) {
+            var distance = Number(activity.distanceKm);
+            var seconds = Number(activity.movingSeconds);
+            var age = Math.floor((now - new Date(activity.date).getTime()) / dayMs);
+            if (
+                age < 0 ||
+                age >= 28 ||
+                !Number.isFinite(distance) ||
+                !Number.isFinite(seconds) ||
+                distance <= 0 ||
+                seconds <= 0
+            ) return;
+            weeks[Math.min(3, Math.floor(age / 7))] += distance;
+            totalDistance += distance;
+            totalSeconds += seconds;
+            runCount += 1;
+            var heartRate = Number(activity.averageHr);
+            if (Number.isFinite(heartRate) && heartRate >= 30 && heartRate <= 230) {
+                totalHeartRate += heartRate;
+                heartRateCount += 1;
+            }
+        });
+        var health = dashboard && dashboard.health || {};
+        function optionalNumber(value) {
+            var number = Number(value);
+            return value == null || value === "" || !Number.isFinite(number) ? null : number;
+        }
+        return {
+            runCount28Days: runCount,
+            weeklyDistanceKmOldestToNewest: weeks.slice().reverse().map(function (value) {
+                return Math.round(value * 10) / 10;
+            }),
+            averagePaceSecondsPerKm: totalDistance
+                ? Math.round(totalSeconds / totalDistance)
+                : null,
+            averageHeartRateBpm: heartRateCount
+                ? Math.round(totalHeartRate / heartRateCount)
+                : null,
+            health: {
+                sleepHours: optionalNumber(health.sleepHours),
+                hrv: optionalNumber(health.hrv),
+                restingHeartRate: optionalNumber(health.restingHr),
+                trainingReadiness: optionalNumber(health.trainingReadiness)
+            }
+        };
+    }
+
     function loadCombinedDashboard(baseRequest) {
         return Promise.all([baseRequest, fetchGarminDashboard()]).then(function (values) {
             var dashboard = normalizeDashboard(mergeProviderDashboards(values[0], values[1]));
+            renderDashboard(dashboard);
+            return dashboard;
+        });
+    }
+
+    function loadAnalyzedDashboard() {
+        var garminDashboard;
+        return Promise.all([
+            apiRequest("/dashboard", { method: "GET" }),
+            fetchGarminDashboard()
+        ]).then(function (values) {
+            garminDashboard = values[1];
+            var combined = mergeProviderDashboards(values[0], garminDashboard);
+            return apiRequest("/analyze", {
+                method: "POST",
+                body: JSON.stringify({
+                    analysisInput: analysisInputForDashboard(combined)
+                })
+            });
+        }).then(function (analyzed) {
+            var dashboard = normalizeDashboard(
+                mergeProviderDashboards(analyzed, garminDashboard)
+            );
             renderDashboard(dashboard);
             return dashboard;
         });
@@ -591,7 +685,7 @@
                 method: "PUT",
                 body: JSON.stringify(profile)
             }).then(function () {
-                return loadCombinedDashboard(apiRequest("/analyze", { method: "POST", body: "{}" }));
+                return loadAnalyzedDashboard();
             }).then(function () {
                 setFormStatus("목표와 이번 주 훈련 계획을 저장했습니다.");
             }).catch(function (error) {
@@ -644,7 +738,7 @@
         closeGarminDialog();
         setFormStatus("Garmin 연결을 완료했습니다. 최근 기록을 가져오는 중입니다.");
         return apiRequest("/garmin/sync", { method: "POST", body: "{}" })
-            .then(function () { return loadDashboard(); })
+            .then(function () { return loadAnalyzedDashboard(); })
             .then(function () {
                 setFormStatus("Garmin 러닝 기록과 신체 상태를 반영했습니다.");
             })
@@ -789,7 +883,7 @@
             }
             setFormStatus("최신 러닝 기록을 가져오는 중입니다.");
             Promise.all(tasks).then(function () {
-                return loadDashboard();
+                return loadAnalyzedDashboard();
             }).then(function () {
                 setFormStatus("최신 러닝 기록과 분석을 반영했습니다.");
             }).catch(function (error) {
@@ -809,7 +903,7 @@
                 setFormStatus("입력한 컨디션으로 분석을 다시 계산했습니다.");
                 return;
             }
-            loadCombinedDashboard(apiRequest("/analyze", { method: "POST", body: "{}" })).then(function () {
+            loadAnalyzedDashboard().then(function () {
                 setFormStatus("현재 상태와 훈련 계획을 다시 계산했습니다.");
             }).catch(function (error) {
                 setFormStatus(error.message, true);

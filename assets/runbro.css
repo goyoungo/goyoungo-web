@@ -695,6 +695,38 @@ select:focus {
     background: var(--run-accent-soft);
 }
 
+.analysis-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.analysis-label-row .analysis-label {
+    margin: 0;
+}
+
+.analysis-verification {
+    padding: 5px 8px;
+    border: 1px solid color-mix(in srgb, var(--run-accent) 50%, transparent);
+    background: var(--run-surface);
+    color: var(--run-text);
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+
+.analysis-verification.is-adjusted::after {
+    content: " · 조정";
+    color: var(--run-accent);
+}
+
+.analysis-verification.is-single {
+    border-color: var(--run-line);
+    color: var(--run-muted);
+}
+
 .analysis-copy h3 {
     margin: 10px 0;
     font-size: clamp(20px, 3vw, 28px);
@@ -732,6 +764,17 @@ select:focus {
     width: 6px;
     height: 6px;
     background: var(--run-accent);
+}
+
+@media (max-width: 520px) {
+    .analysis-label-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .analysis-verification {
+        white-space: normal;
+    }
 }
 
 .training-plan {

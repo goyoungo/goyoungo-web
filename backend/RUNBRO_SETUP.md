@@ -9,7 +9,7 @@ RUNBRO는 목표 레이스, 컨디션, 러닝 활동을 카카오 계정 기준�
 - 주간 훈련 스케줄 생성
 - Garmin Connect 로그인·MFA와 최근 러닝·수면·HRV·훈련 준비도 동기화
 - Strava OAuth 2.0 연결과 최근 120일 러닝 동기화
-- Gemini 2.5 Flash를 이용한 선택적 해설
+- Gemini 3.6 Flash 1차 분석과 GPT-5.6 Sol 2차 교차 검증
 - 연결 토큰, 러닝 기록, 프로필 전체 삭제
 
 ## Garmin Connect
@@ -74,6 +74,7 @@ aws cloudformation deploy \
     StravaClientId=<strava-client-id> \
     StravaClientSecret=<strava-client-secret> \
     GeminiApiKey=<gemini-api-key> \
+    OpenAIApiKey=<openai-api-key> \
     GarminCodeBucket=<artifact-bucket> \
     GarminCodeKey=<artifact-key>
 ```
@@ -94,6 +95,8 @@ node --check assets/runbro.js
 - 카카오 사용자 ID는 HMAC-SHA256으로 가명 처리합니다.
 - Strava 액세스·리프레시 토큰은 사용자·공급자 암호화 컨텍스트와 함께 KMS로 암호화합니다.
 - Garmin 토큰과 데이터는 공개 접근이 차단된 전용 S3 버킷에서 KMS로 암호화합니다.
-- Gemini에는 이름, 계정 ID, 활동 경로, 위치, 정확한 시작 시각을 보내지 않고 4주 거리·평균 페이스·목표·컨디션 집계만 전달합니다.
+- Gemini와 OpenAI에는 이름, 계정 ID, 활동 경로, 위치, 정확한 시작 시각을 보내지 않고 4주 거리·평균 페이스·목표·컨디션 집계만 전달합니다.
+- Gemini 3.6 Flash가 1차 분석하고 GPT-5.6 Sol이 같은 익명 집계와 1차 결과를 대조해 확인하거나 조정합니다. 한 공급자가 응답하지 않으면 화면에 단일 모델 분석임을 표시합니다.
+- OpenAI 요청은 응답 저장을 끄고, 카카오 사용자 ID와 분리된 추가 HMAC 값만 안전 식별자로 전달합니다.
 - 분석은 의료 진단이 아니며 거리 급증과 회복을 우선 확인합니다.
 - 전체 삭제 시 Strava 토큰 폐기를 요청하고 DynamoDB 사용자 파티션과 Garmin S3 사용자 경로를 제거합니다.

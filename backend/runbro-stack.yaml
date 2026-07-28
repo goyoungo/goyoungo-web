@@ -30,7 +30,12 @@ Parameters:
     Type: String
     NoEcho: true
     Default: ""
-    Description: Optional Gemini API key for narrative analysis; deterministic analysis remains available without it
+    Description: Optional Gemini API key for Gemini 3.6 Flash first-pass analysis
+  OpenAIApiKey:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: Optional OpenAI API key for GPT-5.6 Sol cross-validation
   GarminCodeBucket:
     Type: String
     Default: ""
@@ -217,7 +222,7 @@ Resources:
         - arm64
       Handler: index.handler
       MemorySize: 256
-      Timeout: 24
+      Timeout: 28
       ReservedConcurrentExecutions: 15
       Role: !GetAtt RunbroFunctionRole.Arn
       Environment:
@@ -230,6 +235,7 @@ Resources:
           STRAVA_CLIENT_ID: !Ref StravaClientId
           STRAVA_CLIENT_SECRET: !Ref StravaClientSecret
           GEMINI_API_KEY: !Ref GeminiApiKey
+          OPENAI_API_KEY: !Ref OpenAIApiKey
       Code:
         ZipFile: |
           "use strict";
@@ -256,6 +262,7 @@ Resources:
           const stravaClientId = String(process.env.STRAVA_CLIENT_ID || "");
           const stravaClientSecret = process.env.STRAVA_CLIENT_SECRET || "";
           const geminiApiKey = process.env.GEMINI_API_KEY || "";
+          const openaiApiKey = process.env.OPENAI_API_KEY || "";
           const callbackUrl = "https://goyoungo.com/runbro/callback.html";
           const allowedOrigins = new Set([
             "https://goyoungo.com",
@@ -487,6 +494,7 @@ Resources:
 
           function publicDashboard(items) {
             const profileItem = items.find((item) => item.sk === "PROFILE");
+            const analysisItem = items.find((item) => item.sk === "ANALYSIS");
             const connections = {};
             const activities = [];
             for (const item of items) {
@@ -520,7 +528,8 @@ Resources:
             return {
               profile: profileItem ? profileItem.profile : null,
               connections,
-              activities: activities.slice(0, 120)
+              activities: activities.slice(0, 120),
+              analysis: analysisItem && analysisItem.analysis ? analysisItem.analysis : null
             };
           }
 
@@ -744,19 +753,103 @@ Resources:
             return response(200, await dashboardFor(userPk));
           }
 
-          function aggregateForAnalysis(dashboard) {
+          function optionalAnalysisNumber(value, min, max, integer) {
+            if (value == null) return null;
+            if (
+              typeof value !== "number" ||
+              !Number.isFinite(value) ||
+              value < min ||
+              value > max ||
+              (integer && !Number.isInteger(value))
+            ) {
+              throw new HttpError(400, "분석용 기록 요약을 확인해 주세요.", "invalid_analysis_input");
+            }
+            return value;
+          }
+
+          function validatedAnalysisInput(body) {
+            if (!body.analysisInput) return null;
+            const source = body.analysisInput;
+            if (!source || Array.isArray(source) || typeof source !== "object") {
+              throw new HttpError(400, "분석용 기록 요약을 확인해 주세요.", "invalid_analysis_input");
+            }
+            const weekly = source.weeklyDistanceKmOldestToNewest;
+            if (!Array.isArray(weekly) || weekly.length !== 4) {
+              throw new HttpError(400, "분석용 기록 요약을 확인해 주세요.", "invalid_analysis_input");
+            }
+            const healthSource = source.health;
+            if (
+              healthSource != null &&
+              (!healthSource || Array.isArray(healthSource) || typeof healthSource !== "object")
+            ) {
+              throw new HttpError(400, "분석용 컨디션 요약을 확인해 주세요.", "invalid_analysis_input");
+            }
+            const runCount28Days = optionalAnalysisNumber(source.runCount28Days, 0, 100, true);
+            const weeklyDistanceKmOldestToNewest = weekly.map((value) =>
+              optionalAnalysisNumber(value, 0, 500, false)
+            );
+            if (
+              runCount28Days == null ||
+              weeklyDistanceKmOldestToNewest.some((value) => value == null)
+            ) {
+              throw new HttpError(400, "분석용 기록 요약을 확인해 주세요.", "invalid_analysis_input");
+            }
+            return {
+              runCount28Days,
+              weeklyDistanceKmOldestToNewest,
+              averagePaceSecondsPerKm: optionalAnalysisNumber(
+                source.averagePaceSecondsPerKm,
+                120,
+                3600,
+                false
+              ),
+              averageHeartRateBpm: optionalAnalysisNumber(
+                source.averageHeartRateBpm,
+                30,
+                230,
+                false
+              ),
+              health: healthSource ? {
+                sleepHours: optionalAnalysisNumber(healthSource.sleepHours, 0, 14, false),
+                hrv: optionalAnalysisNumber(healthSource.hrv, 0, 300, false),
+                restingHeartRate: optionalAnalysisNumber(
+                  healthSource.restingHeartRate,
+                  30,
+                  160,
+                  false
+                ),
+                trainingReadiness: optionalAnalysisNumber(
+                  healthSource.trainingReadiness,
+                  0,
+                  100,
+                  false
+                )
+              } : null
+            };
+          }
+
+          function aggregateForAnalysis(dashboard, clientInput) {
             const now = Date.now();
             const weeks = [0, 0, 0, 0];
             let totalDistance = 0;
             let totalSeconds = 0;
+            let totalHeartRate = 0;
+            let heartRateCount = 0;
             for (const activity of dashboard.activities) {
               const age = Math.floor((now - new Date(activity.date).getTime()) / 86400000);
               if (age >= 0 && age < 28) {
                 weeks[Math.min(3, Math.floor(age / 7))] += Number(activity.distanceKm || 0);
                 totalDistance += Number(activity.distanceKm || 0);
                 totalSeconds += Number(activity.movingSeconds || 0);
+                if (Number.isFinite(Number(activity.averageHr))) {
+                  totalHeartRate += Number(activity.averageHr);
+                  heartRateCount += 1;
+                }
               }
             }
+            const serverRunCount = dashboard.activities.filter((activity) =>
+              now - new Date(activity.date).getTime() <= 28 * 86400000
+            ).length;
             return {
               race: dashboard.profile ? {
                 date: dashboard.profile.raceDate,
@@ -765,21 +858,45 @@ Resources:
                 daysPerWeek: dashboard.profile.daysPerWeek
               } : null,
               condition: dashboard.profile && dashboard.profile.condition,
-              runCount28Days: dashboard.activities.filter((activity) =>
-                now - new Date(activity.date).getTime() <= 28 * 86400000
-              ).length,
-              weeklyDistanceKmOldestToNewest: weeks.slice().reverse(),
-              averagePaceSecondsPerKm: totalDistance ? Math.round(totalSeconds / totalDistance) : null
+              runCount28Days: clientInput
+                ? clientInput.runCount28Days
+                : serverRunCount,
+              weeklyDistanceKmOldestToNewest: clientInput
+                ? clientInput.weeklyDistanceKmOldestToNewest
+                : weeks.slice().reverse().map((value) => Math.round(value * 10) / 10),
+              averagePaceSecondsPerKm: clientInput
+                ? clientInput.averagePaceSecondsPerKm
+                : (totalDistance ? Math.round(totalSeconds / totalDistance) : null),
+              averageHeartRateBpm: clientInput
+                ? clientInput.averageHeartRateBpm
+                : (heartRateCount ? Math.round(totalHeartRate / heartRateCount) : null),
+              health: clientInput ? clientInput.health : null
             };
           }
 
-          async function geminiAnalysis(dashboard) {
-            if (!geminiApiKey || !dashboard.profile || dashboard.activities.length < 2) return null;
-            const aggregate = aggregateForAnalysis(dashboard);
+          function normalizedAnalysis(value) {
+            if (
+              !value ||
+              typeof value.title !== "string" ||
+              typeof value.summary !== "string" ||
+              !Array.isArray(value.points) ||
+              value.points.length !== 3 ||
+              value.points.some((point) => typeof point !== "string")
+            ) return null;
+            const title = value.title.trim().slice(0, 80);
+            const summary = value.summary.trim().slice(0, 320);
+            const points = value.points.map((point) => String(point).trim().slice(0, 140));
+            if (!title || !summary || points.some((point) => !point)) return null;
+            return { title, summary, points };
+          }
+
+          async function geminiAnalysis(aggregate) {
+            if (!geminiApiKey || !aggregate.race || aggregate.runCount28Days < 2) return null;
             const prompt = [
-              "당신은 러닝 훈련 데이터 해설 도우미입니다.",
+              "당신은 RUNBRO의 1차 러닝 훈련 데이터 분석가입니다.",
               "의료 진단을 하지 말고, 통증이나 이상 증상은 전문가 상담을 권고하세요.",
               "개인 식별정보나 경로정보가 제거된 아래 집계만 사용하세요.",
+              "숫자를 추측하지 말고 목표 가능성을 단정하지 마세요.",
               "과훈련을 조장하지 말고 주간 거리 급증을 경고하세요.",
               "반드시 JSON 객체만 반환하세요.",
               '형식: {"title":"한국어 35자 이내","summary":"한국어 160자 이내","points":["구체적 권고 1","구체적 권고 2","구체적 권고 3"]}',
@@ -788,20 +905,21 @@ Resources:
             let result;
             try {
               result = await fetch(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
-                  encodeURIComponent(geminiApiKey),
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
                 {
                   method: "POST",
-                  headers: { "content-type": "application/json" },
+                  headers: {
+                    "content-type": "application/json",
+                    "x-goog-api-key": geminiApiKey
+                  },
                   body: JSON.stringify({
                     contents: [{ parts: [{ text: prompt }] }],
                     generationConfig: {
-                      temperature: 0.2,
                       responseMimeType: "application/json",
                       maxOutputTokens: 450
                     }
                   }),
-                  signal: AbortSignal.timeout(12000)
+                  signal: AbortSignal.timeout(7500)
                 }
               );
             } catch (error) {
@@ -814,27 +932,184 @@ Resources:
               body.candidates[0].content.parts[0] && body.candidates[0].content.parts[0].text;
             if (!source || source.length > 3000) return null;
             try {
-              const analysis = JSON.parse(source);
+              return normalizedAnalysis(JSON.parse(source));
+            } catch (error) {
+              return null;
+            }
+          }
+
+          async function openAIReview(aggregate, candidate, userPk) {
+            if (!openaiApiKey || !aggregate.race || aggregate.runCount28Days < 2) return null;
+            const safetyIdentifier = crypto
+              .createHmac("sha256", userHmacSecret)
+              .update("openai-safety:" + userPk)
+              .digest("hex")
+              .slice(0, 32);
+            const systemPrompt = [
+              "당신은 RUNBRO의 2차 러닝 훈련 분석 검증자입니다.",
+              "익명 집계와 Gemini 3.6 Flash의 1차 분석을 대조하세요.",
+              "수치와 맞지 않거나 과훈련을 유도하는 문구는 수정하고, 근거 없는 단정은 제거하세요.",
+              "의료 진단을 하지 말고 통증이나 이상 증상에는 운동 중단과 전문가 상담을 권고하세요.",
+              "1차 분석이 타당하면 verdict를 confirmed, 의미 있게 수정했으면 adjusted로 설정하세요.",
+              "1차 분석이 없으면 독립 분석하고 verdict를 adjusted로 설정하세요.",
+              "한국어로 간결하게 작성하고 제공된 집계 밖의 숫자는 만들지 마세요."
+            ].join("\n");
+            const schema = {
+              type: "object",
+              properties: {
+                title: { type: "string" },
+                summary: { type: "string" },
+                points: {
+                  type: "array",
+                  items: { type: "string" },
+                  minItems: 3,
+                  maxItems: 3
+                },
+                verdict: {
+                  type: "string",
+                  enum: ["confirmed", "adjusted"]
+                },
+                verificationNote: { type: "string" }
+              },
+              required: ["title", "summary", "points", "verdict", "verificationNote"],
+              additionalProperties: false
+            };
+            let result;
+            try {
+              result = await fetch("https://api.openai.com/v1/responses", {
+                method: "POST",
+                headers: {
+                  authorization: "Bearer " + openaiApiKey,
+                  "content-type": "application/json"
+                },
+                body: JSON.stringify({
+                  model: "gpt-5.6-sol",
+                  store: false,
+                  safety_identifier: safetyIdentifier,
+                  reasoning: { effort: "low" },
+                  input: [
+                    { role: "system", content: systemPrompt },
+                    {
+                      role: "user",
+                      content: JSON.stringify({
+                        aggregate,
+                        geminiFirstPass: candidate
+                      })
+                    }
+                  ],
+                  max_output_tokens: 900,
+                  text: {
+                    verbosity: "low",
+                    format: {
+                      type: "json_schema",
+                      name: "runbro_analysis_review",
+                      strict: true,
+                      schema
+                    }
+                  }
+                }),
+                signal: AbortSignal.timeout(12000)
+              });
+            } catch (error) {
+              return null;
+            }
+            if (!result.ok) return null;
+            const body = await result.json().catch(() => ({}));
+            if (body.status === "incomplete") return null;
+            const message = Array.isArray(body.output)
+              ? body.output.find((item) => item && item.type === "message")
+              : null;
+            const output = message && Array.isArray(message.content)
+              ? message.content.find((item) => item && item.type === "output_text")
+              : null;
+            if (!output || typeof output.text !== "string" || output.text.length > 4000) return null;
+            try {
+              const parsed = JSON.parse(output.text);
+              const analysis = normalizedAnalysis(parsed);
               if (
-                typeof analysis.title !== "string" ||
-                typeof analysis.summary !== "string" ||
-                !Array.isArray(analysis.points)
+                !analysis ||
+                !["confirmed", "adjusted"].includes(parsed.verdict) ||
+                typeof parsed.verificationNote !== "string"
               ) return null;
               return {
-                title: analysis.title.slice(0, 80),
-                summary: analysis.summary.slice(0, 320),
-                points: analysis.points.slice(0, 3).map((point) => String(point).slice(0, 140))
+                analysis,
+                verdict: parsed.verdict,
+                note: parsed.verificationNote.trim().slice(0, 160)
               };
             } catch (error) {
               return null;
             }
           }
 
+          async function crossValidatedAnalysis(aggregate, userPk) {
+            const gemini = await geminiAnalysis(aggregate);
+            const gpt = await openAIReview(aggregate, gemini, userPk);
+            const generatedAt = new Date().toISOString();
+            if (gemini && gpt) {
+              return {
+                ...gpt.analysis,
+                verification: {
+                  status: "cross_checked",
+                  verdict: gpt.verdict,
+                  note: gpt.note || (gpt.verdict === "confirmed"
+                    ? "두 모델의 핵심 판단이 일치했습니다."
+                    : "2차 검증에서 표현과 권고를 조정했습니다."),
+                  models: ["gemini-3.6-flash", "gpt-5.6-sol"],
+                  generatedAt
+                }
+              };
+            }
+            if (gemini) {
+              return {
+                ...gemini,
+                verification: {
+                  status: "single_model",
+                  verdict: "not_cross_checked",
+                  note: "GPT 검증을 완료하지 못해 Gemini 분석만 표시합니다.",
+                  models: ["gemini-3.6-flash"],
+                  generatedAt
+                }
+              };
+            }
+            if (gpt) {
+              return {
+                ...gpt.analysis,
+                verification: {
+                  status: "single_model",
+                  verdict: "not_cross_checked",
+                  note: "Gemini 1차 분석을 완료하지 못해 GPT 분석만 표시합니다.",
+                  models: ["gpt-5.6-sol"],
+                  generatedAt
+                }
+              };
+            }
+            return null;
+          }
+
           async function analyze(event) {
             const userPk = await verifyKakaoUser(event);
-            parseBody(event, 256);
+            const body = parseBody(event, 4096);
             const dashboard = await dashboardFor(userPk);
-            const analysis = await geminiAnalysis(dashboard);
+            const aggregate = aggregateForAnalysis(dashboard, validatedAnalysisInput(body));
+            const freshAnalysis = await crossValidatedAnalysis(aggregate, userPk);
+            const analysis = freshAnalysis || null;
+            if (freshAnalysis) {
+              try {
+                await documentClient.send(new PutCommand({
+                  TableName: tableName,
+                  Item: {
+                    pk: userPk,
+                    sk: "ANALYSIS",
+                    analysis: freshAnalysis,
+                    updatedAt: freshAnalysis.verification.generatedAt
+                  }
+                }));
+              } catch (error) {
+                console.error("RUNBRO analysis persistence failed", {
+                  name: error && error.name
+                });
+              }
+            }
             return response(200, { ...dashboard, analysis });
           }
 
