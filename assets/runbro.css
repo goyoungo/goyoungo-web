@@ -951,6 +951,113 @@ th:nth-child(n+3) {
     min-height: 18px;
 }
 
+.garmin-dialog {
+    width: min(520px, calc(100% - 28px));
+    max-height: calc(100dvh - 28px);
+    margin: auto;
+    padding: 0;
+    overflow: auto;
+    border: 1px solid var(--run-line);
+    border-radius: 0;
+    background: var(--run-surface);
+    color: var(--run-text);
+    box-shadow: 0 32px 90px rgba(22, 18, 14, 0.32);
+}
+
+.garmin-dialog::backdrop {
+    background: rgba(20, 17, 14, 0.65);
+    backdrop-filter: blur(5px);
+}
+
+.garmin-dialog-head {
+    padding: 22px 24px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    border-bottom: 1px solid var(--run-line);
+}
+
+.garmin-dialog-head h2 {
+    margin: 8px 0 0;
+    font-size: 25px;
+    letter-spacing: -0.04em;
+}
+
+.dialog-close {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    border: 1px solid var(--run-line);
+    background: transparent;
+    color: var(--run-text);
+    font-size: 24px;
+    line-height: 1;
+}
+
+.dialog-close:hover,
+.dialog-close:focus-visible {
+    border-color: var(--run-accent);
+    background: var(--run-accent);
+    color: #fff;
+}
+
+.garmin-auth-form {
+    padding: 24px 24px 0;
+}
+
+.dialog-copy {
+    margin: 0 0 4px;
+    color: var(--run-muted);
+    font-size: 12px;
+    line-height: 1.65;
+    word-break: keep-all;
+}
+
+.consent-check {
+    grid-template-columns: 18px 1fr;
+    align-items: start;
+    gap: 9px;
+    font-weight: 700;
+    line-height: 1.55;
+}
+
+.consent-check input {
+    width: 18px;
+    min-height: 18px;
+    margin: 1px 0 0;
+    accent-color: var(--run-accent);
+}
+
+.garmin-auth-form .secondary-button {
+    margin-top: -6px;
+}
+
+.dialog-status {
+    min-height: 20px;
+    margin: 16px 24px 0;
+    color: var(--run-muted);
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.dialog-status.is-error {
+    color: var(--run-accent);
+}
+
+.dialog-footnote {
+    margin: 14px 0 0;
+    padding: 16px 24px 22px;
+    border-top: 1px solid var(--run-line-soft);
+    color: var(--run-muted);
+    font-size: 9px;
+    line-height: 1.6;
+}
+
+body:has(.garmin-dialog[open]) {
+    overflow: hidden;
+}
+
 html[data-theme="dark"] body {
     background:
         linear-gradient(180deg, rgba(240, 104, 77, 0.08), transparent 420px),
@@ -961,7 +1068,8 @@ html[data-theme="dark"] body {
 html[data-theme="dark"] .run-header,
 html[data-theme="dark"] .panel,
 html[data-theme="dark"] .run-hero,
-html[data-theme="dark"] .login-card {
+html[data-theme="dark"] .login-card,
+html[data-theme="dark"] .garmin-dialog {
     background-color: rgba(33, 30, 25, 0.95);
 }
 
@@ -1135,6 +1243,22 @@ html[data-theme="dark"] .plan-day.is-rest {
         flex-wrap: wrap;
         justify-content: center;
         padding: 20px 14px;
+    }
+
+    .garmin-dialog-head,
+    .garmin-auth-form {
+        padding-right: 18px;
+        padding-left: 18px;
+    }
+
+    .dialog-status {
+        margin-right: 18px;
+        margin-left: 18px;
+    }
+
+    .dialog-footnote {
+        padding-right: 18px;
+        padding-left: 18px;
     }
 }
 

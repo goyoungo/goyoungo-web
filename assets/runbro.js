@@ -6,6 +6,7 @@
     var preview = ["localhost", "127.0.0.1"].includes(window.location.hostname) &&
         new URLSearchParams(window.location.search).has("preview");
     var currentDashboard = null;
+    var currentGarminChallenge = null;
     var themeOrder = ["system", "light", "dark"];
 
     var sampleActivities = [
@@ -171,7 +172,7 @@
         }
     }
 
-    function computeDashboard(profile, activities) {
+    function computeDashboard(profile, activities, health) {
         var now = Date.now();
         var dayMs = 86400000;
         var runs = (activities || []).filter(function (activity) {
@@ -206,13 +207,22 @@
             ? Number(bestComparable.movingSeconds) * Math.pow(targetDistance / Number(bestComparable.distanceKm), 1.06)
             : 0;
         var loadRatio = previousWeek > 0 ? weekKm / previousWeek : 1;
-        var sleep = Number(profile && profile.condition && profile.condition.sleepHours || 7);
+        var healthSleep = health && health.sleepHours != null ? Number(health.sleepHours) : null;
+        var sleep = healthSleep != null && Number.isFinite(healthSleep)
+            ? healthSleep
+            : Number(profile && profile.condition && profile.condition.sleepHours || 7);
         var fatigue = Number(profile && profile.condition && profile.condition.fatigue || 2);
         var score = 82;
         score += clamp((sleep - 7) * 6, -18, 10);
         score -= (fatigue - 2) * 8;
         if (loadRatio > 1.35) score -= Math.min(20, (loadRatio - 1.35) * 35);
         if (loadRatio < 0.55 && recent.length) score -= 5;
+        var garminReadiness = health && health.trainingReadiness != null
+            ? Number(health.trainingReadiness)
+            : null;
+        if (garminReadiness != null && Number.isFinite(garminReadiness)) {
+            score = score * 0.6 + clamp(garminReadiness, 0, 100) * 0.4;
+        }
         score = Math.round(clamp(score, 35, 96));
         var daysToRace = profile && profile.raceDate
             ? Math.ceil((new Date(profile.raceDate + "T00:00:00").getTime() - now) / dayMs)
@@ -244,9 +254,15 @@
             summary = "최근 러닝 볼륨과 컨디션이 목표 훈련을 이어갈 수 있는 범위입니다. 이번 주는 한 번의 품질 훈련과 한 번의 롱런을 중심으로 구성하세요.";
             points = [consistentWeeks + "주 연속 러닝 기준선 확보", "강한 훈련은 주 1~2회로 제한", "목표 페이스 " + formatPace((profile && profile.goalTimeSeconds) / targetDistance) + "/km 확인"];
         }
+        if (health && health.sleepHours != null && Number.isFinite(Number(health.sleepHours))) {
+            points[2] = "Garmin 수면 " + Number(health.sleepHours).toFixed(1) + "시간" +
+                (Number.isFinite(Number(health.hrv)) ? " · HRV " + Math.round(Number(health.hrv)) : "") +
+                " 반영";
+        }
         return {
             profile: profile,
             activities: runs,
+            health: health || null,
             metrics: {
                 readinessScore: score,
                 readinessLabel: score >= 80 ? "훈련 진행 가능" : score >= 65 ? "강도 조절 권장" : "회복 우선",
@@ -405,7 +421,7 @@
                 button.textContent = "연결됨";
                 button.dataset.connected = "true";
             } else {
-                status.textContent = provider === "garmin" ? "개발자 승인 후 연결" : "연결되지 않음";
+                status.textContent = "연결되지 않음";
                 button.textContent = "연결";
                 button.dataset.connected = "false";
             }
@@ -425,7 +441,11 @@
 
     function normalizeDashboard(body) {
         if (body && body.metrics && body.plan) return body;
-        var normalized = computeDashboard(body && body.profile, body && body.activities || []);
+        var normalized = computeDashboard(
+            body && body.profile,
+            body && body.activities || [],
+            body && body.health
+        );
         normalized.connections = body && body.connections || {};
         if (body && body.analysis && body.analysis.title) normalized.analysis = body.analysis;
         return normalized;
@@ -442,12 +462,56 @@
             daysPerWeek: 4,
             condition: { sleepHours: 7, restingHr: 54, fatigue: 2 }
         };
-        var dashboard = computeDashboard(profile, sampleActivities);
+        var dashboard = computeDashboard(profile, sampleActivities, null);
         dashboard.connections = {
-            strava: { connected: true, lastSyncAt: new Date().toISOString() },
+            strava: { connected: false },
             garmin: { connected: false }
         };
         return dashboard;
+    }
+
+    function emptyGarminDashboard() {
+        return {
+            activities: [],
+            health: null,
+            connections: { garmin: { connected: false, lastSyncAt: null } }
+        };
+    }
+
+    function fetchGarminDashboard() {
+        return apiRequest("/garmin/dashboard", { method: "GET" }).catch(function (error) {
+            if (error.status === 404 || error.code === "not_found") return emptyGarminDashboard();
+            throw error;
+        });
+    }
+
+    function mergeProviderDashboards(base, garmin) {
+        var merged = Object.assign({}, base || {});
+        var activities = []
+            .concat(base && base.activities || [])
+            .concat(garmin && garmin.activities || []);
+        var seen = new Set();
+        merged.activities = activities.filter(function (activity) {
+            var key = String(activity.provider || "unknown") + ":" + String(activity.id || "");
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+        merged.connections = Object.assign(
+            {},
+            base && base.connections || {},
+            garmin && garmin.connections || {}
+        );
+        merged.health = garmin && garmin.health || null;
+        return merged;
+    }
+
+    function loadCombinedDashboard(baseRequest) {
+        return Promise.all([baseRequest, fetchGarminDashboard()]).then(function (values) {
+            var dashboard = normalizeDashboard(mergeProviderDashboards(values[0], values[1]));
+            renderDashboard(dashboard);
+            return dashboard;
+        });
     }
 
     function loadDashboard() {
@@ -460,9 +524,7 @@
             renderDashboard(computeDashboard(null, []));
             return Promise.resolve();
         }
-        return apiRequest("/dashboard", { method: "GET" }).then(function (dashboard) {
-            renderDashboard(normalizeDashboard(dashboard));
-        }).catch(function (error) {
+        return loadCombinedDashboard(apiRequest("/dashboard", { method: "GET" })).catch(function (error) {
             if (error.status === 401 && window.GoyoungoAuth) {
                 window.GoyoungoAuth.invalidateSession();
             }
@@ -495,9 +557,8 @@
                 method: "PUT",
                 body: JSON.stringify(profile)
             }).then(function () {
-                return apiRequest("/analyze", { method: "POST", body: "{}" });
-            }).then(function (dashboard) {
-                renderDashboard(normalizeDashboard(dashboard));
+                return loadCombinedDashboard(apiRequest("/analyze", { method: "POST", body: "{}" }));
+            }).then(function () {
                 setFormStatus("목표와 이번 주 훈련 계획을 저장했습니다.");
             }).catch(function (error) {
                 setFormStatus(error.message, true);
@@ -505,12 +566,161 @@
         });
     }
 
+    function setGarminDialogStatus(message, isError) {
+        var status = el("garminDialogStatus");
+        status.textContent = message || "";
+        status.classList.toggle("is-error", Boolean(isError));
+    }
+
+    function setGarminAuthStep(step) {
+        el("garminLoginForm").hidden = step !== "login";
+        el("garminMfaForm").hidden = step !== "mfa";
+        setGarminDialogStatus("");
+        if (step === "mfa") {
+            window.setTimeout(function () { el("garminMfaCode").focus(); }, 50);
+        }
+    }
+
+    function resetGarminDialog() {
+        currentGarminChallenge = null;
+        el("garminPassword").value = "";
+        el("garminMfaCode").value = "";
+        setGarminAuthStep("login");
+    }
+
+    function openGarminDialog() {
+        resetGarminDialog();
+        var dialog = el("garminDialog");
+        if (typeof dialog.showModal === "function") {
+            dialog.showModal();
+        } else {
+            dialog.setAttribute("open", "");
+        }
+        window.setTimeout(function () { el("garminEmail").focus(); }, 50);
+    }
+
+    function closeGarminDialog() {
+        var dialog = el("garminDialog");
+        if (typeof dialog.close === "function") dialog.close();
+        else dialog.removeAttribute("open");
+        resetGarminDialog();
+    }
+
+    function finishGarminConnection() {
+        closeGarminDialog();
+        setFormStatus("Garmin 연결을 완료했습니다. 최근 기록을 가져오는 중입니다.");
+        return apiRequest("/garmin/sync", { method: "POST", body: "{}" })
+            .then(function () { return loadDashboard(); })
+            .then(function () {
+                setFormStatus("Garmin 러닝 기록과 신체 상태를 반영했습니다.");
+            })
+            .catch(function (error) {
+                setFormStatus(error.message, true);
+            });
+    }
+
+    function submitGarminLogin(event) {
+        event.preventDefault();
+        var email = el("garminEmail").value.trim();
+        var password = el("garminPassword").value;
+        if (!email || !password || !el("garminConsent").checked) {
+            setGarminDialogStatus("이메일, 비밀번호와 확인 항목을 확인해 주세요.", true);
+            return;
+        }
+        var button = el("garminLoginSubmit");
+        button.disabled = true;
+        setGarminDialogStatus("Garmin Connect에 안전하게 로그인하고 있습니다.");
+        if (preview) {
+            el("garminPassword").value = "";
+            window.setTimeout(function () {
+                button.disabled = false;
+                currentGarminChallenge = "preview-challenge";
+                setGarminAuthStep("mfa");
+                setGarminDialogStatus("미리보기용 MFA 단계입니다. 123456을 입력해 주세요.");
+            }, 350);
+            return;
+        }
+        apiRequest("/garmin/auth/start", {
+            method: "POST",
+            body: JSON.stringify({ email: email, password: password })
+        }).then(function (body) {
+            el("garminPassword").value = "";
+            if (body.needsMfa && body.challengeId) {
+                currentGarminChallenge = body.challengeId;
+                setGarminAuthStep("mfa");
+                setGarminDialogStatus("Garmin에서 전송한 인증 코드를 입력해 주세요.");
+                return;
+            }
+            if (!body.connected) throw new Error("Garmin 연결 상태를 확인하지 못했습니다.");
+            return finishGarminConnection();
+        }).catch(function (error) {
+            el("garminPassword").value = "";
+            setGarminDialogStatus(error.message, true);
+        }).finally(function () {
+            button.disabled = false;
+        });
+    }
+
+    function submitGarminMfa(event) {
+        event.preventDefault();
+        var code = el("garminMfaCode").value.replace(/\s+/g, "");
+        if (!currentGarminChallenge || !/^\d{4,10}$/.test(code)) {
+            setGarminDialogStatus("Garmin 인증 코드를 확인해 주세요.", true);
+            return;
+        }
+        var button = el("garminMfaSubmit");
+        button.disabled = true;
+        setGarminDialogStatus("Garmin 인증을 완료하고 있습니다.");
+        if (preview) {
+            window.setTimeout(function () {
+                button.disabled = false;
+                closeGarminDialog();
+                var dashboard = sampleDashboard();
+                dashboard.connections.garmin = {
+                    connected: true,
+                    lastSyncAt: new Date().toISOString()
+                };
+                var health = {
+                    sleepHours: 7.4,
+                    restingHr: 52,
+                    hrv: 61,
+                    trainingReadiness: 78
+                };
+                var connectedDashboard = computeDashboard(
+                    dashboard.profile,
+                    sampleActivities,
+                    health
+                );
+                connectedDashboard.connections = dashboard.connections;
+                renderDashboard(connectedDashboard);
+                setFormStatus("미리보기에서 Garmin 연결과 동기화를 완료했습니다.");
+            }, 350);
+            return;
+        }
+        apiRequest("/garmin/auth/complete", {
+            method: "POST",
+            body: JSON.stringify({
+                challengeId: currentGarminChallenge,
+                code: code
+            })
+        }).then(function (body) {
+            if (!body.connected) throw new Error("Garmin 연결 상태를 확인하지 못했습니다.");
+            return finishGarminConnection();
+        }).catch(function (error) {
+            setGarminDialogStatus(error.message, true);
+        }).finally(function () {
+            button.disabled = false;
+        });
+    }
+
     function connectProvider(provider) {
         requireLogin(provider.toUpperCase() + " 기록을 연결하려면 카카오 로그인이 필요합니다.", function () {
+            if (provider === "garmin") {
+                openGarminDialog();
+                return;
+            }
             if (preview) {
-                setFormStatus(provider === "garmin"
-                    ? "Garmin은 개발자 프로그램 승인 후 직접 연결할 수 있습니다."
-                    : "미리보기에서는 실제 Strava 로그인으로 이동하지 않습니다.");
+                setFormStatus("미리보기에서는 실제 Strava 로그인으로 이동하지 않습니다.");
                 return;
             }
             apiRequest("/oauth/" + provider + "/start", {
@@ -520,10 +730,7 @@
                 if (!body.authorizationUrl) throw new Error("연결 주소를 받지 못했습니다.");
                 window.location.assign(body.authorizationUrl);
             }).catch(function (error) {
-                var message = error.code === "provider_not_configured" && provider === "garmin"
-                    ? "Garmin 개발자 프로그램 승인 후 직접 연결이 열립니다. 지금은 Garmin → Strava 자동 공유를 이용해 주세요."
-                    : error.message;
-                setFormStatus(message, true);
+                setFormStatus(error.message, true);
             });
         });
     }
@@ -534,9 +741,22 @@
                 setFormStatus("미리보기 기록을 최신 상태로 표시했습니다.");
                 return;
             }
+            var connections = currentDashboard && currentDashboard.connections || {};
+            var tasks = [];
+            if (connections.strava && connections.strava.connected) {
+                tasks.push(apiRequest("/sync", { method: "POST", body: "{}" }));
+            }
+            if (connections.garmin && connections.garmin.connected) {
+                tasks.push(apiRequest("/garmin/sync", { method: "POST", body: "{}" }));
+            }
+            if (!tasks.length) {
+                setFormStatus("먼저 Garmin Connect 또는 Strava를 연결해 주세요.", true);
+                return;
+            }
             setFormStatus("최신 러닝 기록을 가져오는 중입니다.");
-            apiRequest("/sync", { method: "POST", body: "{}" }).then(function (dashboard) {
-                renderDashboard(normalizeDashboard(dashboard));
+            Promise.all(tasks).then(function () {
+                return loadDashboard();
+            }).then(function () {
                 setFormStatus("최신 러닝 기록과 분석을 반영했습니다.");
             }).catch(function (error) {
                 setFormStatus(error.message, true);
@@ -547,12 +767,15 @@
     function refreshAnalysis() {
         requireLogin("개인 기록을 다시 분석하려면 카카오 로그인이 필요합니다.", function () {
             if (preview) {
-                renderDashboard(computeDashboard(profileFromForm(), sampleActivities));
+                renderDashboard(computeDashboard(
+                    profileFromForm(),
+                    sampleActivities,
+                    currentDashboard && currentDashboard.health
+                ));
                 setFormStatus("입력한 컨디션으로 분석을 다시 계산했습니다.");
                 return;
             }
-            apiRequest("/analyze", { method: "POST", body: "{}" }).then(function (dashboard) {
-                renderDashboard(normalizeDashboard(dashboard));
+            loadCombinedDashboard(apiRequest("/analyze", { method: "POST", body: "{}" })).then(function () {
                 setFormStatus("현재 상태와 훈련 계획을 다시 계산했습니다.");
             }).catch(function (error) {
                 setFormStatus(error.message, true);
@@ -568,9 +791,16 @@
                 setFormStatus("미리보기 데이터를 초기화했습니다.");
                 return;
             }
-            apiRequest("/account", { method: "DELETE" }).then(function () {
+            Promise.allSettled([
+                apiRequest("/account", { method: "DELETE" }),
+                apiRequest("/garmin/account", { method: "DELETE" })
+            ]).then(function (results) {
+                var failed = results.filter(function (result) { return result.status === "rejected"; });
+                if (failed.length === results.length) throw failed[0].reason;
                 renderDashboard(computeDashboard(null, []));
-                setFormStatus("RUNBRO 연결과 저장 기록을 삭제했습니다.");
+                setFormStatus(failed.length
+                    ? "일부 연결 정보 삭제를 완료하지 못했습니다. 잠시 후 다시 시도해 주세요."
+                    : "RUNBRO 연결과 저장 기록을 삭제했습니다.", Boolean(failed.length));
             }).catch(function (error) {
                 setFormStatus(error.message, true);
             });
@@ -616,6 +846,14 @@
 
         initializeThemeButton();
         el("raceForm").addEventListener("submit", saveProfile);
+        el("garminLoginForm").addEventListener("submit", submitGarminLogin);
+        el("garminMfaForm").addEventListener("submit", submitGarminMfa);
+        el("garminDialogClose").addEventListener("click", closeGarminDialog);
+        el("garminMfaRestart").addEventListener("click", resetGarminDialog);
+        el("garminDialog").addEventListener("cancel", function (event) {
+            event.preventDefault();
+            closeGarminDialog();
+        });
         document.querySelectorAll("[data-provider]").forEach(function (button) {
             button.addEventListener("click", function () {
                 if (button.dataset.connected === "true") {

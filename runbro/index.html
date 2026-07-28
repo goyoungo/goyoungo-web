@@ -165,14 +165,14 @@
                         <div class="source-logo" aria-hidden="true">G</div>
                         <div class="source-copy">
                             <strong>GARMIN CONNECT</strong>
-                            <span id="garminStatus">개발자 승인 후 연결</span>
+                            <span id="garminStatus">연결되지 않음</span>
                         </div>
                         <button class="source-button" type="button" data-provider="garmin">연결</button>
                     </article>
 
                     <button id="syncButton" class="secondary-button" type="button">최신 기록 동기화</button>
-                    <p class="source-note"><strong>연결 범위:</strong> 최근 러닝의 날짜, 거리, 시간, 고도, 평균·최대 심박을 가져옵니다. 경로 좌표와 활동 설명은 저장하지 않으며, AI 해설에는 계정 정보와 개별 활동 원본 대신 4주 집계만 전달합니다.</p>
-                    <p class="source-note">Garmin 직접 연동이 열리기 전에는 Garmin Connect에서 Strava 자동 공유를 켜고 Strava를 연결하면 같은 러닝 기록을 가져올 수 있습니다.</p>
+                    <p class="source-note"><strong>Garmin 연결 범위:</strong> 최근 러닝의 날짜, 거리, 시간, 고도, 심박과 오늘의 수면·HRV·훈련 준비도를 가져옵니다. 경로 좌표와 활동 설명은 저장하지 않으며, 토큰과 데이터는 S3에서 KMS로 암호화합니다.</p>
+                    <p class="source-note">Garmin 비밀번호는 최초 로그인 요청에만 사용하고 저장하지 않습니다. 이 기능은 Garmin의 비공식 연동 방식이므로 Garmin 정책이나 로그인 방식 변경 시 일시 중단될 수 있습니다.</p>
                 </section>
             </aside>
 
@@ -285,9 +285,52 @@
         <a href="https://www.instagram.com/go.youngo/" target="_blank" rel="noopener noreferrer">@go.youngo</a>
     </footer>
 
+    <dialog id="garminDialog" class="garmin-dialog" aria-labelledby="garminDialogTitle">
+        <div class="garmin-dialog-head">
+            <div>
+                <p class="section-index">GARMIN · SECURE CONNECTION</p>
+                <h2 id="garminDialogTitle">Garmin Connect 연결</h2>
+            </div>
+            <button id="garminDialogClose" class="dialog-close" type="button" aria-label="Garmin 연결 창 닫기">×</button>
+        </div>
+
+        <form id="garminLoginForm" class="garmin-auth-form">
+            <p class="dialog-copy">Garmin Connect 계정으로 한 번 로그인하면 RUNBRO가 암호화된 토큰으로 이후 기록을 동기화합니다.</p>
+            <label>
+                <span>Garmin 이메일</span>
+                <input id="garminEmail" type="email" maxlength="254" autocomplete="username" inputmode="email"
+                    placeholder="runner@example.com" required>
+            </label>
+            <label>
+                <span>Garmin 비밀번호</span>
+                <input id="garminPassword" type="password" minlength="6" maxlength="256"
+                    autocomplete="current-password" required>
+            </label>
+            <label class="consent-check">
+                <input id="garminConsent" type="checkbox" required>
+                <span>비밀번호는 Garmin 로그인 요청에만 사용되며 RUNBRO에 저장되지 않는다는 점을 확인했습니다.</span>
+            </label>
+            <button id="garminLoginSubmit" class="primary-button" type="submit">안전하게 연결하기</button>
+        </form>
+
+        <form id="garminMfaForm" class="garmin-auth-form" hidden>
+            <p class="dialog-copy">Garmin에서 전송한 일회용 인증 코드를 입력해 주세요. 인증 요청은 5분 후 만료됩니다.</p>
+            <label>
+                <span>일회용 인증 코드</span>
+                <input id="garminMfaCode" type="text" minlength="4" maxlength="10" inputmode="numeric"
+                    autocomplete="one-time-code" pattern="[0-9]{4,10}" required>
+            </label>
+            <button id="garminMfaSubmit" class="primary-button" type="submit">인증 완료하기</button>
+            <button id="garminMfaRestart" class="secondary-button" type="button">처음부터 다시 연결</button>
+        </form>
+
+        <p id="garminDialogStatus" class="dialog-status" role="status" aria-live="polite"></p>
+        <p class="dialog-footnote">RUNBRO는 Garmin 공식 파트너 앱이 아닙니다. 연결 해제 시 저장된 토큰과 Garmin 데이터를 삭제할 수 있습니다.</p>
+    </dialog>
+
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/v1/kakao.min.js"></script>
     <script src="/assets/auth.js?v=20260728-auth2"></script>
     <script src="/assets/runbro-config.js?v=20260728-runbro1"></script>
-    <script src="/assets/runbro.js?v=20260728-runbro1"></script>
+    <script src="/assets/runbro.js?v=20260728-garmin1"></script>
 </body>
 </html>
