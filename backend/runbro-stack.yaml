@@ -499,11 +499,11 @@ Resources:
           }
 
           async function completeStravaOAuth(event) {
+            const body = parseBody(event, 4096);
+            const state = verifyState(body.state);
             if (!/^\d+$/.test(stravaClientId) || stravaClientSecret.length < 8) {
               throw new HttpError(503, "Strava 앱 연결 설정이 필요합니다.", "provider_not_configured");
             }
-            const body = parseBody(event, 4096);
-            const state = verifyState(body.state);
             const code = String(body.code || "");
             if (!/^[A-Za-z0-9_-]{8,512}$/.test(code)) {
               throw new HttpError(400, "Strava 연결 코드를 확인해 주세요.", "invalid_oauth_code");
@@ -809,6 +809,16 @@ Resources:
                 ? event.requestContext.http.method
                 : "";
               const path = event.rawPath || "";
+              if (method === "OPTIONS") {
+                return {
+                  statusCode: 204,
+                  headers: {
+                    "cache-control": "no-store",
+                    "x-content-type-options": "nosniff"
+                  },
+                  body: ""
+                };
+              }
               if (method === "GET" && path === "/dashboard") {
                 const userPk = await verifyKakaoUser(event);
                 return response(200, await dashboardFor(userPk));
