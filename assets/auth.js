@@ -155,6 +155,22 @@
         }
     }
 
+    function startKakaoLogin(ui) {
+        Kakao.Auth.login({
+            success: function () {
+                finishLogin(ui);
+            },
+            fail: function (error) {
+                var message = error && error.error === "access_denied"
+                    ? "로그인이 취소되었습니다."
+                    : "카카오 로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+                setLoading(ui, false);
+                setStatus(ui, message);
+                ui.loginButton.focus();
+            }
+        });
+    }
+
     function login(ui) {
         if (!sdkReady || localPreview) {
             openLogin(ui, "");
@@ -165,19 +181,10 @@
         setStatus(ui, "카카오 로그인 창을 확인해 주세요.");
 
         try {
-            Kakao.Auth.login({
-                success: function () {
-                    finishLogin(ui);
-                },
-                fail: function (error) {
-                    var message = error && error.error === "access_denied"
-                        ? "로그인이 취소되었습니다."
-                        : "카카오 로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.";
-                    setLoading(ui, false);
-                    setStatus(ui, message);
-                    ui.loginButton.focus();
-                }
-            });
+            if (sessionInvalidated && typeof Kakao.Auth.setAccessToken === "function") {
+                Kakao.Auth.setAccessToken(null);
+            }
+            startKakaoLogin(ui);
         } catch (error) {
             setLoading(ui, false);
             setStatus(ui, "로그인을 시작할 수 없습니다. 카카오 앱 설정을 확인해 주세요.");

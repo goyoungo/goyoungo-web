@@ -524,7 +524,10 @@
             renderDashboard(computeDashboard(null, []));
             return Promise.resolve();
         }
-        return loadCombinedDashboard(apiRequest("/dashboard", { method: "GET" })).catch(function (error) {
+        return loadCombinedDashboard(apiRequest("/dashboard", { method: "GET" })).then(function (dashboard) {
+            setFormStatus("");
+            return dashboard;
+        }).catch(function (error) {
             if (error.status === 401 && window.GoyoungoAuth) {
                 window.GoyoungoAuth.invalidateSession();
             }
