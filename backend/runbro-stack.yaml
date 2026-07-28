@@ -916,7 +916,10 @@ Resources:
                     contents: [{ parts: [{ text: prompt }] }],
                     generationConfig: {
                       responseMimeType: "application/json",
-                      maxOutputTokens: 450
+                      maxOutputTokens: 800,
+                      thinkingConfig: {
+                        thinkingLevel: "minimal"
+                      }
                     }
                   }),
                   signal: AbortSignal.timeout(7500)
