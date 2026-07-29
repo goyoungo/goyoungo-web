@@ -39,6 +39,20 @@ Parameters:
     Type: String
     Default: ""
     Description: S3 key containing the packaged RUNBRO Garmin Lambda zip
+  AnalysisCodeBucket:
+    Type: String
+    Description: S3 bucket containing the packaged RUNBRO analysis worker code
+  AnalysisCodeKey:
+    Type: String
+    Description: S3 key containing the packaged RUNBRO analysis worker zip
+  CodexImageUri:
+    Type: String
+    Description: ECR image URI for the RUNBRO Codex verification Lambda
+  CodexAuthKey:
+    Type: String
+    Default: "system/codex/auth.json"
+    AllowedPattern: "^system/codex/[A-Za-z0-9._/-]+$"
+    Description: Private S3 object key containing the file-backed Codex auth cache
 
 Conditions:
   GarminCodeProvided: !And
@@ -120,6 +134,11 @@ Resources:
             Status: Enabled
             NoncurrentVersionExpiration:
               NoncurrentDays: 30
+          - Id: RemoveOldCodexAuthVersions
+            Status: Enabled
+            Prefix: "system/codex/"
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 1
           - Id: RemoveAbandonedEphemeralObjects
             Status: Enabled
             TagFilters:
@@ -160,6 +179,72 @@ Resources:
               Bool:
                 aws:SecureTransport: false
 
+  RunbroGeminiDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-gemini-dlq.fifo"
+      FifoQueue: true
+      ContentBasedDeduplication: false
+      MessageRetentionPeriod: 86400
+      SqsManagedSseEnabled: true
+
+  RunbroGeminiQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-gemini.fifo"
+      FifoQueue: true
+      ContentBasedDeduplication: false
+      MessageRetentionPeriod: 3600
+      VisibilityTimeout: 360
+      SqsManagedSseEnabled: true
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt RunbroGeminiDeadLetterQueue.Arn
+        maxReceiveCount: 3
+
+  RunbroCodexDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-codex-dlq.fifo"
+      FifoQueue: true
+      ContentBasedDeduplication: false
+      MessageRetentionPeriod: 86400
+      SqsManagedSseEnabled: true
+
+  RunbroCodexQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-codex.fifo"
+      FifoQueue: true
+      ContentBasedDeduplication: false
+      MessageRetentionPeriod: 3600
+      VisibilityTimeout: 3600
+      SqsManagedSseEnabled: true
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt RunbroCodexDeadLetterQueue.Arn
+        maxReceiveCount: 3
+
+  RunbroAnalysisResultDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-analysis-result-dlq.fifo"
+      FifoQueue: true
+      ContentBasedDeduplication: false
+      MessageRetentionPeriod: 86400
+      SqsManagedSseEnabled: true
+
+  RunbroAnalysisResultQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-analysis-result.fifo"
+      FifoQueue: true
+      ContentBasedDeduplication: false
+      MessageRetentionPeriod: 3600
+      VisibilityTimeout: 180
+      SqsManagedSseEnabled: true
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt RunbroAnalysisResultDeadLetterQueue.Arn
+        maxReceiveCount: 3
+
   RunbroFunctionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -196,6 +281,10 @@ Resources:
                 Resource:
                   - !Sub "${RunbroGarminBucket.Arn}/users/*/garmin/activities/latest.json.gz"
                   - !Sub "${RunbroGarminBucket.Arn}/users/*/garmin/health/latest.json.gz"
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource: !GetAtt RunbroGeminiQueue.Arn
         - PolicyName: RunbroLogs
           PolicyDocument:
             Version: "2012-10-17"
@@ -238,8 +327,8 @@ Resources:
           OAUTH_STATE_SECRET: !Ref OAuthStateSecret
           STRAVA_CLIENT_ID: !Ref StravaClientId
           STRAVA_CLIENT_SECRET: !Ref StravaClientSecret
-          GEMINI_API_KEY: !Ref GeminiApiKey
           RUNBRO_GARMIN_BUCKET: !Ref RunbroGarminBucket
+          RUNBRO_ANALYSIS_QUEUE_URL: !Ref RunbroGeminiQueue
       Code:
         ZipFile: |
           "use strict";
@@ -264,6 +353,10 @@ Resources:
             EncryptCommand,
             DecryptCommand
           } = require("@aws-sdk/client-kms");
+          const {
+            SQSClient,
+            SendMessageCommand
+          } = require("@aws-sdk/client-sqs");
 
           const tableName = process.env.RUNBRO_TABLE_NAME;
           const tokenKeyId = process.env.RUNBRO_TOKEN_KEY_ID;
@@ -272,8 +365,8 @@ Resources:
           const oauthStateSecret = process.env.OAUTH_STATE_SECRET || "";
           const stravaClientId = String(process.env.STRAVA_CLIENT_ID || "");
           const stravaClientSecret = process.env.STRAVA_CLIENT_SECRET || "";
-          const geminiApiKey = process.env.GEMINI_API_KEY || "";
           const garminBucket = process.env.RUNBRO_GARMIN_BUCKET || "";
+          const analysisQueueUrl = process.env.RUNBRO_ANALYSIS_QUEUE_URL || "";
           const callbackUrl = "https://goyoungo.com/runbro/callback.html";
           const chatgptConsentUrl = "https://goyoungo.com/runbro/chatgpt-connect.html";
           const mcpScopes = new Set(["running:read", "analysis:write"]);
@@ -299,6 +392,7 @@ Resources:
           );
           const kmsClient = new KMSClient({});
           const s3Client = new S3Client({});
+          const sqsClient = new SQSClient({});
 
           class HttpError extends Error {
             constructor(statusCode, message, code) {
@@ -592,6 +686,9 @@ Resources:
           function publicDashboard(items) {
             const profileItem = items.find((item) => item.sk === "PROFILE");
             const analysisItem = items.find((item) => item.sk === "ANALYSIS");
+            const latestAnalysisJob = items
+              .filter((item) => item.sk.startsWith("ANALYSIS_JOB#"))
+              .sort((a, b) => String(b.requestedAt || "").localeCompare(String(a.requestedAt || "")))[0];
             const connections = {};
             const activities = [];
             for (const item of items) {
@@ -626,7 +723,15 @@ Resources:
               profile: profileItem ? profileItem.profile : null,
               connections,
               activities: activities.slice(0, 120),
-              analysis: analysisItem && analysisItem.analysis ? analysisItem.analysis : null
+              analysis: analysisItem && analysisItem.analysis ? analysisItem.analysis : null,
+              analysisJob: latestAnalysisJob ? {
+                jobId: latestAnalysisJob.sk.slice("ANALYSIS_JOB#".length),
+                status: latestAnalysisJob.status,
+                errorCode: latestAnalysisJob.errorCode || null,
+                requestedAt: latestAnalysisJob.requestedAt || null,
+                updatedAt: latestAnalysisJob.updatedAt || null,
+                completedAt: latestAnalysisJob.completedAt || null
+              } : null
             };
           }
 
@@ -1049,115 +1154,151 @@ Resources:
             };
           }
 
-          function normalizedAnalysis(value) {
-            if (
-              !value ||
-              typeof value.title !== "string" ||
-              typeof value.summary !== "string" ||
-              !Array.isArray(value.points) ||
-              value.points.length !== 5 ||
-              value.points.some((point) => typeof point !== "string")
-            ) return null;
-            const title = value.title.trim().slice(0, 80);
-            const summary = value.summary.trim().slice(0, 520);
-            const points = value.points.map((point) => String(point).trim().slice(0, 220));
-            if (!title || !summary || points.some((point) => !point)) return null;
-            return { title, summary, points };
+          function analysisBand(value, low, high) {
+            if (value == null || value === "") return "unavailable";
+            if (!Number.isFinite(Number(value))) return "unavailable";
+            if (Number(value) < low) return "low";
+            if (Number(value) > high) return "high";
+            return "middle";
           }
 
-          async function geminiAnalysis(aggregate) {
-            if (!geminiApiKey || !aggregate.race || aggregate.runCount28Days < 2) return null;
-            const prompt = [
-              "당신은 RUNBRO의 1차 러닝 훈련 데이터 분석가입니다.",
-              "의료 진단을 하지 말고, 통증이나 이상 증상은 전문가 상담을 권고하세요.",
-              "개인 식별정보나 경로정보가 제거된 아래 집계만 사용하세요.",
-              "숫자를 추측하지 말고 목표 가능성을 단정하지 마세요.",
-              "과훈련을 조장하지 말고 주간 거리 급증을 경고하세요.",
-              "분석은 목표 적합성, 훈련량, 회복 상태, 이번 주 우선순위, 주의 사항을 각각 다뤄야 합니다.",
-              "반드시 JSON 객체만 반환하세요.",
-              '형식: {"title":"한국어 40자 이내","summary":"한국어 320자 이내","points":["목표 적합성 · ...","훈련량 · ...","회복 상태 · ...","이번 주 우선순위 · ...","주의 · ..."]}',
-              JSON.stringify(aggregate)
-            ].join("\n");
-            let result;
-            try {
-              result = await fetch(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
-                {
-                  method: "POST",
-                  headers: {
-                    "content-type": "application/json",
-                    "x-goog-api-key": geminiApiKey
-                  },
-                  body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: {
-                      responseMimeType: "application/json",
-                      maxOutputTokens: 1400,
-                      thinkingConfig: {
-                        thinkingLevel: "minimal"
-                      }
-                    }
-                  }),
-                  signal: AbortSignal.timeout(7500)
-                }
-              );
-            } catch (error) {
-              return null;
-            }
-            if (!result.ok) return null;
-            const body = await result.json().catch(() => ({}));
-            const source = body.candidates && body.candidates[0] &&
-              body.candidates[0].content && body.candidates[0].content.parts &&
-              body.candidates[0].content.parts[0] && body.candidates[0].content.parts[0].text;
-            if (!source || source.length > 3000) return null;
-            try {
-              return normalizedAnalysis(JSON.parse(source));
-            } catch (error) {
-              return null;
-            }
-          }
-
-          async function firstPassAnalysis(aggregate) {
-            const gemini = await geminiAnalysis(aggregate);
-            if (!gemini) return null;
-            const generatedAt = new Date().toISOString();
+          function privacyPreservingAggregate(aggregate) {
+            const zones = Array.isArray(aggregate.heartZoneMinutes)
+              ? aggregate.heartZoneMinutes.map((value) => Number(value || 0))
+              : [];
+            const zoneTotal = zones.reduce((sum, value) => sum + value, 0);
             return {
-              ...gemini,
-              verification: {
-                status: "pending_chatgpt",
-                verdict: "not_cross_checked",
-                note: "ChatGPT의 RUNBRO 앱에서 상세 교차검증을 진행할 수 있습니다.",
-                models: ["gemini-3.6-flash"],
-                generatedAt
-              }
+              race: aggregate.race,
+              runCount28Days: aggregate.runCount28Days,
+              weeklyDistanceKmOldestToNewest:
+                aggregate.weeklyDistanceKmOldestToNewest,
+              averagePaceSecondsPerKm: aggregate.averagePaceSecondsPerKm,
+              estimatedVdot: aggregate.estimatedVdot,
+              runTypeCounts: aggregate.runTypeCounts,
+              heartZoneDistributionPercent: zoneTotal
+                ? zones.map((value) => Math.round(value / zoneTotal * 100))
+                : null,
+              recoveryBands: aggregate.health ? {
+                sleep: analysisBand(aggregate.health.sleepHours, 6, 8.5),
+                hrvAvailable: Number.isFinite(Number(aggregate.health.hrv)),
+                restingHeartRate: analysisBand(
+                  aggregate.health.restingHeartRate,
+                  50,
+                  75
+                ),
+                trainingReadiness: analysisBand(
+                  aggregate.health.trainingReadiness,
+                  40,
+                  70
+                )
+              } : null,
+              privacy:
+                "No account ID, token, route, coordinates, activity title, exact start time, exact HRV, or exact resting heart rate is included."
             };
           }
 
           async function analyze(event) {
             const userPk = await verifyKakaoUser(event);
             const body = parseBody(event, 4096);
-            const dashboard = await dashboardFor(userPk);
-            const aggregate = aggregateForAnalysis(dashboard, validatedAnalysisInput(body));
-            const freshAnalysis = await firstPassAnalysis(aggregate);
-            const analysis = freshAnalysis || null;
-            if (freshAnalysis) {
-              try {
-                await documentClient.send(new PutCommand({
-                  TableName: tableName,
-                  Item: {
-                    pk: userPk,
-                    sk: "ANALYSIS",
-                    analysis: freshAnalysis,
-                    updatedAt: freshAnalysis.verification.generatedAt
-                  }
-                }));
-              } catch (error) {
-                console.error("RUNBRO analysis persistence failed", {
-                  name: error && error.name
-                });
-              }
+            const items = await queryUserItems(userPk);
+            const dashboard = publicDashboard(items);
+            const activeJob = dashboard.analysisJob;
+            if (
+              activeJob &&
+              ["queued", "gemini_processing", "codex_queued"].includes(activeJob.status) &&
+              Date.now() - new Date(activeJob.requestedAt || 0).getTime() < 15 * 60 * 1000
+            ) {
+              return response(202, { ...dashboard, analysisJob: activeJob });
             }
-            return response(200, { ...dashboard, analysis });
+            const aggregate = aggregateForAnalysis(dashboard, validatedAnalysisInput(body));
+            if (!aggregate.race || aggregate.runCount28Days < 2) {
+              throw new HttpError(
+                409,
+                "목표 레이스와 최근 러닝 기록 2개 이상이 필요합니다.",
+                "analysis_data_required"
+              );
+            }
+            if (!analysisQueueUrl) {
+              throw new HttpError(
+                503,
+                "분석 대기열을 준비하고 있습니다.",
+                "analysis_queue_unavailable"
+              );
+            }
+            const jobId = crypto.randomUUID();
+            const requestedAt = new Date().toISOString();
+            const ttl = Math.floor(Date.now() / 1000) + 86400;
+            await documentClient.send(new PutCommand({
+              TableName: tableName,
+              Item: {
+                pk: userPk,
+                sk: "ANALYSIS_JOB#" + jobId,
+                status: "queued",
+                requestedAt,
+                updatedAt: requestedAt,
+                ttl
+              }
+            }));
+            try {
+              await sqsClient.send(new SendMessageCommand({
+                QueueUrl: analysisQueueUrl,
+                MessageBody: JSON.stringify({
+                  userPk,
+                  jobId,
+                  aggregate: privacyPreservingAggregate(aggregate)
+                }),
+                MessageGroupId: userPk,
+                MessageDeduplicationId: jobId
+              }));
+            } catch (error) {
+              await documentClient.send(new PutCommand({
+                TableName: tableName,
+                Item: {
+                  pk: userPk,
+                  sk: "ANALYSIS_JOB#" + jobId,
+                  status: "failed",
+                  errorCode: "queue_submit_failed",
+                  requestedAt,
+                  updatedAt: new Date().toISOString(),
+                  ttl
+                }
+              }));
+              throw error;
+            }
+            return response(202, {
+              ...dashboard,
+              analysisJob: {
+                jobId,
+                status: "queued",
+                errorCode: null,
+                requestedAt,
+                updatedAt: requestedAt,
+                completedAt: null
+              }
+            });
+          }
+
+          async function analysisStatus(event, jobId) {
+            const userPk = await verifyKakaoUser(event);
+            if (!/^[a-f0-9-]{36}$/.test(jobId)) {
+              throw new HttpError(400, "분석 작업 번호를 확인해 주세요.", "invalid_analysis_job");
+            }
+            const job = await getItem(userPk, "ANALYSIS_JOB#" + jobId);
+            if (!job) {
+              throw new HttpError(404, "분석 작업을 찾을 수 없습니다.", "analysis_job_not_found");
+            }
+            const dashboard = await dashboardFor(userPk);
+            return response(200, {
+              ...dashboard,
+              analysisJob: {
+                jobId,
+                status: job.status,
+                errorCode: job.errorCode || null,
+                requestedAt: job.requestedAt || null,
+                updatedAt: job.updatedAt || null,
+                completedAt: job.completedAt || null
+              }
+            });
           }
 
           async function getItem(pk, sk) {
@@ -2096,6 +2237,10 @@ Resources:
               if (method === "PUT" && path === "/profile") return await putProfile(event);
               if (method === "POST" && path === "/sync") return await syncActivities(event);
               if (method === "POST" && path === "/analyze") return await analyze(event);
+              const analysisMatch = /^\/analysis\/([a-f0-9-]{36})$/.exec(path);
+              if (method === "GET" && analysisMatch) {
+                return await analysisStatus(event, analysisMatch[1]);
+              }
               if (method === "DELETE" && path === "/account") return await deleteAccount(event);
               const startMatch = /^\/oauth\/(strava|garmin)\/start$/.exec(path);
               if (method === "POST" && startMatch) return await startOAuth(event, startMatch[1]);
@@ -2131,6 +2276,263 @@ Resources:
               });
             }
           };
+
+  RunbroGeminiFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-gemini-lambda-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: RunbroGeminiWorker
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ChangeMessageVisibility
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                  - sqs:ReceiveMessage
+                Resource: !GetAtt RunbroGeminiQueue.Arn
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource:
+                  - !GetAtt RunbroCodexQueue.Arn
+                  - !GetAtt RunbroAnalysisResultQueue.Arn
+              - Effect: Allow
+                Action:
+                  - dynamodb:UpdateItem
+                Resource: !GetAtt RunbroTable.Arn
+        - PolicyName: RunbroGeminiLogs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-gemini:*"
+
+  RunbroGeminiFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-gemini"
+      RetentionInDays: 7
+
+  RunbroGeminiFunction:
+    Type: AWS::Lambda::Function
+    DependsOn:
+      - RunbroGeminiFunctionLogGroup
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-gemini"
+      Description: Privacy-preserving Gemini first-pass analysis for RUNBRO
+      Runtime: nodejs22.x
+      Architectures:
+        - arm64
+      Handler: gemini_worker.handler
+      MemorySize: 256
+      Timeout: 60
+      ReservedConcurrentExecutions: 5
+      Role: !GetAtt RunbroGeminiFunctionRole.Arn
+      Environment:
+        Variables:
+          RUNBRO_TABLE_NAME: !Ref RunbroTable
+          GEMINI_API_KEY: !Ref GeminiApiKey
+          GEMINI_MODEL: "gemini-3.6-flash"
+          CODEX_QUEUE_URL: !Ref RunbroCodexQueue
+          RESULT_QUEUE_URL: !Ref RunbroAnalysisResultQueue
+      Code:
+        S3Bucket: !Ref AnalysisCodeBucket
+        S3Key: !Ref AnalysisCodeKey
+
+  RunbroGeminiEventSource:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt RunbroGeminiQueue.Arn
+      FunctionName: !Ref RunbroGeminiFunction
+      BatchSize: 1
+      Enabled: true
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+
+  RunbroCodexFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-codex-lambda-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: RunbroCodexWorker
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ChangeMessageVisibility
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                  - sqs:ReceiveMessage
+                Resource: !GetAtt RunbroCodexQueue.Arn
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource: !GetAtt RunbroAnalysisResultQueue.Arn
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:PutObject
+                Resource: !Sub "${RunbroGarminBucket.Arn}/${CodexAuthKey}"
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                  - kms:Encrypt
+                  - kms:GenerateDataKey
+                Resource: !GetAtt RunbroTokenKey.Arn
+        - PolicyName: RunbroCodexLogs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-codex:*"
+
+  RunbroCodexFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-codex"
+      RetentionInDays: 7
+
+  RunbroCodexFunction:
+    Type: AWS::Lambda::Function
+    DependsOn:
+      - RunbroCodexFunctionLogGroup
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-codex"
+      Description: Serialized Codex second-pass verification for RUNBRO
+      PackageType: Image
+      Architectures:
+        - x86_64
+      Code:
+        ImageUri: !Ref CodexImageUri
+      MemorySize: 2048
+      Timeout: 600
+      ReservedConcurrentExecutions: 1
+      EphemeralStorage:
+        Size: 1024
+      Role: !GetAtt RunbroCodexFunctionRole.Arn
+      Environment:
+        Variables:
+          CODEX_AUTH_BUCKET: !Ref RunbroGarminBucket
+          CODEX_AUTH_KEY: !Ref CodexAuthKey
+          RESULT_QUEUE_URL: !Ref RunbroAnalysisResultQueue
+          CODEX_TIMEOUT_MS: "510000"
+
+  RunbroCodexEventSource:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt RunbroCodexQueue.Arn
+      FunctionName: !Ref RunbroCodexFunction
+      BatchSize: 1
+      Enabled: true
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+
+  RunbroAnalysisFinalizerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-analysis-finalizer-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: RunbroAnalysisFinalizer
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ChangeMessageVisibility
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                  - sqs:ReceiveMessage
+                Resource: !GetAtt RunbroAnalysisResultQueue.Arn
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                Resource: !GetAtt RunbroTable.Arn
+        - PolicyName: RunbroAnalysisFinalizerLogs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-analysis-finalizer:*"
+
+  RunbroAnalysisFinalizerLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-analysis-finalizer"
+      RetentionInDays: 7
+
+  RunbroAnalysisFinalizer:
+    Type: AWS::Lambda::Function
+    DependsOn:
+      - RunbroAnalysisFinalizerLogGroup
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-analysis-finalizer"
+      Description: Validates and stores Gemini plus Codex RUNBRO analysis
+      Runtime: nodejs22.x
+      Architectures:
+        - arm64
+      Handler: finalizer.handler
+      MemorySize: 256
+      Timeout: 30
+      ReservedConcurrentExecutions: 5
+      Role: !GetAtt RunbroAnalysisFinalizerRole.Arn
+      Environment:
+        Variables:
+          RUNBRO_TABLE_NAME: !Ref RunbroTable
+      Code:
+        S3Bucket: !Ref AnalysisCodeBucket
+        S3Key: !Ref AnalysisCodeKey
+
+  RunbroAnalysisFinalizerEventSource:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt RunbroAnalysisResultQueue.Arn
+      FunctionName: !Ref RunbroAnalysisFinalizer
+      BatchSize: 1
+      Enabled: true
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
 
   RunbroGarminFunctionRole:
     Type: AWS::IAM::Role

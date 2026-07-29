@@ -10,7 +10,7 @@ RUNBRO는 목표 레이스, 컨디션, 러닝 활동을 카카오 계정 기준�
 - 추천 내용과 근거를 함께 제시하는 다음 훈련 제안
 - 날짜가 지정된 7일 계획과 월간 훈련 달력
 - Garmin Connect 로그인·MFA와 최근 러닝·수면·HRV·훈련 준비도 동기화
-- Gemini 3.6 Flash 1차 분석과 카카오 계정 기반 ChatGPT 앱 교차검증
+- Gemini 3.6 Flash 1차 분석과 Codex 2차 자동 교차검증
 - 연결 토큰, 러닝 기록, 프로필 전체 삭제
 
 ## Garmin Connect
@@ -35,29 +35,27 @@ RUNBRO는 목표 레이스, 컨디션, 러닝 활동을 카카오 계정 기준�
 
 ## 배포
 
-기존 `goyoungo-runbro-prod` 스택을 업데이트할 때 AWS CloudShell에서 저장소를 받은 뒤 다음 스크립트를 실행합니다.
+Garmin Lambda만 갱신할 때는 기존 스크립트를 사용합니다.
 
 ```text
 bash backend/deploy-runbro-garmin.sh
 ```
 
-스크립트는 다음 작업을 수행합니다.
-
-1. Linux x86_64·Python 3.13용 Lambda 의존성을 임시 폴더에 설치합니다.
-2. 고유한 S3 키로 배포 ZIP과 CloudFormation 템플릿을 업로드합니다.
-3. S3 템플릿 URL로 CloudFormation 템플릿을 검증합니다.
-4. `GarminCodeBucket`, `GarminCodeKey`를 전달해 기존 스택을 업데이트합니다.
-
-환경별로 값을 바꾸려면 실행 전에 설정합니다.
+Gemini·Codex 자동 분석 파이프라인을 배포할 때는 AWS CloudShell에서 다음 스크립트를 사용합니다. CloudShell은 Docker를 기본 제공하므로 Codex Lambda 컨테이너를 빌드해 ECR에 올리고, Gemini·결과 저장 Lambda ZIP과 CloudFormation 스택을 함께 갱신합니다.
 
 ```text
 export AWS_REGION=ap-northeast-3
 export RUNBRO_STACK_NAME=goyoungo-runbro-prod
-export RUNBRO_ARTIFACT_BUCKET=<기존 또는 새 배포 파일 버킷>
-bash backend/deploy-runbro-garmin.sh
+export RUNBRO_ARTIFACT_BUCKET=<기존 배포 파일 버킷>
+export CODEX_AUTH_FILE=$HOME/auth.json
+bash backend/deploy-runbro-analysis.sh
 ```
 
-새 스택을 만드는 경우에는 기존 필수 비밀 값도 함께 전달해야 합니다.
+`CODEX_AUTH_FILE`은 신뢰할 수 있는 PC에서 `codex login`으로 만든 파일 기반 인증 캐시입니다. 저장소에 넣지 말고 CloudShell 파일 업로드 기능으로 일시적으로 올린 뒤 사용합니다. 스크립트는 이를 공개 접근이 차단된 RUNBRO S3 버킷의 `system/codex/auth.json`에 저장하며, 버킷 기본 KMS 키로 암호화합니다.
+
+인증 파일을 전달하지 않아도 인프라는 배포되지만 Codex 검증 작업은 `auth_required` 상태가 됩니다. 인증 파일은 한 개의 직렬 Codex Lambda만 사용하고 실행 후 갱신본을 같은 S3 객체에 다시 저장합니다.
+
+새 스택을 만드는 경우에는 기존 필수 비밀 값과 분석용 세 값을 모두 전달해야 합니다.
 
 ```text
 aws cloudformation deploy \
@@ -73,43 +71,32 @@ aws cloudformation deploy \
     StravaClientSecret=<strava-client-secret> \
     GeminiApiKey=<gemini-api-key> \
     GarminCodeBucket=<artifact-bucket> \
-    GarminCodeKey=<artifact-key>
+    GarminCodeKey=<artifact-key> \
+    AnalysisCodeBucket=<artifact-bucket> \
+    AnalysisCodeKey=<analysis-artifact-key> \
+    CodexImageUri=<ecr-image-uri>
 ```
 
 배포 출력의 `ApiEndpoint`는 기존 `assets/runbro-config.js`의 `apiBase`와 같아야 합니다. 운영 키와 비밀 값은 저장소나 명령 기록에 커밋하지 않습니다.
 
-## ChatGPT 앱 연결
+## 자동 분석 흐름
 
-OpenAI API 키를 서버에 저장하거나 RUNBRO 서버에서 ChatGPT API를 직접 호출하지 않습니다. 대신 배포된 API 자체가 OAuth 2.1 보호 MCP 서버로 동작하고, 사용자가 ChatGPT에서 RUNBRO 앱에 카카오 계정 접근 권한을 승인합니다.
+OpenAI API는 사용하지 않습니다. 카카오 로그인 사용자가 분석을 요청하면 공개 API는 즉시 작업 번호만 반환하고 다음 순서로 비동기 처리합니다.
 
-1. ChatGPT 앱/커넥터 개발 화면에서 원격 MCP 서버를 추가합니다.
-2. 서버 URL은 배포 출력의 `ApiEndpoint` 뒤에 `/mcp`를 붙인 주소를 사용합니다.
-3. 인증 방식은 OAuth를 선택합니다. 서버는 보호 리소스·인증 서버 메타데이터, 동적 클라이언트 등록, PKCE S256, 액세스·리프레시 토큰 회전을 제공합니다.
-4. 앱 연결 화면에서 카카오 로그인 후 `러닝 요약 읽기`와 `검증 결과 저장` 권한을 승인합니다.
-5. RUNBRO 화면의 `ChatGPT로 상세 검증`을 누르고 다음 요청을 실행합니다.
+1. API Lambda가 비식별 집계와 작업 번호를 암호화된 Gemini FIFO 대기열에 넣습니다.
+2. Gemini Lambda가 무료 티어의 `gemini-3.6-flash`로 1차 분석합니다.
+3. Codex FIFO 대기열이 하나의 Codex Lambda에 작업을 직렬 전달합니다.
+4. Codex Lambda가 읽기 전용·비대화형 모드로 1차 분석을 교차검증합니다.
+5. 결과 저장 Lambda가 JSON 형식, 문자열 길이, 훈련 유형, 7일 계획을 다시 검사한 뒤 DynamoDB에 저장합니다.
+6. RUNBRO 화면은 작업 상태를 조회해 완료된 결과를 자동으로 반영합니다.
 
-```text
-RUNBRO 앱으로 내 최근 러닝 기록과 Gemini 1차 분석을 교차검증하고,
-다음 훈련의 내용과 근거 및 7일 계획을 저장해줘.
-```
-
-MCP 도구는 다음 두 개입니다.
-
-- `get_running_snapshot`: 목표 레이스, 4·8·12주 집계, 러닝 자동 분류, VDOT·심박존·회복 지표, Gemini 1차 분석을 읽습니다.
-- `save_verified_analysis`: 사용자가 저장을 명시적으로 승인한 뒤 ChatGPT의 검증 결과, 근거형 다음 훈련 제안, 7일 계획을 저장합니다.
-
-MCP 서버 URL과 OAuth 메타데이터 예시는 다음과 같습니다.
-
-```text
-https://<api-id>.execute-api.ap-northeast-3.amazonaws.com/mcp
-https://<api-id>.execute-api.ap-northeast-3.amazonaws.com/.well-known/oauth-protected-resource/mcp
-https://<api-id>.execute-api.ap-northeast-3.amazonaws.com/.well-known/oauth-authorization-server
-```
+기존 ChatGPT 앱용 OAuth/MCP 경로는 이전 연결 호환성을 위해 보호된 상태로 남아 있지만 RUNBRO 화면에서는 호출하지 않습니다.
 
 ## 테스트
 
 ```text
 python -m unittest discover -s backend/runbro-garmin/tests -v
+node --test backend/runbro-analysis/tests/analysis-lib.test.mjs
 node --check assets/runbro.js
 ```
 
@@ -120,8 +107,10 @@ node --check assets/runbro.js
 - 카카오 사용자 ID는 HMAC-SHA256으로 가명 처리합니다.
 - Strava 액세스·리프레시 토큰은 사용자·공급자 암호화 컨텍스트와 함께 KMS로 암호화합니다.
 - Garmin 토큰과 데이터는 공개 접근이 차단된 전용 S3 버킷에서 KMS로 암호화합니다.
-- Gemini에는 이름, 계정 ID, 활동 경로, 위치, 정확한 시작 시각을 보내지 않고 거리·평균 페이스·목표·컨디션 집계만 전달합니다.
-- ChatGPT 앱은 사용자가 승인한 카카오 계정의 익명 집계만 읽습니다. 카카오 ID, Garmin 토큰·비밀번호, 경로·좌표, 활동명, 정확한 시작 시각은 MCP 응답에 포함하지 않습니다.
+- Gemini와 Codex에는 이름, 계정 ID, 활동 경로, 위치, 활동명, 정확한 시작 시각, 정확한 HRV·안정시 심박을 보내지 않습니다. 러닝 거리·페이스·목표와 범주화한 회복 상태만 전달합니다.
+- SQS 메시지는 SSE-SQS로 암호화하고 1시간 후 삭제하며, 처리 실패 대기열도 1일 후 삭제합니다.
+- Codex 인증 캐시는 RUNBRO S3 버킷에서 KMS로 암호화하고 Codex Lambda 역할만 읽고 갱신할 수 있습니다. 이전 객체 버전은 1일 후 삭제합니다.
+- Codex는 사용자별 세션을 이어 쓰지 않고 작업마다 임시 디렉터리에서 새 비대화형 세션으로 실행합니다.
 - OAuth 액세스 토큰은 원문 대신 SHA-256 해시로 DynamoDB에 저장하고 1시간 후 만료합니다. 리프레시 토큰은 회전하며 30일 후 만료합니다.
 - RUNBRO 계정 삭제 시 사용자 파티션의 ChatGPT 권한도 제거되므로 발급된 토큰은 즉시 사용할 수 없게 됩니다.
 - 분석은 의료 진단이 아니며 거리 급증과 회복을 우선 확인합니다.

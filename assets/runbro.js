@@ -7,6 +7,7 @@
         new URLSearchParams(window.location.search).has("preview");
     var currentDashboard = null;
     var currentGarminChallenge = null;
+    var analysisPollToken = 0;
     var trendWeeks = 4;
     var calendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     var themeOrder = ["system", "light", "dark"];
@@ -986,7 +987,7 @@
         el("trainingCalendar").innerHTML = cells.join("");
     }
 
-    function renderAnalysis(analysis) {
+    function renderAnalysis(analysis, analysisJob) {
         el("analysisTitle").textContent = analysis && analysis.title || "목표와 기록을 연결해 주세요.";
         el("analysisSummary").textContent = analysis && analysis.summary ||
             "최근 훈련량, 페이스 변화, 회복 정보를 함께 비교해 오늘의 상태와 다음 훈련 방향을 제안합니다.";
@@ -995,26 +996,57 @@
         }).join("");
         var verification = analysis && analysis.verification;
         var badge = el("analysisVerification");
+        var automationStatus = el("analysisAutomationStatus");
+        var jobStatus = analysisJob && analysisJob.status;
+        var jobLabels = {
+            queued: "분석 요청 대기",
+            gemini_processing: "GEMINI 1차 분석 중",
+            codex_queued: "CODEX 교차검증 중",
+            auth_required: "CODEX 인증 확인 필요",
+            failed: "자동 검증 실패"
+        };
+        if (jobLabels[jobStatus]) {
+            badge.hidden = false;
+            badge.classList.remove("is-adjusted");
+            badge.classList.add("is-single");
+            badge.textContent = jobLabels[jobStatus];
+            badge.title = "";
+            automationStatus.textContent = {
+                queued: "분석 요청을 안전한 대기열에 등록했습니다.",
+                gemini_processing: "Gemini가 비식별 러닝 집계를 분석하고 있습니다.",
+                codex_queued: "Codex가 1차 분석과 기록 추세를 교차검증하고 있습니다.",
+                auth_required: "자동 검증 서비스 인증 갱신이 필요합니다.",
+                failed: "자동 검증을 완료하지 못했습니다. 잠시 후 다시 분석해 주세요."
+            }[jobStatus];
+            return;
+        }
         if (!verification || !verification.status) {
             badge.hidden = true;
             badge.textContent = "";
             badge.removeAttribute("title");
-            el("chatgptReviewStatus").textContent =
-                "첫 연결 시 ChatGPT의 RUNBRO 앱에서 권한을 승인해 주세요.";
+            automationStatus.textContent =
+                "분석을 실행하면 Gemini 1차 분석과 Codex 2차 검증이 자동으로 진행됩니다.";
             return;
         }
         badge.hidden = false;
         badge.classList.toggle("is-adjusted", verification.verdict === "adjusted");
-        badge.classList.toggle("is-single", verification.status !== "chatgpt_verified");
-        badge.textContent = verification.status === "chatgpt_verified"
-            ? "GEMINI × CHATGPT 검증 완료"
+        badge.classList.toggle(
+            "is-single",
+            !["chatgpt_verified", "codex_verified"].includes(verification.status)
+        );
+        badge.textContent = verification.status === "codex_verified"
+            ? "GEMINI × CODEX 검증 완료"
+            : verification.status === "chatgpt_verified"
+                ? "GEMINI × CHATGPT 검증 완료"
             : verification.status === "pending_chatgpt"
-                ? "GEMINI 1차 분석 · CHATGPT 검증 대기"
+                ? "GEMINI 1차 분석 · 새 검증 필요"
                 : "RUNBRO 분석";
         badge.title = verification.note || "";
-        el("chatgptReviewStatus").textContent = verification.status === "chatgpt_verified"
-            ? "ChatGPT가 기록 집계와 1차 분석을 대조해 저장한 결과입니다."
-            : "ChatGPT의 RUNBRO 앱에서 이 분석을 교차검증할 수 있습니다.";
+        automationStatus.textContent = verification.status === "codex_verified"
+            ? "Gemini 분석을 Codex가 대조하고 형식과 안전 기준을 확인해 저장한 결과입니다."
+            : verification.status === "chatgpt_verified"
+                ? "기존 ChatGPT 교차검증으로 저장된 결과입니다."
+                : "새 자동 분석을 실행하면 Codex 교차검증 결과로 갱신됩니다.";
     }
 
     function renderAnalysisEvidence(dashboard) {
@@ -1148,7 +1180,7 @@
         renderHero(dashboard.profile, dashboard.metrics);
         renderMetrics(dashboard);
         renderTrends(dashboard);
-        renderAnalysis(dashboard.analysis);
+        renderAnalysis(dashboard.analysis, dashboard.analysisJob);
         renderAnalysisEvidence(dashboard);
         renderNextTraining(dashboard.nextTraining);
         renderPlan(dashboard.plan, dashboard.metrics || {});
@@ -1165,6 +1197,7 @@
             body && body.health
         );
         normalized.connections = body && body.connections || {};
+        normalized.analysisJob = body && body.analysisJob || null;
         if (body && body.analysis && body.analysis.title) {
             var storedAnalysis = Object.assign({}, body.analysis);
             var storedPoints = Array.isArray(storedAnalysis.points)
@@ -1321,7 +1354,60 @@
         return Promise.all([baseRequest, fetchGarminDashboard()]).then(function (values) {
             var dashboard = normalizeDashboard(mergeProviderDashboards(values[0], values[1]));
             renderDashboard(dashboard);
+            if (dashboard.analysisJob && isPendingAnalysis(dashboard.analysisJob.status)) {
+                return pollAnalysisJob(
+                    dashboard.analysisJob.jobId,
+                    values[1],
+                    ++analysisPollToken,
+                    0
+                );
+            }
             return dashboard;
+        });
+    }
+
+    function isPendingAnalysis(status) {
+        return ["queued", "gemini_processing", "codex_queued"].includes(status);
+    }
+
+    function analysisFailureMessage(job) {
+        if (job && job.status === "auth_required") {
+            return "Codex 자동 검증 인증 갱신이 필요합니다. 잠시 후 다시 시도해 주세요.";
+        }
+        return "자동 분석을 완료하지 못했습니다. 잠시 후 다시 분석해 주세요.";
+    }
+
+    function pollAnalysisJob(jobId, garminDashboard, token, attempt) {
+        if (token !== analysisPollToken) return Promise.resolve(currentDashboard);
+        if (attempt >= 120) {
+            throw new Error("분석 시간이 예상보다 길어지고 있습니다. 잠시 후 다시 확인해 주세요.");
+        }
+        var delay = attempt < 2 ? 2000 : 5000;
+        return new Promise(function (resolve) {
+            window.setTimeout(resolve, delay);
+        }).then(function () {
+            if (token !== analysisPollToken) return currentDashboard;
+            return apiRequest("/analysis/" + encodeURIComponent(jobId), { method: "GET" });
+        }).then(function (body) {
+            if (!body || token !== analysisPollToken) return currentDashboard;
+            var dashboard = normalizeDashboard(
+                mergeProviderDashboards(body, garminDashboard)
+            );
+            renderDashboard(dashboard);
+            var job = dashboard.analysisJob || {};
+            if (job.status === "complete") {
+                setFormStatus("Gemini 분석과 Codex 교차검증을 완료했습니다.");
+                return dashboard;
+            }
+            if (job.status === "failed" || job.status === "auth_required") {
+                throw new Error(analysisFailureMessage(job));
+            }
+            setFormStatus(
+                job.status === "codex_queued"
+                    ? "Codex가 1차 분석을 교차검증하고 있습니다."
+                    : "Gemini가 러닝 기록을 분석하고 있습니다."
+            );
+            return pollAnalysisJob(jobId, garminDashboard, token, attempt + 1);
         });
     }
 
@@ -1344,6 +1430,21 @@
                 mergeProviderDashboards(analyzed, garminDashboard)
             );
             renderDashboard(dashboard);
+            if (dashboard.analysisJob && isPendingAnalysis(dashboard.analysisJob.status)) {
+                setFormStatus("러닝 분석 요청을 등록했습니다.");
+                return pollAnalysisJob(
+                    dashboard.analysisJob.jobId,
+                    garminDashboard,
+                    ++analysisPollToken,
+                    0
+                );
+            }
+            if (
+                dashboard.analysisJob &&
+                ["failed", "auth_required"].includes(dashboard.analysisJob.status)
+            ) {
+                throw new Error(analysisFailureMessage(dashboard.analysisJob));
+            }
             return dashboard;
         });
     }
@@ -1631,18 +1732,6 @@
         }
     }
 
-    function openChatgptReview() {
-        var target = String(config.chatgptAppUrl || "https://chatgpt.com/");
-        var prompt = "RUNBRO 앱으로 내 최근 러닝 기록과 Gemini 1차 분석을 교차검증하고, 다음 훈련의 내용과 근거 및 7일 계획을 저장해줘.";
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(prompt).catch(function () {});
-        }
-        window.open(target, "_blank", "noopener,noreferrer");
-        el("chatgptReviewStatus").textContent = config.chatgptAppUrl
-            ? "ChatGPT에서 RUNBRO 앱 연결을 승인한 뒤 상세 검증을 진행해 주세요."
-            : "분석 요청 문구를 복사했습니다. ChatGPT에서 RUNBRO 앱을 연결한 뒤 붙여넣어 주세요.";
-    }
-
     function disconnectAll() {
         requireLogin("연결과 저장 기록을 삭제하려면 카카오 로그인이 필요합니다.", function () {
             if (!window.confirm("RUNBRO에 저장된 연결 정보, 러닝 기록, 분석 결과를 모두 삭제할까요?")) return;
@@ -1725,7 +1814,6 @@
         });
         el("syncButton").addEventListener("click", syncActivities);
         el("refreshAnalysis").addEventListener("click", refreshAnalysis);
-        el("chatgptReviewButton").addEventListener("click", openChatgptReview);
         document.querySelectorAll("[data-period-weeks]").forEach(function (button) {
             button.addEventListener("click", function () { selectTrendPeriod(button); });
         });

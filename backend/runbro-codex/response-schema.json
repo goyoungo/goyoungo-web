@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "summary": { "type": "string", "minLength": 1, "maxLength": 520 },
+        "points": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": { "type": "string", "minLength": 1, "maxLength": 220 }
+        }
+      },
+      "required": ["title", "summary", "points"]
+    },
+    "recommendation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["interval", "tempo", "zone2", "long", "recovery", "rest"]
+        },
+        "title": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "prescription": { "type": "string", "minLength": 1, "maxLength": 260 },
+        "why": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": { "type": "string", "minLength": 1, "maxLength": 220 }
+        },
+        "caution": { "type": "string", "minLength": 1, "maxLength": 240 }
+      },
+      "required": ["type", "title", "prescription", "why", "caution"]
+    },
+    "trainingPlan": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "weekday": { "type": "string", "minLength": 1, "maxLength": 4 },
+          "type": { "type": "string", "minLength": 1, "maxLength": 20 },
+          "title": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "detail": { "type": "string", "minLength": 1, "maxLength": 180 },
+          "duration": { "type": "string", "minLength": 1, "maxLength": 40 },
+          "effort": { "type": "string", "minLength": 1, "maxLength": 40 },
+          "purpose": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "note": { "type": "string", "minLength": 1, "maxLength": 240 },
+          "distanceKm": { "type": "number", "minimum": 0, "maximum": 100 },
+          "key": { "type": "boolean" },
+          "rest": { "type": "boolean" }
+        },
+        "required": [
+          "date",
+          "weekday",
+          "type",
+          "title",
+          "detail",
+          "duration",
+          "effort",
+          "purpose",
+          "note",
+          "distanceKm",
+          "key",
+          "rest"
+        ]
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["confirmed", "adjusted"]
+    },
+    "verificationNote": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 180
+    }
+  },
+  "required": [
+    "analysis",
+    "recommendation",
+    "trainingPlan",
+    "verdict",
+    "verificationNote"
+  ]
+}
