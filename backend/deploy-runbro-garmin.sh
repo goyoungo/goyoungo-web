@@ -12,6 +12,7 @@ PACKAGE_DIR="${BUILD_ROOT}/package"
 ZIP_PATH="${BUILD_ROOT}/runbro-garmin.zip"
 BUILD_ID="$(date -u +%Y%m%dT%H%M%SZ)"
 CODE_KEY="runbro-garmin/${BUILD_ID}.zip"
+TEMPLATE_KEY="runbro-cloudformation/${BUILD_ID}.yaml"
 
 cleanup() {
   rm -rf "${BUILD_ROOT}"
@@ -64,14 +65,22 @@ aws s3 cp \
   --region "${REGION}" \
   --sse AES256
 
+aws s3 cp \
+  "${SCRIPT_DIR}/runbro-stack.yaml" \
+  "s3://${ARTIFACT_BUCKET}/${TEMPLATE_KEY}" \
+  --region "${REGION}" \
+  --sse AES256
+
 aws cloudformation validate-template \
   --region "${REGION}" \
-  --template-body "file://${SCRIPT_DIR}/runbro-stack.yaml" >/dev/null
+  --template-url "https://${ARTIFACT_BUCKET}.s3.${REGION}.amazonaws.com/${TEMPLATE_KEY}" >/dev/null
 
 aws cloudformation deploy \
   --region "${REGION}" \
   --stack-name "${STACK_NAME}" \
   --template-file "${SCRIPT_DIR}/runbro-stack.yaml" \
+  --s3-bucket "${ARTIFACT_BUCKET}" \
+  --s3-prefix "runbro-cloudformation" \
   --capabilities CAPABILITY_NAMED_IAM \
   --no-fail-on-empty-changeset \
   --parameter-overrides \

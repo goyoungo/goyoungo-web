@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f1ea">
+    <script src="/assets/theme.js?v=20260728-theme1"></script>
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="description" content="ChatGPT RUNBRO 앱과 카카오 계정을 안전하게 연결합니다.">
+    <title>ChatGPT 연결 · RUNBRO</title>
+    <link rel="stylesheet" href="/assets/theme.css?v=20260728-theme2">
+    <link rel="stylesheet" href="/assets/runbro.css?v=20260729-insights1">
+</head>
+<body>
+    <header class="run-header">
+        <a class="run-brand" href="/runbro/" aria-label="RUNBRO로 돌아가기">
+            <span class="run-brand-dot" aria-hidden="true"></span>
+            <span>RUNBRO</span>
+        </a>
+        <button id="logoutBtn" class="quiet-button account-button" type="button">로그인</button>
+    </header>
+
+    <main id="mainContent" class="oauth-consent-page" tabindex="-1">
+        <section class="oauth-consent-card" aria-labelledby="consentTitle">
+            <p class="section-index">CHATGPT · SECURE CONNECTION</p>
+            <h1 id="consentTitle">ChatGPT가 RUNBRO 분석을 도와드릴까요?</h1>
+            <p class="oauth-consent-lead">카카오 계정에 연결된 러닝 기록을 개인 식별정보 없이 요약해 ChatGPT가 교차검증하고, 승인한 결과만 RUNBRO에 저장합니다.</p>
+
+            <div class="oauth-scope-list" aria-label="요청 권한">
+                <article>
+                    <span>읽기</span>
+                    <div>
+                        <strong>러닝 요약 조회</strong>
+                        <p>목표 레이스, 기간별 거리·페이스·VDOT 추정, 러닝 분류와 심박존 비율</p>
+                    </div>
+                </article>
+                <article>
+                    <span>쓰기</span>
+                    <div>
+                        <strong>검증 결과 저장</strong>
+                        <p>상태 분석, 근거가 포함된 다음 훈련 제안과 7일 훈련계획</p>
+                    </div>
+                </article>
+            </div>
+
+            <div class="oauth-data-boundary">
+                <strong>전달하지 않는 정보</strong>
+                <p>카카오 ID, Garmin 토큰, 비밀번호, 활동 경로·좌표, 활동명, 정확한 시작 시각은 ChatGPT에 전달하지 않습니다.</p>
+            </div>
+
+            <div class="oauth-consent-actions">
+                <button id="approveChatgpt" class="primary-button" type="button">카카오 로그인 후 연결</button>
+                <button id="cancelChatgpt" class="secondary-button" type="button">취소</button>
+            </div>
+            <p id="connectStatus" class="dialog-status" role="status" aria-live="polite"></p>
+        </section>
+    </main>
+
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/v1/kakao.min.js"></script>
+    <script src="/assets/auth.js?v=20260728-auth3"></script>
+    <script src="/assets/runbro-config.js?v=20260729-chatgpt1"></script>
+    <script src="/assets/runbro-chatgpt-connect.js?v=20260729-chatgpt1"></script>
+</body>
+</html>

@@ -19,7 +19,7 @@
     <link rel="canonical" href="https://goyoungo.com/runbro/">
     <title>RUNBRO · GO.YOUNGO</title>
     <link rel="stylesheet" href="/assets/theme.css?v=20260728-theme2">
-    <link rel="stylesheet" href="/assets/runbro.css?v=20260729-detail1">
+    <link rel="stylesheet" href="/assets/runbro.css?v=20260729-insights1">
 </head>
 <body>
     <a class="skip-link" href="#mainContent">콘텐츠로 건너뛰기</a>
@@ -208,9 +208,64 @@
                 <section class="panel analysis-panel">
                     <div class="section-heading">
                         <div>
-                            <p class="section-index">04 · ANALYSIS</p>
+                            <p class="section-index">04 · TRENDS</p>
+                            <h2>기간별 기록 추세</h2>
+                        </div>
+                        <div class="period-selector" role="group" aria-label="추세 조회 기간">
+                            <button class="period-button is-active" type="button" data-period-weeks="4"
+                                aria-pressed="true">4주</button>
+                            <button class="period-button" type="button" data-period-weeks="8"
+                                aria-pressed="false">8주</button>
+                            <button class="period-button" type="button" data-period-weeks="12"
+                                aria-pressed="false">12주</button>
+                        </div>
+                    </div>
+                    <div id="trendSummary" class="trend-summary" aria-label="VDOT와 심박 요약"></div>
+                    <div class="trend-chart-grid">
+                        <article class="trend-chart-card">
+                            <div class="chart-copy">
+                                <strong>주간 거리 추세</strong>
+                                <span id="distanceTrendLabel">주간 합계 · km</span>
+                            </div>
+                            <div id="distanceTrend" class="trend-bars" role="img"
+                                aria-label="선택 기간의 주간 러닝 거리"></div>
+                        </article>
+                        <article class="trend-chart-card">
+                            <div class="chart-copy">
+                                <strong>VDOT 추정 추세</strong>
+                                <span>러닝 기록 기반 · 참고 지표</span>
+                            </div>
+                            <div id="vdotTrend" class="trend-bars vdot-bars" role="img"
+                                aria-label="선택 기간의 주간 VDOT 추정값"></div>
+                        </article>
+                    </div>
+                    <div class="distribution-grid">
+                        <article>
+                            <div class="chart-copy">
+                                <strong>러닝 자동 분류</strong>
+                                <span>인터벌 · 템포 · 존2 · 장거리 · 회복런</span>
+                            </div>
+                            <div id="runTypeDistribution" class="distribution-list"></div>
+                        </article>
+                        <article>
+                            <div class="chart-copy">
+                                <strong>심박존 분포</strong>
+                                <span id="heartZoneBasis">최근 관측 심박을 기준으로 계산합니다.</span>
+                            </div>
+                            <div id="heartZoneDistribution" class="distribution-list"></div>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="panel analysis-panel">
+                    <div class="section-heading">
+                        <div>
+                            <p class="section-index">05 · ANALYSIS</p>
                             <h2>러닝 상세 분석</h2>
                         </div>
+                        <button id="chatgptReviewButton" class="chatgpt-button" type="button">
+                            ChatGPT로 상세 검증
+                        </button>
                     </div>
                     <div class="analysis-copy">
                         <div class="analysis-label-row">
@@ -226,17 +281,58 @@
                         </ul>
                     </div>
                     <div id="analysisEvidence" class="analysis-evidence" aria-label="분석 근거"></div>
+                    <div class="chatgpt-review-note">
+                        <strong>ChatGPT 교차검증</strong>
+                        <p>카카오 계정으로 RUNBRO 앱을 연결하면 개인 식별정보와 경로를 제외한 러닝 집계만 ChatGPT가 읽고, 확인한 분석을 이 화면에 다시 저장합니다.</p>
+                        <span id="chatgptReviewStatus">첫 연결 시 ChatGPT의 RUNBRO 앱에서 권한을 승인해 주세요.</span>
+                    </div>
+                </section>
+
+                <section class="panel next-training-panel">
+                    <div class="section-heading">
+                        <div>
+                            <p class="section-index">06 · NEXT SESSION</p>
+                            <h2>다음 훈련 제안</h2>
+                        </div>
+                        <span id="nextTrainingType" class="status-chip accent-chip">READY</span>
+                    </div>
+                    <div id="nextTraining" class="next-training">
+                        <p class="empty-state">기록을 연결하면 다음 훈련과 추천 근거를 표시합니다.</p>
+                    </div>
                 </section>
 
                 <section class="panel plan-panel">
                     <div class="section-heading">
                         <div>
-                            <p class="section-index">05 · THIS WEEK</p>
-                            <h2>이번 주 훈련 스케줄</h2>
+                            <p class="section-index">07 · CALENDAR</p>
+                            <h2>훈련 달력</h2>
                         </div>
                         <span id="planPhase" class="status-chip accent-chip">BASE</span>
                     </div>
                     <div id="planOverview" class="plan-overview" aria-label="주간 훈련 계획 요약"></div>
+                    <div class="calendar-toolbar">
+                        <div>
+                            <button id="calendarPrev" class="calendar-nav" type="button"
+                                aria-label="이전 달">←</button>
+                            <strong id="calendarTitle">—</strong>
+                            <button id="calendarNext" class="calendar-nav" type="button"
+                                aria-label="다음 달">→</button>
+                        </div>
+                        <button id="calendarToday" class="text-button" type="button">오늘</button>
+                    </div>
+                    <div class="calendar-weekdays" aria-hidden="true">
+                        <span>월</span><span>화</span><span>수</span><span>목</span>
+                        <span>금</span><span>토</span><span>일</span>
+                    </div>
+                    <div id="trainingCalendar" class="training-calendar" role="grid"
+                        aria-label="러닝 기록과 훈련 계획 달력"></div>
+                    <div class="calendar-legend" aria-label="달력 범례">
+                        <span><i class="legend-dot actual"></i>완료 러닝</span>
+                        <span><i class="legend-dot planned"></i>예정 훈련</span>
+                        <span><i class="legend-dot key"></i>핵심 훈련</span>
+                        <span><i class="legend-dot rest"></i>회복·휴식</span>
+                    </div>
+                    <h3 class="plan-detail-title">7일 상세 계획</h3>
                     <div id="trainingPlan" class="training-plan">
                         <p class="empty-state">목표 레이스를 저장하면 이번 주 계획이 표시됩니다.</p>
                     </div>
@@ -245,7 +341,7 @@
                 <section class="panel activity-panel">
                     <div class="section-heading">
                         <div>
-                            <p class="section-index">06 · ACTIVITY</p>
+                            <p class="section-index">08 · ACTIVITY</p>
                             <h2>최근 러닝 기록</h2>
                         </div>
                         <span id="activityCount" class="status-chip">0 RUNS</span>
@@ -256,6 +352,7 @@
                                 <tr>
                                     <th scope="col">날짜</th>
                                     <th scope="col">러닝</th>
+                                    <th scope="col">분류</th>
                                     <th scope="col">거리</th>
                                     <th scope="col">페이스</th>
                                     <th scope="col">심박</th>
@@ -263,7 +360,7 @@
                             </thead>
                             <tbody id="activityRows">
                                 <tr>
-                                    <td colspan="5" class="empty-cell">연결된 기록이 없습니다.</td>
+                                    <td colspan="6" class="empty-cell">연결된 기록이 없습니다.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -331,6 +428,6 @@
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/v1/kakao.min.js"></script>
     <script src="/assets/auth.js?v=20260728-auth3"></script>
     <script src="/assets/runbro-config.js?v=20260728-runbro1"></script>
-    <script src="/assets/runbro.js?v=20260729-detail1"></script>
+    <script src="/assets/runbro.js?v=20260729-insights1"></script>
 </body>
 </html>
