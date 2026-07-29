@@ -44,8 +44,8 @@ bash backend/deploy-runbro-garmin.sh
 스크립트는 다음 작업을 수행합니다.
 
 1. Linux x86_64·Python 3.13용 Lambda 의존성을 임시 폴더에 설치합니다.
-2. 고유한 S3 키로 배포 ZIP을 업로드합니다.
-3. CloudFormation 템플릿을 검증합니다.
+2. 고유한 S3 키로 배포 ZIP과 CloudFormation 템플릿을 업로드합니다.
+3. S3 템플릿 URL로 CloudFormation 템플릿을 검증합니다.
 4. `GarminCodeBucket`, `GarminCodeKey`를 전달해 기존 스택을 업데이트합니다.
 
 환경별로 값을 바꾸려면 실행 전에 설정합니다.
