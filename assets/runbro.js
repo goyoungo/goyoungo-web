@@ -1984,6 +1984,7 @@
         });
         el("syncButton").addEventListener("click", syncActivities);
         el("refreshAnalysis").addEventListener("click", refreshAnalysis);
+        el("refreshDetailedAnalysis").addEventListener("click", refreshAnalysis);
         el("analysisTabRace").addEventListener("click", function () {
             selectAnalysisTab("race");
         });

@@ -318,6 +318,12 @@ main {
     letter-spacing: -0.055em;
 }
 
+.analysis-heading-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .status-chip {
     padding: 5px 7px;
     border: 1px solid var(--run-line);
@@ -2304,6 +2310,11 @@ html[data-theme="dark"] .plan-day.is-rest {
 
     .chatgpt-button {
         width: 100%;
+    }
+
+    .analysis-heading-actions {
+        flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
     .next-training article {
