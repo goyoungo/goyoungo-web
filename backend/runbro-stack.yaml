@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Secure personal running data, Garmin sync and ChatGPT MCP analysis API for GO.YOUNGO RUNBRO
+Description: Secure personal running data, Garmin sync and automatic Gemini/GPT analysis API for GO.YOUNGO RUNBRO
 
 Parameters:
   KakaoAppId:
@@ -31,6 +31,10 @@ Parameters:
     NoEcho: true
     Default: ""
     Description: Optional Gemini API key for Gemini 3.6 Flash first-pass analysis
+  OpenAIApiKeyParameterName:
+    Type: String
+    Default: ""
+    Description: Optional SSM SecureString parameter name containing the OpenAI API key
   GarminCodeBucket:
     Type: String
     Default: ""
@@ -44,6 +48,7 @@ Conditions:
   GarminCodeProvided: !And
     - !Not [!Equals [!Ref GarminCodeBucket, ""]]
     - !Not [!Equals [!Ref GarminCodeKey, ""]]
+  OpenAIApiKeyConfigured: !Not [!Equals [!Ref OpenAIApiKeyParameterName, ""]]
 
 Resources:
   RunbroTable:
@@ -220,7 +225,7 @@ Resources:
       - RunbroFunctionLogGroup
     Properties:
       FunctionName: !Sub "${AWS::StackName}-api"
-      Description: RUNBRO profile, privacy-preserving analysis and ChatGPT MCP OAuth
+      Description: RUNBRO profile, privacy-preserving Gemini/GPT analysis and ChatGPT MCP OAuth
       Runtime: nodejs22.x
       Architectures:
         - arm64
@@ -239,6 +244,10 @@ Resources:
           STRAVA_CLIENT_ID: !Ref StravaClientId
           STRAVA_CLIENT_SECRET: !Ref StravaClientSecret
           GEMINI_API_KEY: !Ref GeminiApiKey
+          OPENAI_API_KEY: !If
+            - OpenAIApiKeyConfigured
+            - !Sub "{{resolve:ssm-secure:${OpenAIApiKeyParameterName}}}"
+            - ""
           RUNBRO_GARMIN_BUCKET: !Ref RunbroGarminBucket
       Code:
         ZipFile: |
@@ -273,6 +282,7 @@ Resources:
           const stravaClientId = String(process.env.STRAVA_CLIENT_ID || "");
           const stravaClientSecret = process.env.STRAVA_CLIENT_SECRET || "";
           const geminiApiKey = process.env.GEMINI_API_KEY || "";
+          const openaiApiKey = process.env.OPENAI_API_KEY || "";
           const garminBucket = process.env.RUNBRO_GARMIN_BUCKET || "";
           const callbackUrl = "https://goyoungo.com/runbro/callback.html";
           const chatgptConsentUrl = "https://goyoungo.com/runbro/chatgpt-connect.html";
@@ -1065,6 +1075,30 @@ Resources:
             return { title, summary, points };
           }
 
+          function responseOutputText(body) {
+            if (!body || !Array.isArray(body.output)) return "";
+            for (const item of body.output) {
+              if (!item || item.type !== "message" || !Array.isArray(item.content)) continue;
+              for (const part of item.content) {
+                if (part && part.type === "output_text" && typeof part.text === "string") {
+                  return part.text;
+                }
+              }
+            }
+            return "";
+          }
+
+          function normalizedGptVerification(value) {
+            const analysis = normalizedAnalysis(value);
+            if (!analysis) return null;
+            const verdict = ["confirmed", "adjusted"].includes(value.verdict)
+              ? value.verdict
+              : null;
+            const verificationNote = String(value.verificationNote || "").trim().slice(0, 180);
+            if (!verdict || !verificationNote) return null;
+            return { ...analysis, verdict, verificationNote };
+          }
+
           async function geminiAnalysis(aggregate) {
             if (!geminiApiKey || !aggregate.race || aggregate.runCount28Days < 2) return null;
             const prompt = [
@@ -1117,16 +1151,120 @@ Resources:
             }
           }
 
-          async function firstPassAnalysis(aggregate) {
+          async function gptCrossValidation(aggregate, gemini, userPk) {
+            if (!openaiApiKey || !gemini) return null;
+            const schema = {
+              type: "object",
+              properties: {
+                title: { type: "string" },
+                summary: { type: "string" },
+                points: {
+                  type: "array",
+                  items: { type: "string" },
+                  minItems: 5,
+                  maxItems: 5
+                },
+                verdict: {
+                  type: "string",
+                  enum: ["confirmed", "adjusted"]
+                },
+                verificationNote: { type: "string" }
+              },
+              required: [
+                "title",
+                "summary",
+                "points",
+                "verdict",
+                "verificationNote"
+              ],
+              additionalProperties: false
+            };
+            const prompt = [
+              "당신은 RUNBRO의 독립적인 2차 러닝 훈련 검증자입니다.",
+              "아래 익명 집계와 Gemini 1차 분석을 대조해 근거가 약하거나 과도한 판단을 수정하세요.",
+              "의료 진단을 하지 말고, 통증이나 이상 증상은 전문가 상담을 권고하세요.",
+              "수치나 목표 달성 가능성을 추측하거나 단정하지 마세요.",
+              "주간 거리 급증, 회복 부족, 단조로운 훈련 구성을 우선 확인하세요.",
+              "points는 차례대로 목표 적합성, 훈련량, 회복 상태, 다음 우선순위, 주의사항을 담으세요.",
+              "1차 분석을 그대로 확인하면 verdict를 confirmed, 내용 조정이 필요하면 adjusted로 지정하세요.",
+              JSON.stringify({ aggregate, geminiFirstPass: gemini })
+            ].join("\n");
+            let result;
+            try {
+              result = await fetch("https://api.openai.com/v1/responses", {
+                method: "POST",
+                headers: {
+                  authorization: "Bearer " + openaiApiKey,
+                  "content-type": "application/json"
+                },
+                body: JSON.stringify({
+                  model: "gpt-5.6-sol",
+                  input: prompt,
+                  reasoning: { effort: "low" },
+                  max_output_tokens: 1400,
+                  store: false,
+                  safety_identifier: String(userPk || "").slice(-64),
+                  text: {
+                    verbosity: "medium",
+                    format: {
+                      type: "json_schema",
+                      name: "runbro_cross_validation",
+                      strict: true,
+                      schema
+                    }
+                  }
+                }),
+                signal: AbortSignal.timeout(12000)
+              });
+            } catch (error) {
+              console.error("RUNBRO GPT verification request failed", {
+                name: error && error.name
+              });
+              return null;
+            }
+            if (!result.ok) {
+              console.error("RUNBRO GPT verification rejected", {
+                status: result.status
+              });
+              return null;
+            }
+            const body = await result.json().catch(() => ({}));
+            const source = responseOutputText(body);
+            if (!source || source.length > 5000) return null;
+            try {
+              return normalizedGptVerification(JSON.parse(source));
+            } catch (error) {
+              return null;
+            }
+          }
+
+          async function verifiedAnalysis(aggregate, userPk) {
             const gemini = await geminiAnalysis(aggregate);
             if (!gemini) return null;
             const generatedAt = new Date().toISOString();
+            const verified = await gptCrossValidation(aggregate, gemini, userPk);
+            if (verified) {
+              return {
+                title: verified.title,
+                summary: verified.summary,
+                points: verified.points,
+                verification: {
+                  status: "gpt_verified",
+                  verdict: verified.verdict,
+                  note: verified.verificationNote,
+                  models: ["gemini-3.6-flash", "gpt-5.6-sol"],
+                  generatedAt
+                }
+              };
+            }
             return {
               ...gemini,
               verification: {
-                status: "pending_chatgpt",
+                status: openaiApiKey ? "gpt_retry_required" : "gpt_not_configured",
                 verdict: "not_cross_checked",
-                note: "ChatGPT의 RUNBRO 앱에서 상세 교차검증을 진행할 수 있습니다.",
+                note: openaiApiKey
+                  ? "GPT 자동 교차검증을 완료하지 못했습니다. 잠시 후 분석을 새로고침해 주세요."
+                  : "GPT 자동 교차검증용 서버 설정이 필요합니다.",
                 models: ["gemini-3.6-flash"],
                 generatedAt
               }
@@ -1138,7 +1276,7 @@ Resources:
             const body = parseBody(event, 4096);
             const dashboard = await dashboardFor(userPk);
             const aggregate = aggregateForAnalysis(dashboard, validatedAnalysisInput(body));
-            const freshAnalysis = await firstPassAnalysis(aggregate);
+            const freshAnalysis = await verifiedAnalysis(aggregate, userPk);
             const analysis = freshAnalysis || null;
             if (freshAnalysis) {
               try {

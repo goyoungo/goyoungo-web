@@ -1000,21 +1000,20 @@
             badge.textContent = "";
             badge.removeAttribute("title");
             el("chatgptReviewStatus").textContent =
-                "첫 연결 시 ChatGPT의 RUNBRO 앱에서 권한을 승인해 주세요.";
+                "분석을 새로고치면 Gemini와 GPT-5.6이 자동으로 교차검증합니다.";
             return;
         }
+        var verified = ["gpt_verified", "chatgpt_verified"].includes(verification.status);
         badge.hidden = false;
         badge.classList.toggle("is-adjusted", verification.verdict === "adjusted");
-        badge.classList.toggle("is-single", verification.status !== "chatgpt_verified");
-        badge.textContent = verification.status === "chatgpt_verified"
-            ? "GEMINI × CHATGPT 검증 완료"
-            : verification.status === "pending_chatgpt"
-                ? "GEMINI 1차 분석 · CHATGPT 검증 대기"
-                : "RUNBRO 분석";
+        badge.classList.toggle("is-single", !verified);
+        badge.textContent = verified
+            ? "GEMINI × GPT-5.6 검증 완료"
+            : "GEMINI 분석 · GPT 검증 재시도 필요";
         badge.title = verification.note || "";
-        el("chatgptReviewStatus").textContent = verification.status === "chatgpt_verified"
-            ? "ChatGPT가 기록 집계와 1차 분석을 대조해 저장한 결과입니다."
-            : "ChatGPT의 RUNBRO 앱에서 이 분석을 교차검증할 수 있습니다.";
+        el("chatgptReviewStatus").textContent = verified
+            ? "GPT-5.6이 익명 기록 집계와 Gemini 1차 분석을 대조한 결과를 바로 표시합니다."
+            : verification.note || "GPT 자동 교차검증을 완료하지 못했습니다. 분석을 다시 새로고침해 주세요.";
     }
 
     function renderAnalysisEvidence(dashboard) {
@@ -1631,18 +1630,6 @@
         }
     }
 
-    function openChatgptReview() {
-        var target = String(config.chatgptAppUrl || "https://chatgpt.com/");
-        var prompt = "RUNBRO 앱으로 내 최근 러닝 기록과 Gemini 1차 분석을 교차검증하고, 다음 훈련의 내용과 근거 및 7일 계획을 저장해줘.";
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(prompt).catch(function () {});
-        }
-        window.open(target, "_blank", "noopener,noreferrer");
-        el("chatgptReviewStatus").textContent = config.chatgptAppUrl
-            ? "ChatGPT에서 RUNBRO 앱 연결을 승인한 뒤 상세 검증을 진행해 주세요."
-            : "분석 요청 문구를 복사했습니다. ChatGPT에서 RUNBRO 앱을 연결한 뒤 붙여넣어 주세요.";
-    }
-
     function disconnectAll() {
         requireLogin("연결과 저장 기록을 삭제하려면 카카오 로그인이 필요합니다.", function () {
             if (!window.confirm("RUNBRO에 저장된 연결 정보, 러닝 기록, 분석 결과를 모두 삭제할까요?")) return;
@@ -1725,7 +1712,6 @@
         });
         el("syncButton").addEventListener("click", syncActivities);
         el("refreshAnalysis").addEventListener("click", refreshAnalysis);
-        el("chatgptReviewButton").addEventListener("click", openChatgptReview);
         document.querySelectorAll("[data-period-weeks]").forEach(function (button) {
             button.addEventListener("click", function () { selectTrendPeriod(button); });
         });

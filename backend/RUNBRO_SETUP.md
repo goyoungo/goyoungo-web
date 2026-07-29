@@ -10,7 +10,7 @@ RUNBRO는 목표 레이스, 컨디션, 러닝 활동을 카카오 계정 기준�
 - 추천 내용과 근거를 함께 제시하는 다음 훈련 제안
 - 날짜가 지정된 7일 계획과 월간 훈련 달력
 - Garmin Connect 로그인·MFA와 최근 러닝·수면·HRV·훈련 준비도 동기화
-- Gemini 3.6 Flash 1차 분석과 카카오 계정 기반 ChatGPT 앱 교차검증
+- Gemini 3.6 Flash 1차 분석과 GPT-5.6-sol 자동 교차검증
 - 연결 토큰, 러닝 기록, 프로필 전체 삭제
 
 ## Garmin Connect
@@ -72,39 +72,18 @@ aws cloudformation deploy \
     StravaClientId=<strava-client-id> \
     StravaClientSecret=<strava-client-secret> \
     GeminiApiKey=<gemini-api-key> \
+    OpenAIApiKeyParameterName=/goyoungo/runbro/openai-api-key \
     GarminCodeBucket=<artifact-bucket> \
     GarminCodeKey=<artifact-key>
 ```
 
-배포 출력의 `ApiEndpoint`는 기존 `assets/runbro-config.js`의 `apiBase`와 같아야 합니다. 운영 키와 비밀 값은 저장소나 명령 기록에 커밋하지 않습니다.
+배포 출력의 `ApiEndpoint`는 기존 `assets/runbro-config.js`의 `apiBase`와 같아야 합니다. OpenAI API 키는 AWS Systems Manager Parameter Store의 표준 `SecureString` 파라미터 `/goyoungo/runbro/openai-api-key`에 저장하고, 그 이름만 `OpenAIApiKeyParameterName`에 전달합니다. 키는 Lambda 서버 환경에서만 사용하며 브라우저나 정적 사이트에는 포함하지 않습니다. 운영 키와 비밀 값은 저장소나 명령 기록에 커밋하지 않습니다.
 
-## ChatGPT 앱 연결
+## GPT 자동 교차검증
 
-OpenAI API 키를 서버에 저장하거나 RUNBRO 서버에서 ChatGPT API를 직접 호출하지 않습니다. 대신 배포된 API 자체가 OAuth 2.1 보호 MCP 서버로 동작하고, 사용자가 ChatGPT에서 RUNBRO 앱에 카카오 계정 접근 권한을 승인합니다.
+RUNBRO의 `/analyze` 요청은 Gemini 3.6 Flash의 1차 분석을 만든 뒤 OpenAI Responses API의 `gpt-5.6-sol`로 익명 집계와 1차 결과를 대조합니다. 사용자는 ChatGPT 앱을 열거나 별도의 OAuth 연결을 하지 않아도 같은 RUNBRO 화면에서 검증 결과를 확인합니다.
 
-1. ChatGPT 앱/커넥터 개발 화면에서 원격 MCP 서버를 추가합니다.
-2. 서버 URL은 배포 출력의 `ApiEndpoint` 뒤에 `/mcp`를 붙인 주소를 사용합니다.
-3. 인증 방식은 OAuth를 선택합니다. 서버는 보호 리소스·인증 서버 메타데이터, 동적 클라이언트 등록, PKCE S256, 액세스·리프레시 토큰 회전을 제공합니다.
-4. 앱 연결 화면에서 카카오 로그인 후 `러닝 요약 읽기`와 `검증 결과 저장` 권한을 승인합니다.
-5. RUNBRO 화면의 `ChatGPT로 상세 검증`을 누르고 다음 요청을 실행합니다.
-
-```text
-RUNBRO 앱으로 내 최근 러닝 기록과 Gemini 1차 분석을 교차검증하고,
-다음 훈련의 내용과 근거 및 7일 계획을 저장해줘.
-```
-
-MCP 도구는 다음 두 개입니다.
-
-- `get_running_snapshot`: 목표 레이스, 4·8·12주 집계, 러닝 자동 분류, VDOT·심박존·회복 지표, Gemini 1차 분석을 읽습니다.
-- `save_verified_analysis`: 사용자가 저장을 명시적으로 승인한 뒤 ChatGPT의 검증 결과, 근거형 다음 훈련 제안, 7일 계획을 저장합니다.
-
-MCP 서버 URL과 OAuth 메타데이터 예시는 다음과 같습니다.
-
-```text
-https://<api-id>.execute-api.ap-northeast-3.amazonaws.com/mcp
-https://<api-id>.execute-api.ap-northeast-3.amazonaws.com/.well-known/oauth-protected-resource/mcp
-https://<api-id>.execute-api.ap-northeast-3.amazonaws.com/.well-known/oauth-authorization-server
-```
+OpenAI API 호출이 실패하거나 키가 설정되지 않았을 때는 Gemini 결과를 유지하고 `GPT 검증 재시도 필요` 상태를 표시합니다. 분석 새로고침, 목표 저장, Garmin 동기화 시 자동으로 다시 시도합니다. 기존 ChatGPT MCP/OAuth 경로는 이전 연결 호환을 위해 유지하지만 RUNBRO 기본 화면에서는 사용하지 않습니다.
 
 ## 테스트
 
@@ -121,7 +100,7 @@ node --check assets/runbro.js
 - Strava 액세스·리프레시 토큰은 사용자·공급자 암호화 컨텍스트와 함께 KMS로 암호화합니다.
 - Garmin 토큰과 데이터는 공개 접근이 차단된 전용 S3 버킷에서 KMS로 암호화합니다.
 - Gemini에는 이름, 계정 ID, 활동 경로, 위치, 정확한 시작 시각을 보내지 않고 거리·평균 페이스·목표·컨디션 집계만 전달합니다.
-- ChatGPT 앱은 사용자가 승인한 카카오 계정의 익명 집계만 읽습니다. 카카오 ID, Garmin 토큰·비밀번호, 경로·좌표, 활동명, 정확한 시작 시각은 MCP 응답에 포함하지 않습니다.
+- OpenAI Responses API에는 카카오 ID, Garmin 토큰·비밀번호, 경로·좌표, 활동명, 정확한 시작 시각을 보내지 않고 익명 러닝 집계와 Gemini 1차 분석만 전송합니다.
 - OAuth 액세스 토큰은 원문 대신 SHA-256 해시로 DynamoDB에 저장하고 1시간 후 만료합니다. 리프레시 토큰은 회전하며 30일 후 만료합니다.
 - RUNBRO 계정 삭제 시 사용자 파티션의 ChatGPT 권한도 제거되므로 발급된 토큰은 즉시 사용할 수 없게 됩니다.
 - 분석은 의료 진단이 아니며 거리 급증과 회복을 우선 확인합니다.
