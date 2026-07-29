@@ -73,6 +73,8 @@ function promptFor(message) {
         "Gemini 결론을 그대로 반복하지 말고 주간 거리 추세, 훈련 구성, 목표 페이스, 심박존 분포와 회복 범주가 서로 모순되는지 확인하세요.",
         "의료 진단이나 목표 달성 단정을 하지 말고, 통증·흉통·어지럼증 등 이상 증상에는 훈련 중단과 전문가 상담을 안내하세요.",
         "다음 훈련은 무엇을 할지와 왜 필요한지를 수치 근거와 함께 제시하세요.",
+        "analysis는 목표 레이스 대비 분석을 유지하고 latestRunAnalysis는 aggregate.latestRun 한 건만 상세 분석하세요.",
+        "latestRunAnalysis에서는 제공되지 않은 심박, 랩, 케이던스, 통증이나 건강 상태를 추측하지 마세요.",
         `7일 계획은 한국 날짜 ${message.requestedDateKst}의 다음 날부터 연속된 7일로 작성하세요.`,
         "사용자가 설정한 주간 훈련일 수를 존중하고 나머지는 회복 또는 휴식으로 구성하세요.",
         "verdict는 Gemini 분석을 유지하면 confirmed, 중요한 내용을 조정하면 adjusted로 설정하세요.",
@@ -145,7 +147,14 @@ async function runCodex(message, codexHome, workDir) {
     }
     const source = await readFile(resultPath, "utf8");
     if (!source || source.length > 64 * 1024) throw new Error("codex_result_invalid");
-    return JSON.parse(source);
+    const result = JSON.parse(source);
+    if (
+        result.latestRunAnalysis?.runDate !== message.aggregate.latestRun?.date ||
+        result.latestRunAnalysis?.runType !== message.aggregate.latestRun?.runType
+    ) {
+        throw new Error("codex_latest_run_mismatch");
+    }
+    return result;
 }
 
 async function sendResult(message, suffix) {

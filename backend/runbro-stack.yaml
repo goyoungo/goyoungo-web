@@ -1106,6 +1106,116 @@ Resources:
             };
           }
 
+          function latestRunForAnalysis(activities, race) {
+            const usable = (activities || []).filter((activity) => {
+              const distance = Number(activity.distanceKm);
+              const seconds = Number(activity.movingSeconds);
+              return (
+                Number.isFinite(new Date(activity.date).getTime()) &&
+                Number.isFinite(distance) &&
+                Number.isFinite(seconds) &&
+                distance > 0 &&
+                seconds > 0
+              );
+            }).sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (!usable.length) return null;
+            const recent = usable.filter((activity) =>
+              Date.now() - new Date(activity.date).getTime() <= 28 * 86400000
+            );
+            const comparison = recent.length ? recent : usable.slice(0, 8);
+            const averageDistance = comparison.reduce(
+              (sum, activity) => sum + Number(activity.distanceKm),
+              0
+            ) / comparison.length;
+            const averagePace = comparison.reduce(
+              (sum, activity) =>
+                sum + Number(activity.movingSeconds) / Number(activity.distanceKm),
+              0
+            ) / comparison.length;
+            const latest = usable[0];
+            const distance = Number(latest.distanceKm);
+            const movingSeconds = Number(latest.movingSeconds);
+            const pace = movingSeconds / distance;
+            const observedMaxHr = Math.max(
+              0,
+              ...comparison.map((activity) => {
+                const maxHr = Number(activity.maxHr);
+                const averageHr = Number(activity.averageHr);
+                if (Number.isFinite(maxHr) && maxHr >= 120 && maxHr <= 230) return maxHr;
+                if (Number.isFinite(averageHr) && averageHr >= 100 && averageHr <= 210) {
+                  return averageHr + 12;
+                }
+                return 0;
+              })
+            );
+            const latestAverageHr = Number(latest.averageHr);
+            const heartRateRatio =
+              observedMaxHr >= 140 &&
+              Number.isFinite(latestAverageHr) &&
+              latestAverageHr >= 30
+                ? latestAverageHr / observedMaxHr
+                : null;
+            const heartRateIntensity = heartRateRatio == null
+              ? "unavailable"
+              : heartRateRatio >= 0.9
+                ? "very_high"
+                : heartRateRatio >= 0.8
+                  ? "high"
+                  : heartRateRatio >= 0.68
+                    ? "moderate"
+                    : "low";
+            const paceDelta = Math.round(pace - averagePace);
+            const distanceDeltaPercent = Math.round(
+              (distance / Math.max(averageDistance, 0.1) - 1) * 100
+            );
+            let runType = "zone2";
+            if (distance >= Math.max(12, averageDistance * 1.45)) {
+              runType = "long";
+            } else if (heartRateIntensity === "very_high" && paceDelta <= -20) {
+              runType = "interval";
+            } else if (
+              ["high", "very_high"].includes(heartRateIntensity) ||
+              paceDelta <= -15
+            ) {
+              runType = "tempo";
+            } else if (heartRateIntensity === "low" || paceDelta >= 35) {
+              runType = "recovery";
+            }
+            const goalPace =
+              race &&
+              Number(race.goalTimeSeconds) > 0 &&
+              Number(race.distanceKm) > 0
+                ? Number(race.goalTimeSeconds) / Number(race.distanceKm)
+                : null;
+            const previous = usable[1];
+            return {
+              date: String(latest.date).slice(0, 10),
+              runType,
+              distanceKm: Math.round(distance * 100) / 100,
+              movingSeconds: Math.round(movingSeconds),
+              paceSecondsPerKm: Math.round(pace),
+              paceDeltaSecondsVs28DayAverage: paceDelta,
+              paceDeltaSecondsVsGoal: goalPace == null
+                ? null
+                : Math.round(pace - goalPace),
+              distanceDeltaPercentVs28DayAverage: distanceDeltaPercent,
+              elevationGainMeters: Number.isFinite(Number(latest.elevationGain))
+                ? Math.max(0, Math.round(Number(latest.elevationGain)))
+                : null,
+              heartRateIntensity,
+              heartRateAvailable: heartRateIntensity !== "unavailable",
+              daysSincePreviousRun: previous
+                ? Math.max(
+                    0,
+                    Math.round(
+                      (new Date(latest.date).getTime() -
+                        new Date(previous.date).getTime()) / 86400000
+                    )
+                  )
+                : null
+            };
+          }
+
           function aggregateForAnalysis(dashboard, clientInput) {
             const now = Date.now();
             const weeks = [0, 0, 0, 0];
@@ -1128,29 +1238,31 @@ Resources:
             const serverRunCount = dashboard.activities.filter((activity) =>
               now - new Date(activity.date).getTime() <= 28 * 86400000
             ).length;
-            return {
-              race: dashboard.profile ? {
+            const race = dashboard.profile ? {
                 date: dashboard.profile.raceDate,
                 distanceKm: dashboard.profile.distanceKm,
                 goalTimeSeconds: dashboard.profile.goalTimeSeconds,
                 daysPerWeek: dashboard.profile.daysPerWeek
-              } : null,
-              runCount28Days: clientInput
-                ? clientInput.runCount28Days
-                : serverRunCount,
-              weeklyDistanceKmOldestToNewest: clientInput
-                ? clientInput.weeklyDistanceKmOldestToNewest
-                : weeks.slice().reverse().map((value) => Math.round(value * 10) / 10),
-              averagePaceSecondsPerKm: clientInput
-                ? clientInput.averagePaceSecondsPerKm
-                : (totalDistance ? Math.round(totalSeconds / totalDistance) : null),
-              averageHeartRateBpm: clientInput
-                ? clientInput.averageHeartRateBpm
-                : (heartRateCount ? Math.round(totalHeartRate / heartRateCount) : null),
+              } : null;
+            return {
+              race,
+              latestRun: latestRunForAnalysis(dashboard.activities, race),
+              runCount28Days: serverRunCount,
+              weeklyDistanceKmOldestToNewest:
+                weeks.slice().reverse().map((value) => Math.round(value * 10) / 10),
+              averagePaceSecondsPerKm:
+                totalDistance ? Math.round(totalSeconds / totalDistance) : null,
+              averageHeartRateBpm:
+                heartRateCount ? Math.round(totalHeartRate / heartRateCount) : null,
               estimatedVdot: clientInput ? clientInput.estimatedVdot : null,
               runTypeCounts: clientInput ? clientInput.runTypeCounts : null,
               heartZoneMinutes: clientInput ? clientInput.heartZoneMinutes : null,
-              health: clientInput ? clientInput.health : null
+              health: dashboard.health ? {
+                sleepHours: dashboard.health.sleepHours,
+                hrv: dashboard.health.hrv,
+                restingHeartRate: dashboard.health.restingHr,
+                trainingReadiness: dashboard.health.trainingReadiness
+              } : (clientInput ? clientInput.health : null)
             };
           }
 
@@ -1169,6 +1281,7 @@ Resources:
             const zoneTotal = zones.reduce((sum, value) => sum + value, 0);
             return {
               race: aggregate.race,
+              latestRun: aggregate.latestRun,
               runCount28Days: aggregate.runCount28Days,
               weeklyDistanceKmOldestToNewest:
                 aggregate.weeklyDistanceKmOldestToNewest,
@@ -1200,8 +1313,7 @@ Resources:
           async function analyze(event) {
             const userPk = await verifyKakaoUser(event);
             const body = parseBody(event, 4096);
-            const items = await queryUserItems(userPk);
-            const dashboard = publicDashboard(items);
+            const dashboard = await combinedDashboardFor(userPk);
             const activeJob = dashboard.analysisJob;
             if (
               activeJob &&
@@ -1211,7 +1323,7 @@ Resources:
               return response(202, { ...dashboard, analysisJob: activeJob });
             }
             const aggregate = aggregateForAnalysis(dashboard, validatedAnalysisInput(body));
-            if (!aggregate.race || aggregate.runCount28Days < 2) {
+            if (!aggregate.race || !aggregate.latestRun || aggregate.runCount28Days < 2) {
               throw new HttpError(
                 409,
                 "목표 레이스와 최근 러닝 기록 2개 이상이 필요합니다.",

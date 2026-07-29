@@ -8,6 +8,7 @@
     var currentDashboard = null;
     var currentGarminChallenge = null;
     var analysisPollToken = 0;
+    var autoSyncStorageKey = "runbro-garmin-auto-sync-v1";
     var trendWeeks = 4;
     var calendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     var themeOrder = ["system", "light", "dark"];
@@ -1049,6 +1050,99 @@
                 : "새 자동 분석을 실행하면 Codex 교차검증 결과로 갱신됩니다.";
     }
 
+    function renderLatestRunAnalysis(analysis, activities) {
+        var review = analysis && analysis.latestRunAnalysis;
+        var latest = activities && activities.length ? activities[0] : null;
+        var reviewMatchesLatest = Boolean(
+            review &&
+            latest &&
+            String(review.runDate) === String(latest.date || "").slice(0, 10)
+        );
+        var type = reviewMatchesLatest ? review.runType : (latest && latest.runType);
+        var meta = runTypeMeta[type] || { label: "러닝", short: "RUN" };
+        el("latestRunType").textContent = latest ? meta.short : "NO DATA";
+        el("latestRunType").className = "status-chip" + (latest ? " accent-chip" : "");
+
+        if (!latest) {
+            el("latestRunTitle").textContent = "최근 러닝을 동기화해 주세요.";
+            el("latestRunSummary").textContent =
+                "Garmin을 연결하면 가장 최근 러닝의 거리, 페이스, 강도와 회복 관점을 상세히 분석합니다.";
+            el("latestRunMetrics").innerHTML = "";
+        } else {
+            el("latestRunTitle").textContent = reviewMatchesLatest
+                ? review.title
+                : "최근 러닝 기록이 갱신되었습니다.";
+            el("latestRunSummary").textContent = reviewMatchesLatest
+                ? review.summary
+                : "현재 표시된 최신 기록을 상세 분석하려면 ‘다시 분석’을 눌러 주세요.";
+            el("latestRunMetrics").innerHTML = [
+                {
+                    label: "날짜",
+                    value: String(latest.date || "").slice(0, 10) || "—",
+                    detail: meta.label
+                },
+                {
+                    label: "거리",
+                    value: formatDistance(latest.distanceKm) + " km",
+                    detail: "최근 러닝 총거리"
+                },
+                {
+                    label: "평균 페이스",
+                    value: formatPace(paceSeconds(latest)),
+                    detail: "1km 기준"
+                },
+                {
+                    label: "시간 / 심박",
+                    value: formatDuration(Number(latest.movingSeconds || 0)),
+                    detail: latest.averageHr
+                        ? Math.round(Number(latest.averageHr)) + " bpm"
+                        : "심박 데이터 없음"
+                }
+            ].map(function (item) {
+                return "<article><span>" + escapeHtml(item.label) + "</span><strong>" +
+                    escapeHtml(item.value) + "</strong><small>" +
+                    escapeHtml(item.detail) + "</small></article>";
+            }).join("");
+        }
+
+        el("latestRunExecution").textContent = reviewMatchesLatest
+            ? review.execution
+            : "분석을 실행하면 최근 평균과 비교한 거리와 페이스 실행을 평가합니다.";
+        el("latestRunIntensity").textContent = reviewMatchesLatest
+            ? review.intensity
+            : "심박 데이터가 있으면 개인 기록 내 강도 구간을 함께 확인합니다.";
+        el("latestRunRecovery").textContent = reviewMatchesLatest
+            ? review.recovery
+            : "최근 훈련 간격과 누적 거리를 기준으로 회복 관점을 제안합니다.";
+        el("latestRunPositives").innerHTML = (reviewMatchesLatest
+            ? review.positives
+            : ["상세 분석을 실행하면 잘한 점을 근거와 함께 표시합니다."]
+        ).map(function (point) {
+            return "<li>" + escapeHtml(point) + "</li>";
+        }).join("");
+        el("latestRunCautions").innerHTML = (reviewMatchesLatest
+            ? review.cautions
+            : ["새 기록과 이전 훈련의 차이를 분석한 뒤 표시합니다."]
+        ).map(function (point) {
+            return "<li>" + escapeHtml(point) + "</li>";
+        }).join("");
+        el("latestRunNextFocus").textContent = reviewMatchesLatest
+            ? review.nextFocus
+            : "최근 러닝 분석을 실행하면 다음 러닝에서 확인할 포인트를 표시합니다.";
+    }
+
+    function selectAnalysisTab(tabName) {
+        var latestSelected = tabName === "latest";
+        var raceTab = el("analysisTabRace");
+        var latestTab = el("analysisTabLatest");
+        raceTab.classList.toggle("is-active", !latestSelected);
+        latestTab.classList.toggle("is-active", latestSelected);
+        raceTab.setAttribute("aria-selected", String(!latestSelected));
+        latestTab.setAttribute("aria-selected", String(latestSelected));
+        el("raceAnalysisPane").hidden = latestSelected;
+        el("latestRunAnalysisPane").hidden = !latestSelected;
+    }
+
     function renderAnalysisEvidence(dashboard) {
         var metrics = dashboard.metrics || {};
         var profile = dashboard.profile;
@@ -1181,6 +1275,7 @@
         renderMetrics(dashboard);
         renderTrends(dashboard);
         renderAnalysis(dashboard.analysis, dashboard.analysisJob);
+        renderLatestRunAnalysis(dashboard.analysis, dashboard.activities);
         renderAnalysisEvidence(dashboard);
         renderNextTraining(dashboard.nextTraining);
         renderPlan(dashboard.plan, dashboard.metrics || {});
@@ -1231,6 +1326,21 @@
             daysPerWeek: 4
         };
         var dashboard = computeDashboard(profile, sampleActivities, null);
+        dashboard.analysis.latestRunAnalysis = {
+            runDate: String(dashboard.activities[0].date).slice(0, 10),
+            runType: dashboard.activities[0].runType || "zone2",
+            title: "페이스와 강도를 안정적으로 유지한 러닝",
+            summary: "최근 평균과 비교해 거리와 페이스가 안정적인 범위였고, 다음 품질 훈련 전 회복을 확인하기 좋은 기록입니다.",
+            execution: "초반부터 마무리까지 평균 페이스가 크게 흔들리지 않은 실행으로 분류했습니다.",
+            intensity: "관측 심박 기준으로 유산소 중심 강도이며 과도한 고강도 신호는 확인되지 않았습니다.",
+            recovery: "최근 러닝 간격을 고려하면 다음 날은 쉬운 러닝이나 휴식이 적절합니다.",
+            positives: [
+                "현재 주간 훈련 흐름을 해치지 않는 거리로 마무리했습니다.",
+                "다음 훈련으로 연결하기 좋은 강도 범위를 유지했습니다."
+            ],
+            cautions: ["다리가 무겁거나 수면이 부족하면 다음 훈련 강도를 낮추세요."],
+            nextFocus: "다음 러닝에서는 같은 호흡을 유지하면서 후반 페이스 변화를 확인하세요."
+        };
         dashboard.connections = {
             garmin: { connected: false }
         };
@@ -1350,8 +1460,38 @@
         };
     }
 
-    function loadCombinedDashboard(baseRequest) {
+    function loadCombinedDashboard(baseRequest, options) {
+        var settings = options || {};
         return Promise.all([baseRequest, fetchGarminDashboard()]).then(function (values) {
+            var dashboard = normalizeDashboard(mergeProviderDashboards(values[0], values[1]));
+            if (
+                !settings.autoSync ||
+                !dashboard.connections ||
+                !dashboard.connections.garmin ||
+                !dashboard.connections.garmin.connected ||
+                autoSyncCompleted()
+            ) {
+                return values;
+            }
+            markAutoSync("running");
+            setFormStatus("로그인 확인 완료 · Garmin 최신 기록을 자동으로 동기화하고 있습니다.");
+            return apiRequest("/garmin/sync", { method: "POST", body: "{}" })
+                .then(function (garminDashboard) {
+                    markAutoSync("complete");
+                    setFormStatus("Garmin 최신 기록을 자동으로 동기화했습니다.");
+                    return [values[0], garminDashboard];
+                })
+                .catch(function (error) {
+                    markAutoSync("failed");
+                    setFormStatus(
+                        error.code === "sync_in_progress"
+                            ? "Garmin 기록 동기화가 이미 진행 중입니다."
+                            : "자동 동기화를 완료하지 못했습니다. ‘최신 기록 동기화’로 다시 시도해 주세요.",
+                        error.code !== "sync_in_progress"
+                    );
+                    return values;
+                });
+        }).then(function (values) {
             var dashboard = normalizeDashboard(mergeProviderDashboards(values[0], values[1]));
             renderDashboard(dashboard);
             if (dashboard.analysisJob && isPendingAnalysis(dashboard.analysisJob.status)) {
@@ -1364,6 +1504,30 @@
             }
             return dashboard;
         });
+    }
+
+    function markAutoSync(status) {
+        try {
+            sessionStorage.setItem(autoSyncStorageKey, status);
+        } catch (error) {
+            // Storage can be unavailable in hardened browser modes.
+        }
+    }
+
+    function autoSyncCompleted() {
+        try {
+            return Boolean(sessionStorage.getItem(autoSyncStorageKey));
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function clearAutoSyncMarker() {
+        try {
+            sessionStorage.removeItem(autoSyncStorageKey);
+        } catch (error) {
+            // Nothing to clear when storage is unavailable.
+        }
     }
 
     function isPendingAnalysis(status) {
@@ -1459,10 +1623,11 @@
             renderDashboard(computeDashboard(null, []));
             return Promise.resolve();
         }
-        return loadCombinedDashboard(apiRequest("/dashboard", { method: "GET" })).then(function (dashboard) {
-            setFormStatus("");
-            return dashboard;
-        }).catch(function (error) {
+        setFormStatus("");
+        return loadCombinedDashboard(
+            apiRequest("/dashboard", { method: "GET" }),
+            { autoSync: true }
+        ).catch(function (error) {
             if (error.status === 401 && window.GoyoungoAuth) {
                 window.GoyoungoAuth.invalidateSession();
             }
@@ -1575,6 +1740,10 @@
         closeGarminDialog();
         setFormStatus("Garmin 연결을 완료했습니다. 최근 기록을 가져오는 중입니다.");
         return apiRequest("/garmin/sync", { method: "POST", body: "{}" })
+            .then(function (dashboard) {
+                markAutoSync("complete");
+                return dashboard;
+            })
             .then(function () { return loadAnalyzedDashboard(); })
             .then(function () {
                 setFormStatus("Garmin 러닝 기록과 신체 상태를 반영했습니다.");
@@ -1681,6 +1850,7 @@
             }
             setFormStatus("최신 러닝 기록을 가져오는 중입니다.");
             Promise.all(tasks).then(function () {
+                markAutoSync("complete");
                 return loadAnalyzedDashboard();
             }).then(function () {
                 setFormStatus("최신 러닝 기록과 분석을 반영했습니다.");
@@ -1814,6 +1984,23 @@
         });
         el("syncButton").addEventListener("click", syncActivities);
         el("refreshAnalysis").addEventListener("click", refreshAnalysis);
+        el("analysisTabRace").addEventListener("click", function () {
+            selectAnalysisTab("race");
+        });
+        el("analysisTabLatest").addEventListener("click", function () {
+            selectAnalysisTab("latest");
+        });
+        [el("analysisTabRace"), el("analysisTabLatest")].forEach(function (tab, index, tabs) {
+            tab.addEventListener("keydown", function (event) {
+                if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+                event.preventDefault();
+                var nextIndex = event.key === "ArrowRight"
+                    ? (index + 1) % tabs.length
+                    : (index - 1 + tabs.length) % tabs.length;
+                selectAnalysisTab(nextIndex === 1 ? "latest" : "race");
+                tabs[nextIndex].focus();
+            });
+        });
         document.querySelectorAll("[data-period-weeks]").forEach(function (button) {
             button.addEventListener("click", function () { selectTrendPeriod(button); });
         });
@@ -1829,7 +2016,12 @@
         el("disconnectButton").addEventListener("click", disconnectAll);
 
         document.addEventListener("goyoungo:authchange", function (event) {
-            if (event.detail && event.detail.authenticated) loadDashboard();
+            if (event.detail && event.detail.authenticated) {
+                loadDashboard();
+            } else {
+                clearAutoSyncMarker();
+                renderDashboard(computeDashboard(null, []));
+            }
         });
 
         var callback = new URLSearchParams(window.location.search);

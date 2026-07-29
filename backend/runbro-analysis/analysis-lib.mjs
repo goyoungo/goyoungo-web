@@ -41,7 +41,44 @@ export function normalizeGeminiAnalysis(value) {
     return {
         title: text(value.title, 80, "gemini_title"),
         summary: text(value.summary, 520, "gemini_summary"),
-        points: value.points.map((point) => text(point, 220, "gemini_point"))
+        points: value.points.map((point) => text(point, 220, "gemini_point")),
+        latestRunAnalysis: normalizeLatestRunAnalysis(value.latestRunAnalysis)
+    };
+}
+
+function normalizeLatestRunAnalysis(value) {
+    if (
+        !value ||
+        Array.isArray(value) ||
+        typeof value !== "object" ||
+        !Array.isArray(value.positives) ||
+        value.positives.length < 2 ||
+        value.positives.length > 3 ||
+        !Array.isArray(value.cautions) ||
+        value.cautions.length < 1 ||
+        value.cautions.length > 3
+    ) {
+        throw new Error("invalid_latest_run_analysis");
+    }
+    const runType = text(value.runType, 20, "latest_run_type");
+    if (!RUN_TYPES.includes(runType)) {
+        throw new Error("invalid_latest_run_type");
+    }
+    return {
+        runDate: dateValue(value.runDate),
+        runType,
+        title: text(value.title, 100, "latest_run_title"),
+        summary: text(value.summary, 520, "latest_run_summary"),
+        execution: text(value.execution, 260, "latest_run_execution"),
+        intensity: text(value.intensity, 260, "latest_run_intensity"),
+        recovery: text(value.recovery, 260, "latest_run_recovery"),
+        positives: value.positives.map((point) =>
+            text(point, 220, "latest_run_positive")
+        ),
+        cautions: value.cautions.map((point) =>
+            text(point, 220, "latest_run_caution")
+        ),
+        nextFocus: text(value.nextFocus, 260, "latest_run_next_focus")
     };
 }
 
@@ -62,7 +99,7 @@ export function collectGeminiSse(source) {
             }
         }
     }
-    if (!result || result.length > 5000) {
+    if (!result || result.length > 12000) {
         throw new Error("gemini_empty_result");
     }
     return result;
@@ -73,10 +110,12 @@ export function validateVerifiedResult(value) {
         throw new Error("invalid_verified_result");
     }
     const analysis = value.analysis;
+    const latestRunAnalysis = value.latestRunAnalysis;
     const recommendation = value.recommendation;
     const trainingPlan = value.trainingPlan;
     if (
         !analysis ||
+        !latestRunAnalysis ||
         !recommendation ||
         !Array.isArray(analysis.points) ||
         analysis.points.length !== 5 ||
@@ -126,6 +165,7 @@ export function validateVerifiedResult(value) {
                 text(point, 220, "analysis_point")
             )
         },
+        latestRunAnalysis: normalizeLatestRunAnalysis(latestRunAnalysis),
         recommendation: {
             type,
             title: text(recommendation.title, 100, "recommendation_title"),

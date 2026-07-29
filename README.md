@@ -26,7 +26,7 @@ GO.YOUNGO의 라이프 디렉터리와 스키장 정보 서비스 SNOWBRO를 제
 
 공통 화면은 `assets/site.css`, `assets/site.js`, `assets/auth.js`를 사용하며, 읽기 전용 데이터 스냅샷은 `assets/site-data.js`에 있습니다.
 
-RUNBRO 화면은 `assets/runbro.css`, `assets/runbro.js`, `assets/runbro-config.js`를 사용합니다. 개인 목표와 Garmin 러닝 기록은 브라우저 저장소가 아닌 별도 AWS API에 저장합니다. 최근 러닝 자동 분류, 4·8·12주 거리·VDOT·심박존 추세, 근거형 다음 훈련 제안과 월간 훈련 달력을 제공하며, Garmin 및 Gemini 3.6 Flash·Codex 자동 교차검증 설정은 `backend/RUNBRO_SETUP.md`를 참고하세요.
+RUNBRO 화면은 `assets/runbro.css`, `assets/runbro.js`, `assets/runbro-config.js`를 사용합니다. 개인 목표와 Garmin 러닝 기록은 브라우저 저장소가 아닌 별도 AWS API에 저장합니다. 로그인 세션의 첫 화면 진입 시 연결된 Garmin 기록을 한 번 자동 동기화하며, 목표 레이스 대비 분석과 최근 러닝 한 건의 실행·강도·회복 상세 분석을 구분해 제공합니다. 최근 러닝 자동 분류, 4·8·12주 거리·VDOT·심박존 추세, 근거형 다음 훈련 제안과 월간 훈련 달력을 제공하며, Garmin 및 Gemini 3.6 Flash·Codex 자동 교차검증 설정은 `backend/RUNBRO_SETUP.md`를 참고하세요.
 
 맛집 추천·비추천과 정보 수정 요청처럼 참여가 필요한 기능만 카카오 로그인을 요청합니다. 맛집 평가는 기존 스냅샷의 평가 수에 카카오 계정 기반 실시간 평가를 더해 표시하며, 한 계정은 맛집마다 한 번 선택할 수 있습니다. 정보 수정 요청은 내용을 복사한 뒤 인스타그램 DM으로 연결합니다. API 구성과 운영 방법은 `backend/README.md`를 참고하세요.
 

@@ -36,6 +36,7 @@ async function saveResult(userPk, jobId, rawResult) {
     const generatedAt = new Date().toISOString();
     const analysis = {
         ...verified.analysis,
+        latestRunAnalysis: verified.latestRunAnalysis,
         recommendation: verified.recommendation,
         trainingPlan: verified.trainingPlan,
         verification: {

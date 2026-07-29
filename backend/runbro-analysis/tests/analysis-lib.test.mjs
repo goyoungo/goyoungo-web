@@ -19,6 +19,21 @@ function verifiedFixture() {
                 "우선순위 · 다음 훈련은 존2 러닝입니다."
             ]
         },
+        latestRunAnalysis: {
+            runDate: "2026-07-28",
+            runType: "tempo",
+            title: "목표 페이스 적응을 확인한 템포런",
+            summary: "평균보다 빠른 페이스를 안정적으로 유지한 훈련입니다.",
+            execution: "계획한 거리에서 페이스 저하 없이 마무리했습니다.",
+            intensity: "강도는 높았지만 과도한 구간으로 분류되지는 않았습니다.",
+            recovery: "다음 날은 쉬운 러닝이나 휴식이 적절합니다.",
+            positives: [
+                "목표 페이스에 가까운 리듬을 유지했습니다.",
+                "최근 평균보다 긴 시간 동안 집중했습니다."
+            ],
+            cautions: ["다음 품질 훈련 전 회복 시간을 확보하세요."],
+            nextFocus: "초반 속도를 조금 낮추고 후반 유지력을 확인하세요."
+        },
         recommendation: {
             type: "zone2",
             title: "편안한 존2 러닝",
@@ -52,7 +67,8 @@ test("normalizes a five-point Gemini result", () => {
     const result = normalizeGeminiAnalysis({
         title: "  현재 흐름 유지  ",
         summary: "주간 거리 급증 없이 일관성을 유지하세요.",
-        points: ["1", "2", "3", "4", "5"]
+        points: ["1", "2", "3", "4", "5"],
+        latestRunAnalysis: verifiedFixture().latestRunAnalysis
     });
     assert.equal(result.title, "현재 흐름 유지");
     assert.equal(result.points.length, 5);
@@ -69,6 +85,7 @@ test("rejects malformed Gemini output", () => {
 test("validates a complete Codex result", () => {
     const result = validateVerifiedResult(verifiedFixture());
     assert.equal(result.recommendation.type, "zone2");
+    assert.equal(result.latestRunAnalysis.runType, "tempo");
     assert.equal(result.trainingPlan.length, 7);
     assert.equal(result.verdict, "confirmed");
 });
