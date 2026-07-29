@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Secure personal running data, Garmin sync and ChatGPT MCP analysis API for GO.YOUNGO RUNBRO
+Description: Secure Garmin sync and Gemini plus Codex analysis pipeline for GO.YOUNGO RUNBRO
 
 Parameters:
   KakaoAppId:
