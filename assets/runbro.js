@@ -7,15 +7,23 @@
         new URLSearchParams(window.location.search).has("preview");
     var currentDashboard = null;
     var currentGarminChallenge = null;
+    var trendWeeks = 4;
+    var calendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     var themeOrder = ["system", "light", "dark"];
 
     var sampleActivities = [
-        { id: "sample-1", date: offsetIso(-2), name: "아침 이지런", distanceKm: 6.2, movingSeconds: 2207, averageHr: 142 },
-        { id: "sample-2", date: offsetIso(-5), name: "한강 템포런", distanceKm: 8.4, movingSeconds: 2671, averageHr: 164 },
-        { id: "sample-3", date: offsetIso(-8), name: "주말 롱런", distanceKm: 13.1, movingSeconds: 4884, averageHr: 151 },
-        { id: "sample-4", date: offsetIso(-11), name: "회복 조깅", distanceKm: 5.0, movingSeconds: 1885, averageHr: 137 },
-        { id: "sample-5", date: offsetIso(-16), name: "10K 빌드업", distanceKm: 10.0, movingSeconds: 3305, averageHr: 157 },
-        { id: "sample-6", date: offsetIso(-22), name: "이지런", distanceKm: 7.1, movingSeconds: 2588, averageHr: 143 }
+        { id: "sample-1", date: offsetIso(-2), name: "아침 존2 러닝", distanceKm: 6.2, movingSeconds: 2207, averageHr: 142, maxHr: 156 },
+        { id: "sample-2", date: offsetIso(-5), name: "한강 템포런", distanceKm: 8.4, movingSeconds: 2671, averageHr: 164, maxHr: 178 },
+        { id: "sample-3", date: offsetIso(-8), name: "주말 롱런", distanceKm: 13.1, movingSeconds: 4884, averageHr: 151, maxHr: 168 },
+        { id: "sample-4", date: offsetIso(-11), name: "회복 조깅", distanceKm: 5.0, movingSeconds: 1885, averageHr: 137, maxHr: 149 },
+        { id: "sample-5", date: offsetIso(-16), name: "1K 인터벌 5회", distanceKm: 9.2, movingSeconds: 2860, averageHr: 169, maxHr: 186 },
+        { id: "sample-6", date: offsetIso(-22), name: "이지런", distanceKm: 7.1, movingSeconds: 2588, averageHr: 143, maxHr: 158 },
+        { id: "sample-7", date: offsetIso(-31), name: "주말 장거리", distanceKm: 12.0, movingSeconds: 4580, averageHr: 149, maxHr: 165 },
+        { id: "sample-8", date: offsetIso(-39), name: "지속주", distanceKm: 7.5, movingSeconds: 2470, averageHr: 160, maxHr: 174 },
+        { id: "sample-9", date: offsetIso(-48), name: "편안한 조깅", distanceKm: 6.0, movingSeconds: 2305, averageHr: 141, maxHr: 154 },
+        { id: "sample-10", date: offsetIso(-58), name: "400m 반복", distanceKm: 7.8, movingSeconds: 2415, averageHr: 166, maxHr: 183 },
+        { id: "sample-11", date: offsetIso(-68), name: "롱런", distanceKm: 11.0, movingSeconds: 4310, averageHr: 148, maxHr: 163 },
+        { id: "sample-12", date: offsetIso(-78), name: "회복런", distanceKm: 4.8, movingSeconds: 1895, averageHr: 135, maxHr: 147 }
     ];
 
     function offsetIso(days) {
@@ -183,14 +191,278 @@
         if (profile.daysPerWeek) el("daysPerWeek").value = String(profile.daysPerWeek);
     }
 
-    function computeDashboard(profile, activities, health) {
-        var now = Date.now();
-        var dayMs = 86400000;
-        var runs = (activities || []).filter(function (activity) {
+    var runTypeMeta = {
+        interval: { label: "인터벌", short: "INTERVAL" },
+        tempo: { label: "템포", short: "TEMPO" },
+        zone2: { label: "존2", short: "ZONE 2" },
+        long: { label: "장거리", short: "LONG" },
+        recovery: { label: "회복런", short: "RECOVERY" }
+    };
+
+    function median(values) {
+        var sorted = values.filter(Number.isFinite).sort(function (a, b) { return a - b; });
+        if (!sorted.length) return null;
+        var middle = Math.floor(sorted.length / 2);
+        return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+    }
+
+    function observedMaxHeartRate(activities) {
+        var values = [];
+        (activities || []).forEach(function (activity) {
+            var maxHr = Number(activity.maxHr);
+            var averageHr = Number(activity.averageHr);
+            if (Number.isFinite(maxHr) && maxHr >= 120 && maxHr <= 230) values.push(maxHr);
+            else if (Number.isFinite(averageHr) && averageHr >= 110 && averageHr <= 210) {
+                values.push(averageHr + 12);
+            }
+        });
+        return values.length ? Math.round(Math.max.apply(Math, values)) : null;
+    }
+
+    function heartRateZone(activity, maxHr, restingHr) {
+        var averageHr = Number(activity && activity.averageHr);
+        var rest = Number(restingHr);
+        if (
+            !Number.isFinite(averageHr) ||
+            !Number.isFinite(maxHr) ||
+            maxHr < 140 ||
+            averageHr < 30
+        ) return null;
+        if (!Number.isFinite(rest) || rest < 30 || rest >= maxHr - 50) rest = 50;
+        var reserveRatio = (averageHr - rest) / (maxHr - rest);
+        if (reserveRatio < 0.6) return 1;
+        if (reserveRatio < 0.7) return 2;
+        if (reserveRatio < 0.8) return 3;
+        if (reserveRatio < 0.9) return 4;
+        return 5;
+    }
+
+    function estimateVdot(activity) {
+        var distanceKm = Number(activity && activity.distanceKm);
+        var seconds = Number(activity && activity.movingSeconds);
+        if (
+            !Number.isFinite(distanceKm) ||
+            !Number.isFinite(seconds) ||
+            distanceKm < 1.5 ||
+            distanceKm > 50 ||
+            seconds < 360
+        ) return null;
+        var minutes = seconds / 60;
+        var velocity = distanceKm * 1000 / minutes;
+        var oxygenCost = -4.60 + 0.182258 * velocity + 0.000104 * velocity * velocity;
+        var sustainableFraction = 0.8 +
+            0.1894393 * Math.exp(-0.012778 * minutes) +
+            0.2989558 * Math.exp(-0.1932605 * minutes);
+        var vdot = oxygenCost / sustainableFraction;
+        return Number.isFinite(vdot) && vdot >= 15 && vdot <= 90 ? vdot : null;
+    }
+
+    function classifyActivity(activity, context) {
+        var name = String(activity.name || "").toLowerCase();
+        var distance = Number(activity.distanceKm || 0);
+        var duration = Number(activity.movingSeconds || 0);
+        var pace = paceSeconds(activity);
+        var zone = heartRateZone(activity, context.maxHr, context.restingHr);
+        var labelRules = [
+            { type: "interval", pattern: /인터벌|interval|반복|repeat|400m|800m|1k\s/ },
+            { type: "tempo", pattern: /템포|tempo|threshold|역치|지속주|빌드업/ },
+            { type: "long", pattern: /롱런|long|장거리|lsd/ },
+            { type: "recovery", pattern: /회복|recovery|리커버리/ },
+            { type: "zone2", pattern: /존\s?2|zone\s?2|이지|easy|편안|조깅/ }
+        ];
+        var named = labelRules.find(function (rule) { return rule.pattern.test(name); });
+        if (named) return { key: named.type, confidence: "name", zone: zone };
+
+        if (
+            duration >= 3600 &&
+            distance >= Math.max(9, Math.min(18, context.medianDistance * 1.55))
+        ) {
+            return { key: "long", confidence: "metrics", zone: zone };
+        }
+        if (
+            (zone === 5 || (context.medianPace && pace < context.medianPace * 0.86)) &&
+            distance <= 12
+        ) {
+            return { key: "interval", confidence: "metrics", zone: zone };
+        }
+        if (
+            (zone === 4 || (context.medianPace && pace < context.medianPace * 0.94)) &&
+            duration >= 1200 &&
+            duration <= 5400
+        ) {
+            return { key: "tempo", confidence: "metrics", zone: zone };
+        }
+        if (zone === 1 || (context.medianPace && pace > context.medianPace * 1.14)) {
+            return { key: "recovery", confidence: "metrics", zone: zone };
+        }
+        return { key: "zone2", confidence: zone === 2 ? "heart-rate" : "metrics", zone: zone };
+    }
+
+    function decorateActivities(activities, health) {
+        var base = (activities || []).filter(function (activity) {
             return Number(activity.distanceKm) > 0 && Number(activity.movingSeconds) > 0;
         }).sort(function (a, b) {
             return new Date(b.date) - new Date(a.date);
         });
+        var context = {
+            maxHr: observedMaxHeartRate(base),
+            restingHr: health && Number.isFinite(Number(health.restingHr))
+                ? Number(health.restingHr)
+                : 50,
+            medianPace: median(base.map(paceSeconds)),
+            medianDistance: median(base.map(function (activity) {
+                return Number(activity.distanceKm);
+            })) || 6
+        };
+        return base.map(function (activity) {
+            var classified = classifyActivity(activity, context);
+            return Object.assign({}, activity, {
+                runType: classified.key,
+                runTypeLabel: runTypeMeta[classified.key].label,
+                classificationBasis: classified.confidence,
+                heartRateZone: classified.zone,
+                estimatedVdot: estimateVdot(activity)
+            });
+        });
+    }
+
+    function computeTrendData(activities, weeks, health) {
+        var now = new Date();
+        var dayMs = 86400000;
+        var bucketCount = clamp(Number(weeks || 4), 4, 12);
+        var buckets = Array.from({ length: bucketCount }, function (_, index) {
+            return {
+                offset: bucketCount - index - 1,
+                distance: 0,
+                vdot: null,
+                runs: 0
+            };
+        });
+        var typeTotals = { interval: 0, tempo: 0, zone2: 0, long: 0, recovery: 0 };
+        var zoneSeconds = [0, 0, 0, 0, 0];
+        var periodActivities = (activities || []).filter(function (activity) {
+            var age = Math.floor((now.getTime() - new Date(activity.date).getTime()) / dayMs);
+            return age >= 0 && age < bucketCount * 7;
+        });
+        periodActivities.forEach(function (activity) {
+            var age = Math.floor((now.getTime() - new Date(activity.date).getTime()) / dayMs);
+            var newestIndex = Math.min(bucketCount - 1, Math.floor(age / 7));
+            var bucket = buckets[bucketCount - newestIndex - 1];
+            bucket.distance += Number(activity.distanceKm || 0);
+            bucket.runs += 1;
+            var vdot = Number(activity.estimatedVdot);
+            if (Number.isFinite(vdot)) bucket.vdot = Math.max(bucket.vdot || 0, vdot);
+            if (typeTotals[activity.runType] != null) {
+                typeTotals[activity.runType] += Number(activity.distanceKm || 0);
+            }
+            var zone = Number(activity.heartRateZone);
+            if (zone >= 1 && zone <= 5) {
+                zoneSeconds[zone - 1] += Number(activity.movingSeconds || 0);
+            }
+        });
+        var vdotValues = buckets.map(function (bucket) { return bucket.vdot; }).filter(Number.isFinite);
+        var recentVdot = vdotValues.length ? vdotValues[vdotValues.length - 1] : null;
+        var firstVdot = vdotValues.length ? vdotValues[0] : null;
+        var maxHr = observedMaxHeartRate(periodActivities);
+        return {
+            weeks: bucketCount,
+            buckets: buckets,
+            totalDistance: buckets.reduce(function (sum, bucket) { return sum + bucket.distance; }, 0),
+            runCount: periodActivities.length,
+            currentVdot: recentVdot,
+            vdotChange: recentVdot != null && firstVdot != null ? recentVdot - firstVdot : null,
+            maxHr: maxHr,
+            restingHr: health && Number.isFinite(Number(health.restingHr))
+                ? Number(health.restingHr)
+                : null,
+            typeTotals: typeTotals,
+            zoneSeconds: zoneSeconds
+        };
+    }
+
+    function suggestNextTraining(profile, activities, metrics) {
+        if (!activities || !activities.length) return null;
+        var now = Date.now();
+        var recent = (activities || []).filter(function (activity) {
+            return now - new Date(activity.date).getTime() <= 8 * 86400000;
+        });
+        var hasQuality = recent.some(function (activity) {
+            return activity.runType === "interval" || activity.runType === "tempo";
+        });
+        var hasLong = recent.some(function (activity) { return activity.runType === "long"; });
+        var lastRun = activities && activities[0];
+        var daysSinceLast = lastRun
+            ? Math.max(0, Math.floor((now - new Date(lastRun.date).getTime()) / 86400000))
+            : null;
+        var proposal;
+        if (metrics.readinessScore < 60 || metrics.loadRatio > 1.4) {
+            proposal = {
+                type: "RECOVERY",
+                title: "20~30분 회복런 또는 완전 휴식",
+                prescription: "대화가 편한 강도 · RPE 2~3 · 가속 없이 종료",
+                why: [
+                    "준비도 " + metrics.readinessScore + "/100으로 강도보다 회복이 우선입니다.",
+                    "이번 주 부하는 이전 주의 " + metrics.loadRatio.toFixed(2) + "배여서 추가 강도를 억제합니다.",
+                    "다음 품질 훈련의 완성도를 위해 피로를 먼저 낮춥니다."
+                ]
+            };
+        } else if (!hasQuality && metrics.phase === "SHARPEN") {
+            proposal = {
+                type: "INTERVAL",
+                title: "목표 페이스 인터벌 4~6회",
+                prescription: "워밍업 15분 · 3~5분 반복 · 반복 사이 2분 조깅",
+                why: [
+                    "최근 8일 동안 인터벌·템포 훈련이 없어 품질 자극을 배치할 시점입니다.",
+                    "현재 단계가 SHARPEN이라 목표 페이스 적응이 우선입니다.",
+                    "주간 부하가 " + metrics.loadRatio.toFixed(2) + "배로 급증 범위가 아닙니다."
+                ]
+            };
+        } else if (!hasQuality) {
+            proposal = {
+                type: "TEMPO",
+                title: "20분 템포런",
+                prescription: "워밍업 15분 · 템포 10분×2 · 세트 사이 3분 조깅",
+                why: [
+                    "최근 8일 동안 품질 훈련이 없어 역치 자극을 한 번 배치합니다.",
+                    "최근 평균 페이스와 목표 페이스의 차이는 " + formatGap(metrics.paceGapSeconds) + "입니다.",
+                    "주간 총거리보다 지속 가능한 페이스 유지 능력을 먼저 확인합니다."
+                ]
+            };
+        } else if (!hasLong && profile && Number(profile.distanceKm) >= 10) {
+            proposal = {
+                type: "LONG",
+                title: "편안한 장거리 러닝",
+                prescription: "예정 거리의 70~80%는 대화 가능한 강도 · 마지막 10분만 점진 가속",
+                why: [
+                    "최근 8일 동안 장거리 러닝이 없어 지구력 세션을 보완합니다.",
+                    "목표 거리가 " + formatDistance(profile.distanceKm) + "km라 지속 시간 적응이 필요합니다.",
+                    "이미 품질 훈련을 수행했으므로 속도보다 안정적인 시간을 확보합니다."
+                ]
+            };
+        } else {
+            proposal = {
+                type: "ZONE 2",
+                title: "35~50분 존2 러닝",
+                prescription: "대화 가능한 호흡 · RPE 3~4 · 후반에도 같은 강도 유지",
+                why: [
+                    "최근 품질 훈련과 장거리 자극이 모두 있어 추가 강도보다 흡수가 중요합니다.",
+                    "이번 주 거리 변화는 " + (metrics.weekChange == null
+                        ? "비교 기준이 부족합니다."
+                        : (metrics.weekChange >= 0 ? "+" : "") + Math.round(metrics.weekChange) + "%입니다."),
+                    daysSinceLast == null
+                        ? "첫 기록을 만들기 좋은 낮은 강도의 세션입니다."
+                        : "마지막 러닝 후 " + daysSinceLast + "일이 지나 빈도를 안정적으로 이어갑니다."
+                ]
+            };
+        }
+        proposal.caution = "통증, 어지럼, 비정상적인 피로가 있으면 훈련을 중단하고 회복 또는 전문가 상담을 우선하세요.";
+        return proposal;
+    }
+
+    function computeDashboard(profile, activities, health) {
+        var now = Date.now();
+        var dayMs = 86400000;
+        var runs = decorateActivities(activities, health);
         var weeks = [0, 0, 0, 0];
         runs.forEach(function (activity) {
             var age = Math.floor((now - new Date(activity.date).getTime()) / dayMs);
@@ -306,39 +578,41 @@
                 (Number.isFinite(Number(health.hrv)) ? " · HRV " + Math.round(Number(health.hrv)) : "") +
                 "를 준비도 판단에 반영했습니다.";
         }
+        var metrics = {
+            readinessScore: score,
+            readinessLabel: score >= 80 ? "훈련 진행 가능" : score >= 65 ? "강도 조절 권장" : "회복 우선",
+            weekKm: weekKm,
+            previousWeekKm: previousWeek,
+            weekChange: previousWeek > 0 ? ((weekKm - previousWeek) / previousWeek) * 100 : null,
+            loadRatio: loadRatio,
+            recentDistance28Days: recentDistance,
+            runCount28Days: recent.length,
+            averagePaceSeconds: averagePace,
+            averageHeartRate: averageHeartRate,
+            targetPaceSeconds: targetPace,
+            paceGapSeconds: paceGap,
+            predictedSeconds: prediction,
+            predictionGapSeconds: predictionGap,
+            weeklyVolumes: weeks.slice().reverse(),
+            consistentWeeks: consistentWeeks,
+            sleepHours: sleep,
+            hrv: health && Number.isFinite(Number(health.hrv)) ? Number(health.hrv) : null,
+            restingHr: health && Number.isFinite(Number(health.restingHr)) ? Number(health.restingHr) : null,
+            garminReadiness: garminReadiness,
+            phase: phase,
+            daysToRace: daysToRace
+        };
         return {
             profile: profile,
             activities: runs,
             health: health || null,
-            metrics: {
-                readinessScore: score,
-                readinessLabel: score >= 80 ? "훈련 진행 가능" : score >= 65 ? "강도 조절 권장" : "회복 우선",
-                weekKm: weekKm,
-                previousWeekKm: previousWeek,
-                weekChange: previousWeek > 0 ? ((weekKm - previousWeek) / previousWeek) * 100 : null,
-                loadRatio: loadRatio,
-                recentDistance28Days: recentDistance,
-                runCount28Days: recent.length,
-                averagePaceSeconds: averagePace,
-                averageHeartRate: averageHeartRate,
-                targetPaceSeconds: targetPace,
-                paceGapSeconds: paceGap,
-                predictedSeconds: prediction,
-                predictionGapSeconds: predictionGap,
-                weeklyVolumes: weeks.slice().reverse(),
-                consistentWeeks: consistentWeeks,
-                sleepHours: sleep,
-                hrv: health && Number.isFinite(Number(health.hrv)) ? Number(health.hrv) : null,
-                restingHr: health && Number.isFinite(Number(health.restingHr)) ? Number(health.restingHr) : null,
-                garminReadiness: garminReadiness,
-                phase: phase,
-                daysToRace: daysToRace
-            },
+            metrics: metrics,
             analysis: {
                 title: title,
                 summary: summary,
                 points: points
             },
+            nextTraining: suggestNextTraining(profile, runs, metrics),
             plan: buildPlan(profile, weekKm, phase, score)
         };
     }
@@ -552,6 +826,166 @@
         }).join("");
     }
 
+    function renderTrendBars(nodeId, buckets, field, formatter) {
+        var values = buckets.map(function (bucket) {
+            return Number(bucket[field] || 0);
+        });
+        var max = Math.max.apply(Math, values.concat([1]));
+        el(nodeId).innerHTML = buckets.map(function (bucket, index) {
+            var value = Number(bucket[field] || 0);
+            var height = value ? Math.max(10, Math.round((value / max) * 96)) : 4;
+            var weeksAgo = buckets.length - index - 1;
+            var label = weeksAgo === 0 ? "이번 주" : weeksAgo + "주 전";
+            return '<div class="trend-bar-wrap">' +
+                '<span class="trend-value">' + escapeHtml(value ? formatter(value) : "—") + "</span>" +
+                '<div class="trend-bar" style="height:' + height + 'px"></div>' +
+                '<small>' + escapeHtml(label) + "</small>" +
+                "</div>";
+        }).join("");
+    }
+
+    function renderDistribution(nodeId, entries, total, unit) {
+        var safeTotal = Math.max(0, Number(total || 0));
+        el(nodeId).innerHTML = entries.map(function (entry) {
+            var value = Number(entry.value || 0);
+            var percentage = safeTotal ? Math.round((value / safeTotal) * 100) : 0;
+            return '<div class="distribution-row">' +
+                '<div><span>' + escapeHtml(entry.label) + '</span><strong>' +
+                escapeHtml(unit === "km" ? formatDistance(value) + " km" : percentage + "%") +
+                "</strong></div>" +
+                '<div class="distribution-track"><i style="width:' + percentage + '%"></i></div>' +
+                "</div>";
+        }).join("");
+    }
+
+    function renderTrends(dashboard) {
+        var trend = computeTrendData(dashboard.activities || [], trendWeeks, dashboard.health);
+        var vdotValue = trend.currentVdot == null ? "—" : trend.currentVdot.toFixed(1);
+        var vdotChange = trend.vdotChange == null
+            ? "비교 데이터 부족"
+            : (trend.vdotChange >= 0 ? "+" : "") + trend.vdotChange.toFixed(1) + " · 첫 주 대비";
+        var heartBasis = trend.maxHr
+            ? "관측 최고 " + trend.maxHr + "bpm" +
+                (trend.restingHr ? " · 안정 " + Math.round(trend.restingHr) + "bpm" : "") +
+                " 기준"
+            : "심박 기록이 충분하지 않아 구간을 계산하지 않았습니다.";
+        el("trendSummary").innerHTML = [
+            {
+                label: "VDOT 추정",
+                value: vdotValue,
+                note: vdotChange
+            },
+            {
+                label: trend.weeks + "주 러닝",
+                value: trend.runCount + "회",
+                note: formatDistance(trend.totalDistance) + " km"
+            },
+            {
+                label: "심박존 기준",
+                value: trend.maxHr ? trend.maxHr + " bpm" : "—",
+                note: trend.maxHr ? "최근 관측 최고심박" : "심박 데이터 필요"
+            }
+        ].map(function (card) {
+            return '<article><span>' + escapeHtml(card.label) + '</span><strong>' +
+                escapeHtml(card.value) + '</strong><small>' + escapeHtml(card.note) + "</small></article>";
+        }).join("");
+        el("distanceTrendLabel").textContent = trend.weeks + "주 · 총 " +
+            formatDistance(trend.totalDistance) + "km";
+        renderTrendBars("distanceTrend", trend.buckets, "distance", function (value) {
+            return formatDistance(value);
+        });
+        renderTrendBars("vdotTrend", trend.buckets, "vdot", function (value) {
+            return value.toFixed(1);
+        });
+        var typeEntries = Object.keys(runTypeMeta).map(function (key) {
+            return { label: runTypeMeta[key].label, value: trend.typeTotals[key] };
+        });
+        renderDistribution("runTypeDistribution", typeEntries, trend.totalDistance, "km");
+        var zoneTotal = trend.zoneSeconds.reduce(function (sum, value) { return sum + value; }, 0);
+        renderDistribution("heartZoneDistribution", trend.zoneSeconds.map(function (value, index) {
+            return { label: "ZONE " + (index + 1), value: value };
+        }), zoneTotal, "percent");
+        el("heartZoneBasis").textContent = heartBasis;
+    }
+
+    function renderNextTraining(recommendation) {
+        if (!recommendation || !recommendation.title) {
+            el("nextTrainingType").textContent = "READY";
+            el("nextTraining").innerHTML =
+                '<p class="empty-state">기록을 연결하면 다음 훈련과 추천 근거를 표시합니다.</p>';
+            return;
+        }
+        el("nextTrainingType").textContent = recommendation.type || "NEXT";
+        el("nextTraining").innerHTML =
+            '<article class="next-training-main">' +
+            '<span>다음 훈련</span><h3>' + escapeHtml(recommendation.title) + '</h3>' +
+            '<p>' + escapeHtml(recommendation.prescription || "") + '</p></article>' +
+            '<article class="next-training-why"><span>왜 이 훈련인가요?</span><ol>' +
+            (recommendation.why || []).slice(0, 4).map(function (reason) {
+                return "<li>" + escapeHtml(reason) + "</li>";
+            }).join("") +
+            '</ol><small>' + escapeHtml(recommendation.caution || "") + "</small></article>";
+    }
+
+    function localDateKey(date) {
+        return [
+            date.getFullYear(),
+            String(date.getMonth() + 1).padStart(2, "0"),
+            String(date.getDate()).padStart(2, "0")
+        ].join("-");
+    }
+
+    function renderCalendar(plan, activities) {
+        var first = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth(), 1);
+        var start = new Date(first);
+        start.setDate(first.getDate() - ((first.getDay() + 6) % 7));
+        var actualByDate = {};
+        var planByDate = {};
+        (activities || []).forEach(function (activity) {
+            var key = String(activity.date || "").slice(0, 10);
+            if (!key) return;
+            if (!actualByDate[key]) actualByDate[key] = [];
+            actualByDate[key].push(activity);
+        });
+        (plan || []).forEach(function (day) {
+            if (!planByDate[day.date]) planByDate[day.date] = [];
+            planByDate[day.date].push(day);
+        });
+        el("calendarTitle").textContent = first.getFullYear() + "년 " + (first.getMonth() + 1) + "월";
+        var today = localDateKey(new Date());
+        var cells = [];
+        for (var index = 0; index < 42; index += 1) {
+            var date = new Date(start);
+            date.setDate(start.getDate() + index);
+            var key = localDateKey(date);
+            var actual = actualByDate[key] || [];
+            var scheduled = planByDate[key] || [];
+            var outside = date.getMonth() !== first.getMonth();
+            var events = [];
+            actual.slice(0, 1).forEach(function (activity) {
+                events.push('<span class="calendar-event actual">' +
+                    escapeHtml(activity.runTypeLabel || "러닝") + " " +
+                    escapeHtml(formatDistance(activity.distanceKm)) + "km</span>");
+            });
+            scheduled.slice(0, actual.length ? 1 : 2).forEach(function (day) {
+                events.push('<span class="calendar-event ' +
+                    (day.rest ? "rest" : day.key ? "key" : "planned") + '">' +
+                    escapeHtml(day.title) + "</span>");
+            });
+            if (actual.length + scheduled.length > events.length) {
+                events.push('<small class="calendar-more">+' +
+                    (actual.length + scheduled.length - events.length) + "개</small>");
+            }
+            cells.push('<article class="calendar-day' +
+                (outside ? " is-outside" : "") +
+                (key === today ? " is-today" : "") +
+                '" role="gridcell" aria-label="' + escapeHtml(key) + '">' +
+                '<time datetime="' + escapeHtml(key) + '">' + date.getDate() + "</time>" +
+                '<div class="calendar-events">' + events.join("") + "</div></article>");
+        }
+        el("trainingCalendar").innerHTML = cells.join("");
+    }
+
     function renderAnalysis(analysis) {
         el("analysisTitle").textContent = analysis && analysis.title || "목표와 기록을 연결해 주세요.";
         el("analysisSummary").textContent = analysis && analysis.summary ||
@@ -565,15 +999,22 @@
             badge.hidden = true;
             badge.textContent = "";
             badge.removeAttribute("title");
+            el("chatgptReviewStatus").textContent =
+                "첫 연결 시 ChatGPT의 RUNBRO 앱에서 권한을 승인해 주세요.";
             return;
         }
         badge.hidden = false;
         badge.classList.toggle("is-adjusted", verification.verdict === "adjusted");
-        badge.classList.toggle("is-single", verification.status !== "cross_checked");
-        badge.textContent = verification.status === "cross_checked"
-            ? "GEMINI 3.6 FLASH × GPT-5.6 SOL"
-            : "단일 모델 분석";
+        badge.classList.toggle("is-single", verification.status !== "chatgpt_verified");
+        badge.textContent = verification.status === "chatgpt_verified"
+            ? "GEMINI × CHATGPT 검증 완료"
+            : verification.status === "pending_chatgpt"
+                ? "GEMINI 1차 분석 · CHATGPT 검증 대기"
+                : "RUNBRO 분석";
         badge.title = verification.note || "";
+        el("chatgptReviewStatus").textContent = verification.status === "chatgpt_verified"
+            ? "ChatGPT가 기록 집계와 1차 분석을 대조해 저장한 결과입니다."
+            : "ChatGPT의 RUNBRO 앱에서 이 분석을 교차검증할 수 있습니다.";
     }
 
     function renderAnalysisEvidence(dashboard) {
@@ -666,13 +1107,15 @@
         var runs = activities || [];
         el("activityCount").textContent = runs.length + " RUNS";
         if (!runs.length) {
-            el("activityRows").innerHTML = '<tr><td colspan="5" class="empty-cell">연결된 기록이 없습니다.</td></tr>';
+            el("activityRows").innerHTML = '<tr><td colspan="6" class="empty-cell">연결된 기록이 없습니다.</td></tr>';
             return;
         }
         el("activityRows").innerHTML = runs.slice(0, 8).map(function (activity) {
             return "<tr>" +
                 "<td>" + escapeHtml(String(activity.date).slice(0, 10)) + "</td>" +
                 '<td class="activity-name">' + escapeHtml(activity.name || "러닝") + "</td>" +
+                '<td><span class="activity-type type-' + escapeHtml(activity.runType || "zone2") + '">' +
+                escapeHtml(activity.runTypeLabel || "존2") + "</span></td>" +
                 "<td>" + formatDistance(activity.distanceKm) + "km</td>" +
                 "<td>" + formatPace(paceSeconds(activity)) + "</td>" +
                 "<td>" + (activity.averageHr ? Math.round(activity.averageHr) + " bpm" : "—") + "</td>" +
@@ -704,9 +1147,12 @@
         fillProfile(dashboard.profile);
         renderHero(dashboard.profile, dashboard.metrics);
         renderMetrics(dashboard);
+        renderTrends(dashboard);
         renderAnalysis(dashboard.analysis);
         renderAnalysisEvidence(dashboard);
+        renderNextTraining(dashboard.nextTraining);
         renderPlan(dashboard.plan, dashboard.metrics || {});
+        renderCalendar(dashboard.plan, dashboard.activities);
         renderActivities(dashboard.activities);
         renderConnections(dashboard.connections || {});
     }
@@ -728,6 +1174,15 @@
                 normalized.analysis.points.slice(storedPoints.length)
             ).slice(0, 5);
             normalized.analysis = storedAnalysis;
+            if (storedAnalysis.recommendation && storedAnalysis.recommendation.title) {
+                normalized.nextTraining = storedAnalysis.recommendation;
+            }
+            if (
+                Array.isArray(storedAnalysis.trainingPlan) &&
+                storedAnalysis.trainingPlan.length === 7
+            ) {
+                normalized.plan = storedAnalysis.trainingPlan;
+            }
         }
         return normalized;
     }
@@ -794,7 +1249,14 @@
         var totalHeartRate = 0;
         var heartRateCount = 0;
         var runCount = 0;
-        (dashboard && dashboard.activities || []).forEach(function (activity) {
+        var typeCounts = { interval: 0, tempo: 0, zone2: 0, long: 0, recovery: 0 };
+        var heartZoneSeconds = [0, 0, 0, 0, 0];
+        var vdotValues = [];
+        var decorated = decorateActivities(
+            dashboard && dashboard.activities || [],
+            dashboard && dashboard.health
+        );
+        decorated.forEach(function (activity) {
             var distance = Number(activity.distanceKm);
             var seconds = Number(activity.movingSeconds);
             var age = Math.floor((now - new Date(activity.date).getTime()) / dayMs);
@@ -815,6 +1277,13 @@
                 totalHeartRate += heartRate;
                 heartRateCount += 1;
             }
+            if (typeCounts[activity.runType] != null) typeCounts[activity.runType] += 1;
+            if (activity.heartRateZone >= 1 && activity.heartRateZone <= 5) {
+                heartZoneSeconds[activity.heartRateZone - 1] += seconds;
+            }
+            if (Number.isFinite(Number(activity.estimatedVdot))) {
+                vdotValues.push(Number(activity.estimatedVdot));
+            }
         });
         var health = dashboard && dashboard.health || {};
         function optionalNumber(value) {
@@ -832,6 +1301,13 @@
             averageHeartRateBpm: heartRateCount
                 ? Math.round(totalHeartRate / heartRateCount)
                 : null,
+            estimatedVdot: vdotValues.length
+                ? Math.round(Math.max.apply(Math, vdotValues) * 10) / 10
+                : null,
+            runTypeCounts: typeCounts,
+            heartZoneMinutes: heartZoneSeconds.map(function (seconds) {
+                return Math.round(seconds / 60);
+            }),
             health: {
                 sleepHours: optionalNumber(health.sleepHours),
                 hrv: optionalNumber(health.hrv),
@@ -1132,6 +1608,41 @@
         });
     }
 
+    function selectTrendPeriod(button) {
+        var weeks = Number(button.dataset.periodWeeks);
+        if (![4, 8, 12].includes(weeks)) return;
+        trendWeeks = weeks;
+        document.querySelectorAll("[data-period-weeks]").forEach(function (candidate) {
+            var active = candidate === button;
+            candidate.classList.toggle("is-active", active);
+            candidate.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+        if (currentDashboard) renderTrends(currentDashboard);
+    }
+
+    function shiftCalendar(months) {
+        calendarCursor = new Date(
+            calendarCursor.getFullYear(),
+            calendarCursor.getMonth() + months,
+            1
+        );
+        if (currentDashboard) {
+            renderCalendar(currentDashboard.plan, currentDashboard.activities);
+        }
+    }
+
+    function openChatgptReview() {
+        var target = String(config.chatgptAppUrl || "https://chatgpt.com/");
+        var prompt = "RUNBRO 앱으로 내 최근 러닝 기록과 Gemini 1차 분석을 교차검증하고, 다음 훈련의 내용과 근거 및 7일 계획을 저장해줘.";
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(prompt).catch(function () {});
+        }
+        window.open(target, "_blank", "noopener,noreferrer");
+        el("chatgptReviewStatus").textContent = config.chatgptAppUrl
+            ? "ChatGPT에서 RUNBRO 앱 연결을 승인한 뒤 상세 검증을 진행해 주세요."
+            : "분석 요청 문구를 복사했습니다. ChatGPT에서 RUNBRO 앱을 연결한 뒤 붙여넣어 주세요.";
+    }
+
     function disconnectAll() {
         requireLogin("연결과 저장 기록을 삭제하려면 카카오 로그인이 필요합니다.", function () {
             if (!window.confirm("RUNBRO에 저장된 연결 정보, 러닝 기록, 분석 결과를 모두 삭제할까요?")) return;
@@ -1214,6 +1725,19 @@
         });
         el("syncButton").addEventListener("click", syncActivities);
         el("refreshAnalysis").addEventListener("click", refreshAnalysis);
+        el("chatgptReviewButton").addEventListener("click", openChatgptReview);
+        document.querySelectorAll("[data-period-weeks]").forEach(function (button) {
+            button.addEventListener("click", function () { selectTrendPeriod(button); });
+        });
+        el("calendarPrev").addEventListener("click", function () { shiftCalendar(-1); });
+        el("calendarNext").addEventListener("click", function () { shiftCalendar(1); });
+        el("calendarToday").addEventListener("click", function () {
+            var today = new Date();
+            calendarCursor = new Date(today.getFullYear(), today.getMonth(), 1);
+            if (currentDashboard) {
+                renderCalendar(currentDashboard.plan, currentDashboard.activities);
+            }
+        });
         el("disconnectButton").addEventListener("click", disconnectAll);
 
         document.addEventListener("goyoungo:authchange", function (event) {

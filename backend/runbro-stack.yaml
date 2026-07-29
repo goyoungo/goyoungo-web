@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Secure personal running data, Strava OAuth and training analysis API for GO.YOUNGO RUNBRO
+Description: Secure personal running data, Garmin sync and ChatGPT MCP analysis API for GO.YOUNGO RUNBRO
 
 Parameters:
   KakaoAppId:
@@ -31,11 +31,6 @@ Parameters:
     NoEcho: true
     Default: ""
     Description: Optional Gemini API key for Gemini 3.6 Flash first-pass analysis
-  OpenAIApiKey:
-    Type: String
-    NoEcho: true
-    Default: ""
-    Description: Optional OpenAI API key for GPT-5.6 Sol cross-validation
   GarminCodeBucket:
     Type: String
     Default: ""
@@ -70,6 +65,9 @@ Resources:
           KeyType: RANGE
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
       SSESpecification:
         SSEEnabled: true
       Tags:
@@ -192,6 +190,12 @@ Resources:
                   - kms:Encrypt
                   - kms:Decrypt
                 Resource: !GetAtt RunbroTokenKey.Arn
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource:
+                  - !Sub "${RunbroGarminBucket.Arn}/users/*/garmin/activities/latest.json.gz"
+                  - !Sub "${RunbroGarminBucket.Arn}/users/*/garmin/health/latest.json.gz"
         - PolicyName: RunbroLogs
           PolicyDocument:
             Version: "2012-10-17"
@@ -216,7 +220,7 @@ Resources:
       - RunbroFunctionLogGroup
     Properties:
       FunctionName: !Sub "${AWS::StackName}-api"
-      Description: RUNBRO profile, Strava sync and privacy-preserving training analysis
+      Description: RUNBRO profile, privacy-preserving analysis and ChatGPT MCP OAuth
       Runtime: nodejs22.x
       Architectures:
         - arm64
@@ -235,19 +239,26 @@ Resources:
           STRAVA_CLIENT_ID: !Ref StravaClientId
           STRAVA_CLIENT_SECRET: !Ref StravaClientSecret
           GEMINI_API_KEY: !Ref GeminiApiKey
-          OPENAI_API_KEY: !Ref OpenAIApiKey
+          RUNBRO_GARMIN_BUCKET: !Ref RunbroGarminBucket
       Code:
         ZipFile: |
           "use strict";
 
           const crypto = require("node:crypto");
+          const zlib = require("node:zlib");
           const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
           const {
             DynamoDBDocumentClient,
             BatchWriteCommand,
+            DeleteCommand,
+            GetCommand,
             PutCommand,
             QueryCommand
           } = require("@aws-sdk/lib-dynamodb");
+          const {
+            S3Client,
+            GetObjectCommand
+          } = require("@aws-sdk/client-s3");
           const {
             KMSClient,
             EncryptCommand,
@@ -262,8 +273,10 @@ Resources:
           const stravaClientId = String(process.env.STRAVA_CLIENT_ID || "");
           const stravaClientSecret = process.env.STRAVA_CLIENT_SECRET || "";
           const geminiApiKey = process.env.GEMINI_API_KEY || "";
-          const openaiApiKey = process.env.OPENAI_API_KEY || "";
+          const garminBucket = process.env.RUNBRO_GARMIN_BUCKET || "";
           const callbackUrl = "https://goyoungo.com/runbro/callback.html";
+          const chatgptConsentUrl = "https://goyoungo.com/runbro/chatgpt-connect.html";
+          const mcpScopes = new Set(["running:read", "analysis:write"]);
           const allowedOrigins = new Set([
             "https://goyoungo.com",
             "https://www.goyoungo.com",
@@ -285,6 +298,7 @@ Resources:
             { marshallOptions: { removeUndefinedValues: true } }
           );
           const kmsClient = new KMSClient({});
+          const s3Client = new S3Client({});
 
           class HttpError extends Error {
             constructor(statusCode, message, code) {
@@ -307,13 +321,56 @@ Resources:
             };
           }
 
-          function parseBody(event, maxBytes) {
+          function redirectResponse(location) {
+            return {
+              statusCode: 302,
+              headers: {
+                location,
+                "cache-control": "no-store",
+                "x-content-type-options": "nosniff",
+                "referrer-policy": "no-referrer"
+              },
+              body: ""
+            };
+          }
+
+          function emptyResponse(statusCode) {
+            return {
+              statusCode,
+              headers: {
+                "cache-control": "no-store",
+                "x-content-type-options": "nosniff"
+              },
+              body: ""
+            };
+          }
+
+          function requestOrigin(event) {
+            const domain = String(
+              event.requestContext && event.requestContext.domainName || ""
+            );
+            if (!/^[A-Za-z0-9.-]+$/.test(domain)) {
+              throw new HttpError(400, "요청 주소를 확인하지 못했습니다.", "invalid_request_origin");
+            }
+            return "https://" + domain;
+          }
+
+          function rawRequestBody(event, maxBytes) {
             const source = event.isBase64Encoded
               ? Buffer.from(event.body || "", "base64").toString("utf8")
               : (event.body || "");
             if (Buffer.byteLength(source, "utf8") > maxBytes) {
               throw new HttpError(413, "요청 내용이 너무 큽니다.", "payload_too_large");
             }
+            return source;
+          }
+
+          function parseFormBody(event, maxBytes) {
+            return new URLSearchParams(rawRequestBody(event, maxBytes));
+          }
+
+          function parseBody(event, maxBytes) {
+            const source = rawRequestBody(event, maxBytes);
             try {
               const body = JSON.parse(source || "{}");
               if (!body || Array.isArray(body) || typeof body !== "object") throw new Error("object required");
@@ -411,6 +468,60 @@ Resources:
               throw new HttpError(400, "연결 요청이 만료되었습니다. 다시 시도해 주세요.", "expired_oauth_state");
             }
             return payload;
+          }
+
+          function signMcpPayload(payload) {
+            const encoded = Buffer.from(JSON.stringify(payload)).toString("base64url");
+            const signature = crypto
+              .createHmac("sha256", oauthStateSecret)
+              .update("runbro-mcp:" + encoded)
+              .digest("base64url");
+            return encoded + "." + signature;
+          }
+
+          function verifyMcpPayload(value, expectedKind) {
+            const parts = String(value || "").split(".");
+            if (parts.length !== 2 || parts[0].length > 6144 || parts[1].length > 128) {
+              throw new HttpError(400, "ChatGPT 연결 요청이 올바르지 않습니다.", "invalid_oauth_request");
+            }
+            const expected = crypto
+              .createHmac("sha256", oauthStateSecret)
+              .update("runbro-mcp:" + parts[0])
+              .digest();
+            let provided;
+            try {
+              provided = Buffer.from(parts[1], "base64url");
+            } catch (error) {
+              throw new HttpError(400, "ChatGPT 연결 요청이 올바르지 않습니다.", "invalid_oauth_request");
+            }
+            if (provided.length !== expected.length || !crypto.timingSafeEqual(provided, expected)) {
+              throw new HttpError(400, "ChatGPT 연결 요청이 올바르지 않습니다.", "invalid_oauth_request");
+            }
+            let payload;
+            try {
+              payload = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
+            } catch (error) {
+              throw new HttpError(400, "ChatGPT 연결 요청이 올바르지 않습니다.", "invalid_oauth_request");
+            }
+            if (
+              !payload ||
+              payload.kind !== expectedKind ||
+              Number(payload.expiresAt || 0) < Date.now()
+            ) {
+              throw new HttpError(400, "ChatGPT 연결 요청이 만료되었습니다.", "expired_oauth_request");
+            }
+            return payload;
+          }
+
+          function tokenHash(value) {
+            return crypto.createHash("sha256").update(String(value || "")).digest("hex");
+          }
+
+          function normalizedScopes(value) {
+            const scopes = String(value || "")
+              .split(/\s+/)
+              .filter((scope) => mcpScopes.has(scope));
+            return Array.from(new Set(scopes));
           }
 
           async function encryptTokens(userPk, provider, value) {
@@ -521,6 +632,58 @@ Resources:
 
           async function dashboardFor(userPk) {
             return publicDashboard(await queryUserItems(userPk));
+          }
+
+          function garminObjectKey(userPk, suffix) {
+            if (!/^USER#[a-f0-9]{64}$/.test(userPk)) {
+              throw new HttpError(401, "RUNBRO 사용자 연결을 확인해 주세요.", "invalid_user");
+            }
+            return "users/" + userPk.slice(5) + "/garmin/" + suffix;
+          }
+
+          async function readGarminJson(userPk, suffix) {
+            if (!garminBucket) return null;
+            try {
+              const result = await s3Client.send(new GetObjectCommand({
+                Bucket: garminBucket,
+                Key: garminObjectKey(userPk, suffix)
+              }));
+              const bytes = Buffer.from(await result.Body.transformToByteArray());
+              const plain = result.ContentEncoding === "gzip" || (bytes[0] === 31 && bytes[1] === 139)
+                ? zlib.gunzipSync(bytes)
+                : bytes;
+              if (plain.length > 2 * 1024 * 1024) return null;
+              return JSON.parse(plain.toString("utf8"));
+            } catch (error) {
+              const code = String(error && (error.name || error.Code) || "");
+              if (["NoSuchKey", "NotFound", "404"].includes(code)) return null;
+              console.error("RUNBRO Garmin summary read failed", { name: code });
+              return null;
+            }
+          }
+
+          async function combinedDashboardFor(userPk) {
+            const [base, garminActivities, garminHealth] = await Promise.all([
+              dashboardFor(userPk),
+              readGarminJson(userPk, "activities/latest.json.gz"),
+              readGarminJson(userPk, "health/latest.json.gz")
+            ]);
+            const activities = []
+              .concat(base.activities || [])
+              .concat(garminActivities && Array.isArray(garminActivities.activities)
+                ? garminActivities.activities
+                : []);
+            const seen = new Set();
+            base.activities = activities.filter((activity) => {
+              const key = String(activity.provider || "unknown") + ":" + String(activity.id || "");
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            }).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 120);
+            base.health = garminHealth && garminHealth.summary
+              ? garminHealth.summary
+              : null;
+            return base;
           }
 
           async function putProfile(event) {
@@ -780,6 +943,23 @@ Resources:
             ) {
               throw new HttpError(400, "분석용 기록 요약을 확인해 주세요.", "invalid_analysis_input");
             }
+            const runTypeSource = source.runTypeCounts;
+            const runTypeCounts = {};
+            if (runTypeSource != null) {
+              if (!runTypeSource || Array.isArray(runTypeSource) || typeof runTypeSource !== "object") {
+                throw new HttpError(400, "러닝 분류 요약을 확인해 주세요.", "invalid_analysis_input");
+              }
+              for (const key of ["interval", "tempo", "zone2", "long", "recovery"]) {
+                runTypeCounts[key] = optionalAnalysisNumber(runTypeSource[key] || 0, 0, 100, true);
+              }
+            }
+            const heartZoneMinutes = source.heartZoneMinutes;
+            if (
+              heartZoneMinutes != null &&
+              (!Array.isArray(heartZoneMinutes) || heartZoneMinutes.length !== 5)
+            ) {
+              throw new HttpError(400, "심박존 요약을 확인해 주세요.", "invalid_analysis_input");
+            }
             return {
               runCount28Days,
               weeklyDistanceKmOldestToNewest,
@@ -795,6 +975,13 @@ Resources:
                 230,
                 false
               ),
+              estimatedVdot: optionalAnalysisNumber(source.estimatedVdot, 15, 90, false),
+              runTypeCounts: runTypeSource != null ? runTypeCounts : null,
+              heartZoneMinutes: heartZoneMinutes == null
+                ? null
+                : heartZoneMinutes.map((value) =>
+                    optionalAnalysisNumber(value, 0, 100000, true)
+                  ),
               health: healthSource ? {
                 sleepHours: optionalAnalysisNumber(healthSource.sleepHours, 0, 14, false),
                 hrv: optionalAnalysisNumber(healthSource.hrv, 0, 300, false),
@@ -855,6 +1042,9 @@ Resources:
               averageHeartRateBpm: clientInput
                 ? clientInput.averageHeartRateBpm
                 : (heartRateCount ? Math.round(totalHeartRate / heartRateCount) : null),
+              estimatedVdot: clientInput ? clientInput.estimatedVdot : null,
+              runTypeCounts: clientInput ? clientInput.runTypeCounts : null,
+              heartZoneMinutes: clientInput ? clientInput.heartZoneMinutes : null,
               health: clientInput ? clientInput.health : null
             };
           }
@@ -927,153 +1117,20 @@ Resources:
             }
           }
 
-          async function openAIReview(aggregate, candidate, userPk) {
-            if (!openaiApiKey || !aggregate.race || aggregate.runCount28Days < 2) return null;
-            const safetyIdentifier = crypto
-              .createHmac("sha256", userHmacSecret)
-              .update("openai-safety:" + userPk)
-              .digest("hex")
-              .slice(0, 32);
-            const systemPrompt = [
-              "당신은 RUNBRO의 2차 러닝 훈련 분석 검증자입니다.",
-              "익명 집계와 Gemini 3.6 Flash의 1차 분석을 대조하세요.",
-                  "수치와 맞지 않거나 과훈련을 유도하는 문구는 수정하고, 근거 없는 단정은 제거하세요.",
-                  "의료 진단을 하지 말고 통증이나 이상 증상에는 운동 중단과 전문가 상담을 권고하세요.",
-                  "다섯 개 권고는 목표 적합성, 훈련량, 회복 상태, 이번 주 우선순위, 주의 사항을 순서대로 다루세요.",
-              "1차 분석이 타당하면 verdict를 confirmed, 의미 있게 수정했으면 adjusted로 설정하세요.",
-              "1차 분석이 없으면 독립 분석하고 verdict를 adjusted로 설정하세요.",
-              "한국어로 간결하게 작성하고 제공된 집계 밖의 숫자는 만들지 마세요."
-            ].join("\n");
-            const schema = {
-              type: "object",
-              properties: {
-                title: { type: "string" },
-                summary: { type: "string" },
-                  points: {
-                    type: "array",
-                    items: { type: "string" },
-                    minItems: 5,
-                    maxItems: 5
-                },
-                verdict: {
-                  type: "string",
-                  enum: ["confirmed", "adjusted"]
-                },
-                verificationNote: { type: "string" }
-              },
-              required: ["title", "summary", "points", "verdict", "verificationNote"],
-              additionalProperties: false
-            };
-            let result;
-            try {
-              result = await fetch("https://api.openai.com/v1/responses", {
-                method: "POST",
-                headers: {
-                  authorization: "Bearer " + openaiApiKey,
-                  "content-type": "application/json"
-                },
-                body: JSON.stringify({
-                  model: "gpt-5.6-sol",
-                  store: false,
-                  safety_identifier: safetyIdentifier,
-                  reasoning: { effort: "low" },
-                  input: [
-                    { role: "system", content: systemPrompt },
-                    {
-                      role: "user",
-                      content: JSON.stringify({
-                        aggregate,
-                        geminiFirstPass: candidate
-                      })
-                    }
-                  ],
-                  max_output_tokens: 1400,
-                  text: {
-                    verbosity: "low",
-                    format: {
-                      type: "json_schema",
-                      name: "runbro_analysis_review",
-                      strict: true,
-                      schema
-                    }
-                  }
-                }),
-                signal: AbortSignal.timeout(12000)
-              });
-            } catch (error) {
-              return null;
-            }
-            if (!result.ok) return null;
-            const body = await result.json().catch(() => ({}));
-            if (body.status === "incomplete") return null;
-            const message = Array.isArray(body.output)
-              ? body.output.find((item) => item && item.type === "message")
-              : null;
-            const output = message && Array.isArray(message.content)
-              ? message.content.find((item) => item && item.type === "output_text")
-              : null;
-            if (!output || typeof output.text !== "string" || output.text.length > 4000) return null;
-            try {
-              const parsed = JSON.parse(output.text);
-              const analysis = normalizedAnalysis(parsed);
-              if (
-                !analysis ||
-                !["confirmed", "adjusted"].includes(parsed.verdict) ||
-                typeof parsed.verificationNote !== "string"
-              ) return null;
-              return {
-                analysis,
-                verdict: parsed.verdict,
-                note: parsed.verificationNote.trim().slice(0, 160)
-              };
-            } catch (error) {
-              return null;
-            }
-          }
-
-          async function crossValidatedAnalysis(aggregate, userPk) {
+          async function firstPassAnalysis(aggregate) {
             const gemini = await geminiAnalysis(aggregate);
-            const gpt = await openAIReview(aggregate, gemini, userPk);
+            if (!gemini) return null;
             const generatedAt = new Date().toISOString();
-            if (gemini && gpt) {
-              return {
-                ...gpt.analysis,
-                verification: {
-                  status: "cross_checked",
-                  verdict: gpt.verdict,
-                  note: gpt.note || (gpt.verdict === "confirmed"
-                    ? "두 모델의 핵심 판단이 일치했습니다."
-                    : "2차 검증에서 표현과 권고를 조정했습니다."),
-                  models: ["gemini-3.6-flash", "gpt-5.6-sol"],
-                  generatedAt
-                }
-              };
-            }
-            if (gemini) {
-              return {
-                ...gemini,
-                verification: {
-                  status: "single_model",
-                  verdict: "not_cross_checked",
-                  note: "GPT 검증을 완료하지 못해 Gemini 분석만 표시합니다.",
-                  models: ["gemini-3.6-flash"],
-                  generatedAt
-                }
-              };
-            }
-            if (gpt) {
-              return {
-                ...gpt.analysis,
-                verification: {
-                  status: "single_model",
-                  verdict: "not_cross_checked",
-                  note: "Gemini 1차 분석을 완료하지 못해 GPT 분석만 표시합니다.",
-                  models: ["gpt-5.6-sol"],
-                  generatedAt
-                }
-              };
-            }
-            return null;
+            return {
+              ...gemini,
+              verification: {
+                status: "pending_chatgpt",
+                verdict: "not_cross_checked",
+                note: "ChatGPT의 RUNBRO 앱에서 상세 교차검증을 진행할 수 있습니다.",
+                models: ["gemini-3.6-flash"],
+                generatedAt
+              }
+            };
           }
 
           async function analyze(event) {
@@ -1081,7 +1138,7 @@ Resources:
             const body = parseBody(event, 4096);
             const dashboard = await dashboardFor(userPk);
             const aggregate = aggregateForAnalysis(dashboard, validatedAnalysisInput(body));
-            const freshAnalysis = await crossValidatedAnalysis(aggregate, userPk);
+            const freshAnalysis = await firstPassAnalysis(aggregate);
             const analysis = freshAnalysis || null;
             if (freshAnalysis) {
               try {
@@ -1101,6 +1158,853 @@ Resources:
               }
             }
             return response(200, { ...dashboard, analysis });
+          }
+
+          async function getItem(pk, sk) {
+            const result = await documentClient.send(new GetCommand({
+              TableName: tableName,
+              Key: { pk, sk },
+              ConsistentRead: true
+            }));
+            return result.Item || null;
+          }
+
+          function validChatgptRedirect(value) {
+            try {
+              const url = new URL(String(value || ""));
+              return (
+                url.protocol === "https:" &&
+                url.hostname === "chatgpt.com" &&
+                !url.port &&
+                !url.username &&
+                !url.password &&
+                (
+                  url.pathname.startsWith("/connector/oauth/") ||
+                  url.pathname === "/connector_platform_oauth_redirect"
+                )
+              );
+            } catch (error) {
+              return false;
+            }
+          }
+
+          async function oauthProtectedResource(event) {
+            const origin = requestOrigin(event);
+            return response(200, {
+              resource: origin + "/mcp",
+              authorization_servers: [origin],
+              scopes_supported: ["running:read", "analysis:write"],
+              bearer_methods_supported: ["header"],
+              resource_documentation: "https://goyoungo.com/runbro/"
+            });
+          }
+
+          async function oauthAuthorizationMetadata(event) {
+            const origin = requestOrigin(event);
+            return response(200, {
+              issuer: origin,
+              authorization_endpoint: origin + "/oauth/authorize",
+              token_endpoint: origin + "/oauth/token",
+              registration_endpoint: origin + "/oauth/register",
+              response_types_supported: ["code"],
+              grant_types_supported: ["authorization_code", "refresh_token"],
+              token_endpoint_auth_methods_supported: ["none"],
+              code_challenge_methods_supported: ["S256"],
+              scopes_supported: ["running:read", "analysis:write"]
+            });
+          }
+
+          async function registerMcpClient(event) {
+            const body = parseBody(event, 8192);
+            const redirectUris = Array.isArray(body.redirect_uris)
+              ? body.redirect_uris.map(String)
+              : [];
+            if (
+              redirectUris.length < 1 ||
+              redirectUris.length > 8 ||
+              redirectUris.some((uri) => !validChatgptRedirect(uri))
+            ) {
+              throw new HttpError(400, "ChatGPT 콜백 주소를 확인해 주세요.", "invalid_redirect_uri");
+            }
+            const clientId = "runbro_client_" + crypto.randomBytes(24).toString("base64url");
+            const client = {
+              pk: "OAUTH#CLIENT#" + clientId,
+              sk: "METADATA",
+              clientId,
+              clientName: String(body.client_name || "ChatGPT RUNBRO").slice(0, 100),
+              redirectUris: Array.from(new Set(redirectUris)),
+              createdAt: new Date().toISOString()
+            };
+            await documentClient.send(new PutCommand({
+              TableName: tableName,
+              Item: client,
+              ConditionExpression: "attribute_not_exists(pk)"
+            }));
+            return response(201, {
+              client_id: clientId,
+              client_name: client.clientName,
+              redirect_uris: client.redirectUris,
+              token_endpoint_auth_method: "none",
+              grant_types: ["authorization_code", "refresh_token"],
+              response_types: ["code"]
+            });
+          }
+
+          async function authorizeMcpClient(event) {
+            const query = event.queryStringParameters || {};
+            const origin = requestOrigin(event);
+            const resource = String(query.resource || "");
+            const clientId = String(query.client_id || "");
+            const redirectUri = String(query.redirect_uri || "");
+            const externalState = String(query.state || "");
+            const codeChallenge = String(query.code_challenge || "");
+            const scopes = normalizedScopes(query.scope || "running:read analysis:write");
+            if (
+              query.response_type !== "code" ||
+              !/^runbro_client_[A-Za-z0-9_-]{20,80}$/.test(clientId) ||
+              !validChatgptRedirect(redirectUri) ||
+              externalState.length < 8 ||
+              externalState.length > 2048 ||
+              query.code_challenge_method !== "S256" ||
+              !/^[A-Za-z0-9_-]{43,128}$/.test(codeChallenge) ||
+              resource !== origin + "/mcp" ||
+              scopes.length < 1
+            ) {
+              throw new HttpError(400, "ChatGPT OAuth 요청을 확인해 주세요.", "invalid_request");
+            }
+            const client = await getItem("OAUTH#CLIENT#" + clientId, "METADATA");
+            if (!client || !client.redirectUris.includes(redirectUri)) {
+              throw new HttpError(400, "등록되지 않은 ChatGPT 연결입니다.", "invalid_client");
+            }
+            const request = signMcpPayload({
+              kind: "mcp_authorize",
+              clientId,
+              redirectUri,
+              externalState,
+              codeChallenge,
+              resource,
+              scopes,
+              nonce: crypto.randomBytes(18).toString("base64url"),
+              expiresAt: Date.now() + 10 * 60 * 1000
+            });
+            const consent = new URL(chatgptConsentUrl);
+            consent.searchParams.set("request", request);
+            return redirectResponse(consent.toString());
+          }
+
+          async function approveMcpClient(event) {
+            const userPk = await verifyKakaoUser(event);
+            const body = parseBody(event, 8192);
+            const request = verifyMcpPayload(body.request, "mcp_authorize");
+            const client = await getItem("OAUTH#CLIENT#" + request.clientId, "METADATA");
+            if (
+              !client ||
+              !client.redirectUris.includes(request.redirectUri) ||
+              request.resource !== requestOrigin(event) + "/mcp"
+            ) {
+              throw new HttpError(400, "등록되지 않은 ChatGPT 연결입니다.", "invalid_client");
+            }
+            const code = "runbro_code_" + crypto.randomBytes(32).toString("base64url");
+            const now = Math.floor(Date.now() / 1000);
+            await documentClient.send(new PutCommand({
+              TableName: tableName,
+              Item: {
+                pk: "OAUTH#CODE#" + tokenHash(code),
+                sk: "CODE",
+                userPk,
+                clientId: request.clientId,
+                redirectUri: request.redirectUri,
+                codeChallenge: request.codeChallenge,
+                resource: request.resource,
+                scopes: request.scopes,
+                ttl: now + 300
+              },
+              ConditionExpression: "attribute_not_exists(pk)"
+            }));
+            await documentClient.send(new PutCommand({
+              TableName: tableName,
+              Item: {
+                pk: userPk,
+                sk: "MCP_GRANT#" + request.clientId,
+                clientId: request.clientId,
+                scopes: request.scopes,
+                connectedAt: new Date().toISOString()
+              }
+            }));
+            const redirect = new URL(request.redirectUri);
+            redirect.searchParams.set("code", code);
+            redirect.searchParams.set("state", request.externalState);
+            return response(200, { redirectUrl: redirect.toString() });
+          }
+
+          async function storeOauthToken(type, userPk, clientId, scopes, resource, lifetimeSeconds) {
+            const prefix = type === "refresh" ? "runbro_rt_" : "runbro_at_";
+            const value = prefix + crypto.randomBytes(32).toString("base64url");
+            const now = Math.floor(Date.now() / 1000);
+            await documentClient.send(new PutCommand({
+              TableName: tableName,
+              Item: {
+                pk: "OAUTH#TOKEN#" + tokenHash(value),
+                sk: "TOKEN",
+                tokenType: type,
+                userPk,
+                clientId,
+                scopes,
+                resource,
+                ttl: now + lifetimeSeconds
+              },
+              ConditionExpression: "attribute_not_exists(pk)"
+            }));
+            return value;
+          }
+
+          async function issueOauthTokens(userPk, clientId, scopes, resource, includeRefresh) {
+            const accessToken = await storeOauthToken(
+              "access", userPk, clientId, scopes, resource, 3600
+            );
+            const result = {
+              access_token: accessToken,
+              token_type: "Bearer",
+              expires_in: 3600,
+              scope: scopes.join(" ")
+            };
+            if (includeRefresh) {
+              result.refresh_token = await storeOauthToken(
+                "refresh", userPk, clientId, scopes, resource, 30 * 86400
+              );
+            }
+            return result;
+          }
+
+          async function oauthToken(event) {
+            const form = parseFormBody(event, 8192);
+            const grantType = String(form.get("grant_type") || "");
+            const clientId = String(form.get("client_id") || "");
+            const resource = String(form.get("resource") || "");
+            const origin = requestOrigin(event);
+            if (
+              !/^runbro_client_[A-Za-z0-9_-]{20,80}$/.test(clientId) ||
+              resource !== origin + "/mcp"
+            ) {
+              throw new HttpError(401, "OAuth 클라이언트를 확인해 주세요.", "invalid_client");
+            }
+            const client = await getItem("OAUTH#CLIENT#" + clientId, "METADATA");
+            if (!client) {
+              throw new HttpError(401, "OAuth 클라이언트를 확인해 주세요.", "invalid_client");
+            }
+            if (grantType === "authorization_code") {
+              const code = String(form.get("code") || "");
+              const verifier = String(form.get("code_verifier") || "");
+              const redirectUri = String(form.get("redirect_uri") || "");
+              if (
+                !/^runbro_code_[A-Za-z0-9_-]{30,100}$/.test(code) ||
+                !/^[A-Za-z0-9._~-]{43,128}$/.test(verifier) ||
+                !client.redirectUris.includes(redirectUri)
+              ) {
+                throw new HttpError(400, "인증 코드를 확인해 주세요.", "invalid_grant");
+              }
+              let deleted;
+              try {
+                deleted = await documentClient.send(new DeleteCommand({
+                  TableName: tableName,
+                  Key: { pk: "OAUTH#CODE#" + tokenHash(code), sk: "CODE" },
+                  ConditionExpression: "attribute_exists(pk)",
+                  ReturnValues: "ALL_OLD"
+                }));
+              } catch (error) {
+                throw new HttpError(400, "인증 코드가 만료되었거나 이미 사용되었습니다.", "invalid_grant");
+              }
+              const item = deleted.Attributes;
+              const challenge = crypto.createHash("sha256").update(verifier).digest("base64url");
+              if (
+                !item ||
+                item.clientId !== clientId ||
+                item.redirectUri !== redirectUri ||
+                item.resource !== resource ||
+                item.codeChallenge !== challenge ||
+                Number(item.ttl || 0) < Math.floor(Date.now() / 1000)
+              ) {
+                throw new HttpError(400, "인증 코드 검증에 실패했습니다.", "invalid_grant");
+              }
+              const grant = await getItem(item.userPk, "MCP_GRANT#" + clientId);
+              if (!grant) {
+                throw new HttpError(400, "RUNBRO 연결이 해제되었습니다.", "invalid_grant");
+              }
+              return response(200, await issueOauthTokens(
+                item.userPk,
+                clientId,
+                item.scopes,
+                resource,
+                true
+              ));
+            }
+            if (grantType === "refresh_token") {
+              const refreshToken = String(form.get("refresh_token") || "");
+              if (!/^runbro_rt_[A-Za-z0-9_-]{30,100}$/.test(refreshToken)) {
+                throw new HttpError(400, "갱신 토큰을 확인해 주세요.", "invalid_grant");
+              }
+              const tokenPk = "OAUTH#TOKEN#" + tokenHash(refreshToken);
+              const item = await getItem(tokenPk, "TOKEN");
+              if (
+                !item ||
+                item.tokenType !== "refresh" ||
+                item.clientId !== clientId ||
+                item.resource !== resource ||
+                Number(item.ttl || 0) < Math.floor(Date.now() / 1000)
+              ) {
+                throw new HttpError(400, "RUNBRO 연결이 만료되었습니다.", "invalid_grant");
+              }
+              const grant = await getItem(item.userPk, "MCP_GRANT#" + clientId);
+              if (!grant) {
+                throw new HttpError(400, "RUNBRO 연결이 해제되었습니다.", "invalid_grant");
+              }
+              await documentClient.send(new DeleteCommand({
+                TableName: tableName,
+                Key: { pk: tokenPk, sk: "TOKEN" }
+              }));
+              return response(200, await issueOauthTokens(
+                item.userPk,
+                clientId,
+                item.scopes,
+                resource,
+                true
+              ));
+            }
+            throw new HttpError(400, "지원하지 않는 OAuth 방식입니다.", "unsupported_grant_type");
+          }
+
+          function mcpBearerToken(event) {
+            const value = String(
+              event.headers && (event.headers.authorization || event.headers.Authorization) || ""
+            );
+            const match = /^Bearer\s+(runbro_at_[A-Za-z0-9_-]{30,100})$/i.exec(value);
+            return match ? match[1] : null;
+          }
+
+          async function authorizeMcpTool(event, requiredScope) {
+            const token = mcpBearerToken(event);
+            if (!token) return null;
+            const item = await getItem("OAUTH#TOKEN#" + tokenHash(token), "TOKEN");
+            if (
+              !item ||
+              item.tokenType !== "access" ||
+              item.resource !== requestOrigin(event) + "/mcp" ||
+              Number(item.ttl || 0) < Math.floor(Date.now() / 1000) ||
+              !Array.isArray(item.scopes) ||
+              !item.scopes.includes(requiredScope)
+            ) return null;
+            const grant = await getItem(item.userPk, "MCP_GRANT#" + item.clientId);
+            if (!grant || !Array.isArray(grant.scopes) || !grant.scopes.includes(requiredScope)) {
+              return null;
+            }
+            return item;
+          }
+
+          function numeric(value) {
+            const number = Number(value);
+            return Number.isFinite(number) ? number : null;
+          }
+
+          function medianNumber(values) {
+            const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);
+            if (!sorted.length) return null;
+            const middle = Math.floor(sorted.length / 2);
+            return sorted.length % 2
+              ? sorted[middle]
+              : (sorted[middle - 1] + sorted[middle]) / 2;
+          }
+
+          function activityPace(activity) {
+            const distance = numeric(activity.distanceKm);
+            const seconds = numeric(activity.movingSeconds);
+            return distance > 0 && seconds > 0 ? seconds / distance : null;
+          }
+
+          function activityVdot(activity) {
+            const distanceKm = numeric(activity.distanceKm);
+            const seconds = numeric(activity.movingSeconds);
+            if (!distanceKm || !seconds || distanceKm < 1.5 || distanceKm > 50 || seconds < 360) {
+              return null;
+            }
+            const minutes = seconds / 60;
+            const velocity = distanceKm * 1000 / minutes;
+            const oxygenCost = -4.60 + 0.182258 * velocity + 0.000104 * velocity * velocity;
+            const fraction = 0.8 +
+              0.1894393 * Math.exp(-0.012778 * minutes) +
+              0.2989558 * Math.exp(-0.1932605 * minutes);
+            const vdot = oxygenCost / fraction;
+            return Number.isFinite(vdot) && vdot >= 15 && vdot <= 90 ? vdot : null;
+          }
+
+          function mcpRunningSnapshot(dashboard, periodDays) {
+            const now = Date.now();
+            const days = [28, 56, 84].includes(Number(periodDays)) ? Number(periodDays) : 84;
+            const weeks = days / 7;
+            const activities = (dashboard.activities || []).filter((activity) => {
+              const age = Math.floor((now - new Date(activity.date).getTime()) / 86400000);
+              return (
+                age >= 0 &&
+                age < days &&
+                numeric(activity.distanceKm) > 0 &&
+                numeric(activity.movingSeconds) > 0
+              );
+            });
+            const paces = activities.map(activityPace).filter(Number.isFinite);
+            const distances = activities.map((activity) => numeric(activity.distanceKm)).filter(Number.isFinite);
+            const medianPace = medianNumber(paces);
+            const medianDistance = medianNumber(distances) || 6;
+            const maxHrValues = activities.map((activity) => {
+              const maxHr = numeric(activity.maxHr);
+              const averageHr = numeric(activity.averageHr);
+              return maxHr && maxHr >= 120 ? maxHr : averageHr && averageHr >= 110 ? averageHr + 12 : null;
+            }).filter(Number.isFinite);
+            const observedMaxHr = maxHrValues.length ? Math.round(Math.max(...maxHrValues)) : null;
+            const restingHr = numeric(dashboard.health && dashboard.health.restingHr) || 50;
+            const buckets = Array.from({ length: weeks }, (_, index) => ({
+              weekOffset: weeks - index - 1,
+              distanceKm: 0,
+              runCount: 0,
+              bestEstimatedVdot: null
+            }));
+            const runTypeCounts = { interval: 0, tempo: 0, zone2: 0, long: 0, recovery: 0 };
+            const runTypeDistanceKm = { interval: 0, tempo: 0, zone2: 0, long: 0, recovery: 0 };
+            const heartZoneMinutes = [0, 0, 0, 0, 0];
+            let totalDistance = 0;
+            let totalSeconds = 0;
+            let heartRateTotal = 0;
+            let heartRateCount = 0;
+
+            for (const activity of activities) {
+              const age = Math.floor((now - new Date(activity.date).getTime()) / 86400000);
+              const bucket = buckets[weeks - Math.min(weeks - 1, Math.floor(age / 7)) - 1];
+              const distance = numeric(activity.distanceKm) || 0;
+              const seconds = numeric(activity.movingSeconds) || 0;
+              const pace = activityPace(activity);
+              const name = String(activity.name || "").toLowerCase();
+              const averageHr = numeric(activity.averageHr);
+              const reserveRatio = averageHr && observedMaxHr
+                ? (averageHr - restingHr) / Math.max(1, observedMaxHr - restingHr)
+                : null;
+              const zone = reserveRatio == null ? null
+                : reserveRatio < 0.6 ? 1
+                  : reserveRatio < 0.7 ? 2
+                    : reserveRatio < 0.8 ? 3
+                      : reserveRatio < 0.9 ? 4 : 5;
+              let type;
+              if (/인터벌|interval|반복|repeat|400m|800m|1k\s/.test(name)) type = "interval";
+              else if (/템포|tempo|threshold|역치|지속주|빌드업/.test(name)) type = "tempo";
+              else if (/롱런|long|장거리|lsd/.test(name)) type = "long";
+              else if (/회복|recovery|리커버리/.test(name)) type = "recovery";
+              else if (/존\s?2|zone\s?2|이지|easy|편안|조깅/.test(name)) type = "zone2";
+              else if (seconds >= 3600 && distance >= Math.max(9, Math.min(18, medianDistance * 1.55))) type = "long";
+              else if ((zone === 5 || (medianPace && pace < medianPace * 0.86)) && distance <= 12) type = "interval";
+              else if ((zone === 4 || (medianPace && pace < medianPace * 0.94)) && seconds >= 1200) type = "tempo";
+              else if (zone === 1 || (medianPace && pace > medianPace * 1.14)) type = "recovery";
+              else type = "zone2";
+              const vdot = activityVdot(activity);
+              bucket.distanceKm += distance;
+              bucket.runCount += 1;
+              if (vdot != null) {
+                bucket.bestEstimatedVdot = Math.max(bucket.bestEstimatedVdot || 0, vdot);
+              }
+              runTypeCounts[type] += 1;
+              runTypeDistanceKm[type] += distance;
+              if (zone != null) heartZoneMinutes[zone - 1] += Math.round(seconds / 60);
+              totalDistance += distance;
+              totalSeconds += seconds;
+              if (averageHr) {
+                heartRateTotal += averageHr;
+                heartRateCount += 1;
+              }
+            }
+            for (const bucket of buckets) {
+              bucket.distanceKm = Math.round(bucket.distanceKm * 10) / 10;
+              if (bucket.bestEstimatedVdot != null) {
+                bucket.bestEstimatedVdot = Math.round(bucket.bestEstimatedVdot * 10) / 10;
+              }
+            }
+            for (const key of Object.keys(runTypeDistanceKm)) {
+              runTypeDistanceKm[key] = Math.round(runTypeDistanceKm[key] * 10) / 10;
+            }
+            const vdotValues = buckets
+              .map((bucket) => bucket.bestEstimatedVdot)
+              .filter(Number.isFinite);
+            return {
+              periodDays: days,
+              raceGoal: dashboard.profile ? {
+                raceDate: dashboard.profile.raceDate,
+                distanceKm: dashboard.profile.distanceKm,
+                goalTimeSeconds: dashboard.profile.goalTimeSeconds,
+                trainingDaysPerWeek: dashboard.profile.daysPerWeek
+              } : null,
+              totals: {
+                runCount: activities.length,
+                distanceKm: Math.round(totalDistance * 10) / 10,
+                averagePaceSecondsPerKm: totalDistance
+                  ? Math.round(totalSeconds / totalDistance)
+                  : null,
+                averageHeartRateBpm: heartRateCount
+                  ? Math.round(heartRateTotal / heartRateCount)
+                  : null,
+                estimatedVdot: vdotValues.length
+                  ? Math.max(...vdotValues)
+                  : null
+              },
+              weeklyTrendOldestToNewest: buckets,
+              automaticClassification: {
+                runTypeCounts,
+                runTypeDistanceKm,
+                method: "activity label, pace, distance and average heart-rate heuristics"
+              },
+              heartRateZones: {
+                observedMaxHeartRateBpm: observedMaxHr,
+                restingHeartRateBpm: dashboard.health && dashboard.health.restingHr || null,
+                minutesZone1To5: heartZoneMinutes
+              },
+              recovery: dashboard.health ? {
+                sleepHours: dashboard.health.sleepHours || null,
+                hrv: dashboard.health.hrv || null,
+                restingHeartRateBpm: dashboard.health.restingHr || null,
+                trainingReadiness: dashboard.health.trainingReadiness || null
+              } : null,
+              geminiFirstPass: dashboard.analysis ? {
+                title: dashboard.analysis.title || null,
+                summary: dashboard.analysis.summary || null,
+                points: Array.isArray(dashboard.analysis.points)
+                  ? dashboard.analysis.points.slice(0, 5)
+                  : []
+              } : null,
+              privacy: "No account ID, token, route, coordinates, activity title, or exact start time is included."
+            };
+          }
+
+          function requiredText(value, maxLength, fieldName) {
+            const text = String(value || "").trim();
+            if (!text || text.length > maxLength) {
+              throw new HttpError(400, fieldName + " 내용을 확인해 주세요.", "invalid_tool_input");
+            }
+            return text;
+          }
+
+          function validatedChatgptAnalysis(args) {
+            const analysis = args && args.analysis;
+            const recommendation = args && args.recommendation;
+            const trainingPlan = args && args.trainingPlan;
+            if (
+              !analysis ||
+              !recommendation ||
+              !Array.isArray(analysis.points) ||
+              analysis.points.length !== 5 ||
+              !Array.isArray(recommendation.why) ||
+              recommendation.why.length < 2 ||
+              recommendation.why.length > 4 ||
+              !Array.isArray(trainingPlan) ||
+              trainingPlan.length !== 7
+            ) {
+              throw new HttpError(400, "분석 결과 형식을 확인해 주세요.", "invalid_tool_input");
+            }
+            const normalizedPlan = trainingPlan.map((day) => {
+              const date = String(day.date || "");
+              if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+                throw new HttpError(400, "훈련 날짜를 확인해 주세요.", "invalid_tool_input");
+              }
+              const distanceKm = day.distanceKm == null ? 0 : Number(day.distanceKm);
+              if (!Number.isFinite(distanceKm) || distanceKm < 0 || distanceKm > 100) {
+                throw new HttpError(400, "훈련 거리를 확인해 주세요.", "invalid_tool_input");
+              }
+              return {
+                date,
+                weekday: requiredText(day.weekday, 4, "요일"),
+                type: requiredText(day.type, 20, "훈련 유형"),
+                title: requiredText(day.title, 80, "훈련 제목"),
+                detail: requiredText(day.detail, 160, "훈련 내용"),
+                duration: requiredText(day.duration, 40, "훈련 시간"),
+                effort: requiredText(day.effort, 40, "훈련 강도"),
+                purpose: requiredText(day.purpose, 80, "훈련 목적"),
+                note: requiredText(day.note, 220, "훈련 주의사항"),
+                distanceKm: Math.round(distanceKm * 10) / 10,
+                key: Boolean(day.key),
+                rest: Boolean(day.rest)
+              };
+            });
+            return {
+              title: requiredText(analysis.title, 80, "분석 제목"),
+              summary: requiredText(analysis.summary, 520, "분석 요약"),
+              points: analysis.points.map((point) =>
+                requiredText(point, 220, "분석 근거")
+              ),
+              recommendation: {
+                type: requiredText(recommendation.type, 20, "다음 훈련 유형"),
+                title: requiredText(recommendation.title, 100, "다음 훈련 제목"),
+                prescription: requiredText(
+                  recommendation.prescription,
+                  240,
+                  "다음 훈련 내용"
+                ),
+                why: recommendation.why.map((reason) =>
+                  requiredText(reason, 220, "추천 근거")
+                ),
+                caution: requiredText(recommendation.caution, 240, "주의사항")
+              },
+              trainingPlan: normalizedPlan,
+              verdict: ["confirmed", "adjusted"].includes(args.verdict)
+                ? args.verdict
+                : "adjusted",
+              verificationNote: requiredText(
+                args.verificationNote,
+                180,
+                "검증 메모"
+              )
+            };
+          }
+
+          function mcpTools() {
+            const readSecurity = [{ type: "oauth2", scopes: ["running:read"] }];
+            const writeSecurity = [{ type: "oauth2", scopes: ["analysis:write"] }];
+            return [
+              {
+                name: "get_running_snapshot",
+                title: "RUNBRO 러닝 요약 가져오기",
+                description: "카카오 계정에 연결된 목표 레이스, 4~12주 러닝 추세, 자동 분류, VDOT 추정, 심박존, 회복 지표와 Gemini 1차 분석을 익명 집계로 가져옵니다. 경로와 활동명은 반환하지 않습니다.",
+                inputSchema: {
+                  type: "object",
+                  properties: {
+                    periodDays: {
+                      type: "integer",
+                      enum: [28, 56, 84],
+                      description: "분석 기간. 기본값은 84일입니다."
+                    }
+                  },
+                  additionalProperties: false
+                },
+                securitySchemes: readSecurity,
+                annotations: {
+                  readOnlyHint: true,
+                  destructiveHint: false,
+                  openWorldHint: false
+                },
+                _meta: { securitySchemes: readSecurity }
+              },
+              {
+                name: "save_verified_analysis",
+                title: "검증된 RUNBRO 분석 저장",
+                description: "사용자가 저장을 명시적으로 승인한 경우에만 ChatGPT가 교차검증한 분석, 근거형 다음 훈련 제안, 7일 훈련계획을 RUNBRO에 저장합니다.",
+                inputSchema: {
+                  type: "object",
+                  properties: {
+                    analysis: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string" },
+                        summary: { type: "string" },
+                        points: {
+                          type: "array",
+                          items: { type: "string" },
+                          minItems: 5,
+                          maxItems: 5
+                        }
+                      },
+                      required: ["title", "summary", "points"],
+                      additionalProperties: false
+                    },
+                    recommendation: {
+                      type: "object",
+                      properties: {
+                        type: { type: "string" },
+                        title: { type: "string" },
+                        prescription: { type: "string" },
+                        why: {
+                          type: "array",
+                          items: { type: "string" },
+                          minItems: 2,
+                          maxItems: 4
+                        },
+                        caution: { type: "string" }
+                      },
+                      required: ["type", "title", "prescription", "why", "caution"],
+                      additionalProperties: false
+                    },
+                    trainingPlan: {
+                      type: "array",
+                      minItems: 7,
+                      maxItems: 7,
+                      items: {
+                        type: "object",
+                        properties: {
+                          date: { type: "string" },
+                          weekday: { type: "string" },
+                          type: { type: "string" },
+                          title: { type: "string" },
+                          detail: { type: "string" },
+                          duration: { type: "string" },
+                          effort: { type: "string" },
+                          purpose: { type: "string" },
+                          note: { type: "string" },
+                          distanceKm: { type: "number" },
+                          key: { type: "boolean" },
+                          rest: { type: "boolean" }
+                        },
+                        required: [
+                          "date", "weekday", "type", "title", "detail",
+                          "duration", "effort", "purpose", "note",
+                          "distanceKm", "key", "rest"
+                        ],
+                        additionalProperties: false
+                      }
+                    },
+                    verdict: {
+                      type: "string",
+                      enum: ["confirmed", "adjusted"]
+                    },
+                    verificationNote: { type: "string" }
+                  },
+                  required: [
+                    "analysis",
+                    "recommendation",
+                    "trainingPlan",
+                    "verdict",
+                    "verificationNote"
+                  ],
+                  additionalProperties: false
+                },
+                securitySchemes: writeSecurity,
+                annotations: {
+                  readOnlyHint: false,
+                  destructiveHint: false,
+                  openWorldHint: false
+                },
+                _meta: { securitySchemes: writeSecurity }
+              }
+            ];
+          }
+
+          function mcpToolResult(id, structuredContent, text) {
+            return response(200, {
+              jsonrpc: "2.0",
+              id,
+              result: {
+                content: [{ type: "text", text }],
+                structuredContent
+              }
+            });
+          }
+
+          function mcpAuthRequired(id, event, scope) {
+            const metadata = requestOrigin(event) + "/.well-known/oauth-protected-resource/mcp";
+            const challenge = 'Bearer resource_metadata="' + metadata +
+              '", scope="' + scope +
+              '", error="insufficient_scope", error_description="RUNBRO 연결이 필요합니다"';
+            return response(200, {
+              jsonrpc: "2.0",
+              id,
+              result: {
+                content: [{ type: "text", text: "RUNBRO 카카오 계정 연결이 필요합니다." }],
+                _meta: { "mcp/www_authenticate": [challenge] },
+                isError: true
+              }
+            });
+          }
+
+          async function mcpRequest(event) {
+            const body = parseBody(event, 128 * 1024);
+            const id = body.id == null ? null : body.id;
+            if (body.jsonrpc !== "2.0" || typeof body.method !== "string") {
+              return response(400, {
+                jsonrpc: "2.0",
+                id,
+                error: { code: -32600, message: "Invalid Request" }
+              });
+            }
+            if (body.method === "initialize") {
+              return response(200, {
+                jsonrpc: "2.0",
+                id,
+                result: {
+                  protocolVersion: body.params && body.params.protocolVersion || "2025-06-18",
+                  capabilities: { tools: { listChanged: false } },
+                  serverInfo: { name: "RUNBRO", version: "1.0.0" },
+                  instructions: "익명 러닝 집계를 근거로 분석하고, 저장은 사용자의 명시적 확인 후에만 실행하세요."
+                }
+              });
+            }
+            if (body.method === "notifications/initialized") return emptyResponse(202);
+            if (body.method === "ping") {
+              return response(200, { jsonrpc: "2.0", id, result: {} });
+            }
+            if (body.method === "tools/list") {
+              return response(200, {
+                jsonrpc: "2.0",
+                id,
+                result: { tools: mcpTools() }
+              });
+            }
+            if (body.method !== "tools/call") {
+              return response(200, {
+                jsonrpc: "2.0",
+                id,
+                error: { code: -32601, message: "Method not found" }
+              });
+            }
+            const name = String(body.params && body.params.name || "");
+            const args = body.params && body.params.arguments || {};
+            if (name === "get_running_snapshot") {
+              const auth = await authorizeMcpTool(event, "running:read");
+              if (!auth) return mcpAuthRequired(id, event, "running:read");
+              const dashboard = await combinedDashboardFor(auth.userPk);
+              const snapshot = mcpRunningSnapshot(dashboard, args.periodDays);
+              return mcpToolResult(
+                id,
+                snapshot,
+                "RUNBRO의 익명 러닝 집계와 Gemini 1차 분석을 불러왔습니다."
+              );
+            }
+            if (name === "save_verified_analysis") {
+              const auth = await authorizeMcpTool(event, "analysis:write");
+              if (!auth) return mcpAuthRequired(id, event, "analysis:write");
+              const dashboard = await dashboardFor(auth.userPk);
+              if (!dashboard.profile) {
+                return mcpToolResult(
+                  id,
+                  { saved: false, reason: "race_goal_required" },
+                  "RUNBRO에서 목표 레이스를 먼저 설정해 주세요."
+                );
+              }
+              const verified = validatedChatgptAnalysis(args);
+              const generatedAt = new Date().toISOString();
+              const analysis = {
+                title: verified.title,
+                summary: verified.summary,
+                points: verified.points,
+                recommendation: verified.recommendation,
+                trainingPlan: verified.trainingPlan,
+                verification: {
+                  status: "chatgpt_verified",
+                  verdict: verified.verdict,
+                  note: verified.verificationNote,
+                  models: ["gemini-3.6-flash", "chatgpt"],
+                  generatedAt
+                }
+              };
+              await documentClient.send(new PutCommand({
+                TableName: tableName,
+                Item: {
+                  pk: auth.userPk,
+                  sk: "ANALYSIS",
+                  analysis,
+                  updatedAt: generatedAt
+                }
+              }));
+              return mcpToolResult(
+                id,
+                { saved: true, generatedAt },
+                "검증된 분석, 다음 훈련 제안과 7일 계획을 RUNBRO에 저장했습니다."
+              );
+            }
+            return response(200, {
+              jsonrpc: "2.0",
+              id,
+              error: { code: -32602, message: "Unknown tool" }
+            });
           }
 
           async function deleteAccount(event) {
@@ -1158,6 +2062,33 @@ Resources:
                   body: ""
                 };
               }
+              if (
+                method === "GET" &&
+                (
+                  path === "/.well-known/oauth-protected-resource" ||
+                  path === "/.well-known/oauth-protected-resource/mcp"
+                )
+              ) {
+                return await oauthProtectedResource(event);
+              }
+              if (method === "GET" && path === "/.well-known/oauth-authorization-server") {
+                return await oauthAuthorizationMetadata(event);
+              }
+              if (method === "POST" && path === "/oauth/register") {
+                return await registerMcpClient(event);
+              }
+              if (method === "GET" && path === "/oauth/authorize") {
+                return await authorizeMcpClient(event);
+              }
+              if (method === "POST" && path === "/oauth/approve") {
+                return await approveMcpClient(event);
+              }
+              if (method === "POST" && path === "/oauth/token") {
+                return await oauthToken(event);
+              }
+              if (method === "POST" && path === "/mcp") {
+                return await mcpRequest(event);
+              }
               if (method === "GET" && path === "/dashboard") {
                 const userPk = await verifyKakaoUser(event);
                 return response(200, await dashboardFor(userPk));
@@ -1178,6 +2109,18 @@ Resources:
                 console.error("RUNBRO API error", {
                   name: error && error.name,
                   message: error && error.message
+                });
+              }
+              const path = event.rawPath || "";
+              if (
+                path === "/oauth/token" ||
+                path === "/oauth/register"
+              ) {
+                return response(statusCode, {
+                  error: error instanceof HttpError ? error.code : "server_error",
+                  error_description: error instanceof HttpError
+                    ? error.message
+                    : "요청 처리 중 오류가 발생했습니다."
                 });
               }
               return response(statusCode, {
