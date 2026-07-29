@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+    collectGeminiSse,
     normalizeGeminiAnalysis,
     validateVerifiedResult
 } from "../analysis-lib.mjs";
@@ -82,4 +83,16 @@ test("rejects an unsupported recommendation type", () => {
     const fixture = verifiedFixture();
     fixture.recommendation.type = "sprint";
     assert.throws(() => validateVerifiedResult(fixture), /invalid_recommendation_type/);
+});
+
+test("collectGeminiSse joins streamed text chunks", () => {
+    const source = [
+        'data: {"candidates":[{"content":{"parts":[{"thought":true,"text":"내부 추론"},{"text":"{\\"title\\":\\"상태\\""}]}}]}',
+        'data: {"candidates":[{"content":{"parts":[{"text":",\\"summary\\":\\"안정\\",\\"points\\":[\\"근거\\"]}"}]}}]}',
+        "data: [DONE]"
+    ].join("\n\n");
+    assert.equal(
+        collectGeminiSse(source),
+        '{"title":"상태","summary":"안정","points":["근거"]}'
+    );
 });

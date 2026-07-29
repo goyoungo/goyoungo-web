@@ -45,6 +45,29 @@ export function normalizeGeminiAnalysis(value) {
     };
 }
 
+export function collectGeminiSse(source) {
+    if (typeof source !== "string" || source.length > 512 * 1024) {
+        throw new Error("gemini_stream_invalid");
+    }
+    let result = "";
+    for (const line of source.split(/\r?\n/)) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith("data:")) continue;
+        const payload = trimmed.slice(5).trim();
+        if (!payload || payload === "[DONE]") continue;
+        const chunk = JSON.parse(payload);
+        for (const part of chunk.candidates?.[0]?.content?.parts || []) {
+            if (part.thought !== true && typeof part.text === "string") {
+                result += part.text;
+            }
+        }
+    }
+    if (!result || result.length > 5000) {
+        throw new Error("gemini_empty_result");
+    }
+    return result;
+}
+
 export function validateVerifiedResult(value) {
     if (!value || Array.isArray(value) || typeof value !== "object") {
         throw new Error("invalid_verified_result");

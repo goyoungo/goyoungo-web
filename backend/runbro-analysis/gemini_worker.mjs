@@ -10,6 +10,7 @@ import {
     SQSClient
 } from "@aws-sdk/client-sqs";
 import {
+    collectGeminiSse,
     currentDateKst,
     normalizeGeminiAnalysis,
     safeErrorCode
@@ -61,7 +62,7 @@ function promptFor(aggregate) {
 async function callGemini(aggregate) {
     if (!geminiApiKey) throw new Error("gemini_key_missing");
     const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:streamGenerateContent?alt=sse`,
         {
             method: "POST",
             headers: {
@@ -83,11 +84,7 @@ async function callGemini(aggregate) {
     if (!response.ok) {
         throw new Error(`gemini_http_${response.status}`);
     }
-    const body = await response.json();
-    const source = body.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!source || source.length > 5000) {
-        throw new Error("gemini_empty_result");
-    }
+    const source = collectGeminiSse(await response.text());
     return normalizeGeminiAnalysis(JSON.parse(source));
 }
 
@@ -141,6 +138,11 @@ export async function handler(event) {
             await processRecord(record);
         } catch (error) {
             const attempts = Number(record.attributes?.ApproximateReceiveCount || 1);
+            console.error(
+                "gemini_worker_failed",
+                safeErrorCode(error, "gemini_failed"),
+                `attempt=${attempts}`
+            );
             if (attempts >= 3) {
                 await reportFailure(record, error);
             } else {

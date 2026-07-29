@@ -41,6 +41,13 @@ IMAGE_TAG="$(
   } | sha256sum | cut -c1-16
 )"
 IMAGE_URI="${ECR_URL}/${ECR_REPO_NAME}:${IMAGE_TAG}"
+ANALYSIS_TAG="$(
+  {
+    sha256sum "${ANALYSIS_DIR}/analysis-lib.mjs"
+    sha256sum "${ANALYSIS_DIR}/gemini_worker.mjs"
+    sha256sum "${ANALYSIS_DIR}/finalizer.mjs"
+  } | sha256sum | cut -c1-16
+)"
 
 aws ecr get-login-password --region "${AWS_REGION}" |
   docker login --username AWS --password-stdin "${ECR_URL}"
@@ -59,7 +66,7 @@ cp "${ANALYSIS_DIR}/finalizer.mjs" "${BUILD_DIR}/finalizer.mjs"
   zip -q analysis-workers.zip analysis-lib.mjs gemini_worker.mjs finalizer.mjs
 )
 
-ARTIFACT_KEY="runbro/analysis/${IMAGE_TAG}/analysis-workers.zip"
+ARTIFACT_KEY="runbro/analysis/${ANALYSIS_TAG}/analysis-workers.zip"
 aws s3 cp \
   "${BUILD_DIR}/analysis-workers.zip" \
   "s3://${RUNBRO_ARTIFACT_BUCKET}/${ARTIFACT_KEY}" \
