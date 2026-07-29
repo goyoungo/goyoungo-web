@@ -70,7 +70,10 @@ aws cloudformation deploy \
   --region "${AWS_REGION}" \
   --stack-name "${RUNBRO_STACK_NAME}" \
   --template-file "${ROOT_DIR}/backend/runbro-stack.yaml" \
+  --s3-bucket "${RUNBRO_ARTIFACT_BUCKET}" \
+  --s3-prefix "runbro-cloudformation" \
   --capabilities CAPABILITY_NAMED_IAM \
+  --no-fail-on-empty-changeset \
   --parameter-overrides \
     "AnalysisCodeBucket=${RUNBRO_ARTIFACT_BUCKET}" \
     "AnalysisCodeKey=${ARTIFACT_KEY}" \
