@@ -80,9 +80,9 @@
         select.title = "화면 모드";
 
         [
-            { value: "light", label: "☀ 라이트" },
-            { value: "dark", label: "☾ 다크" },
-            { value: "system", label: "◐ 시스템" }
+            { value: "light", label: "라이트" },
+            { value: "dark", label: "다크" },
+            { value: "system", label: "시스템" }
         ].forEach(function (optionData) {
             var option = document.createElement("option");
             option.value = optionData.value;

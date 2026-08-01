@@ -51,14 +51,16 @@ html[data-theme="dark"] {
 
 .theme-mode-select {
     padding: 6px 26px 6px 9px;
+    box-sizing: border-box;
     border: 1px solid var(--theme-control-border);
     border-radius: 0;
     background: var(--theme-control-bg);
     color: var(--text);
     cursor: pointer;
+    font-family: inherit;
     font-size: 12px;
-    font-weight: 780;
-    line-height: 1;
+    font-weight: 700;
+    line-height: 1.4;
 }
 
 .theme-mode-select:hover {
