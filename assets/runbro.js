@@ -99,7 +99,7 @@
             !Number.isInteger(minutes) ||
             !Number.isInteger(seconds) ||
             hours < 0 ||
-            hours > 23 ||
+            hours > 240 ||
             minutes < 0 ||
             minutes > 59 ||
             seconds < 0 ||
@@ -622,13 +622,22 @@
     function buildPlan(profile, weekKm, phase, score) {
         if (!profile || !profile.raceDate) return [];
         var days = Number(profile.daysPerWeek || 4);
-        var baseDistance = Math.max(15, weekKm || Number(profile.distanceKm || 10) * 2.4);
+        var raceDistance = Number(profile.distanceKm || 10);
+        var fallbackVolume = raceDistance <= 42.195
+            ? raceDistance * 2.4
+            : Math.min(120, raceDistance * 1.2);
+        var baseDistance = Math.max(15, weekKm || fallbackVolume);
         var targetPace = profile.goalTimeSeconds
             ? profile.goalTimeSeconds / Number(profile.distanceKm)
             : null;
         var easyPace = targetPace ? targetPace + 65 : null;
         var keyPace = targetPace ? Math.max(210, targetPace - (phase === "SHARPEN" ? 5 : -10)) : null;
-        var longKm = Math.max(Number(profile.distanceKm) * (phase === "TAPER" ? 0.45 : 0.72), baseDistance * 0.34);
+        var raceLongTarget = raceDistance <= 42.195
+            ? raceDistance * (phase === "TAPER" ? 0.45 : 0.72)
+            : Math.min(50, baseDistance * (phase === "TAPER" ? 0.28 : 0.45));
+        var longKm = raceDistance <= 42.195
+            ? Math.max(raceLongTarget, baseDistance * 0.34)
+            : Math.min(50, Math.max(raceLongTarget, baseDistance * 0.34));
         var trainingTemplates = [
             {
                 type: "EASY", title: "회복 조깅", detail: "20~30분 아주 편안하게",
@@ -1630,7 +1639,7 @@
             setFormStatus("레이스 이름, 날짜, 거리를 확인해 주세요.", true);
             return;
         }
-        if (!profile.goalTimeSeconds || profile.goalTimeSeconds < 300 || profile.goalTimeSeconds >= 86400) {
+        if (!profile.goalTimeSeconds || profile.goalTimeSeconds < 300 || profile.goalTimeSeconds > 864000) {
             setFormStatus("목표 기록을 시간·분·초로 정확하게 입력해 주세요.", true);
             return;
         }

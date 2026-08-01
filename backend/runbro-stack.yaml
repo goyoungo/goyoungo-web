@@ -622,8 +622,8 @@ Resources:
               new Date(raceDate + "T00:00:00Z").getTime() > Date.now() + 3 * 365 * 86400000 ||
               !Number.isFinite(distanceKm) ||
               distanceKm < 1 ||
-              distanceKm > 100 ||
-              (goalTimeSeconds != null && (!Number.isFinite(goalTimeSeconds) || goalTimeSeconds < 300 || goalTimeSeconds > 86400)) ||
+              distanceKm > 250 ||
+              (goalTimeSeconds != null && (!Number.isFinite(goalTimeSeconds) || goalTimeSeconds < 300 || goalTimeSeconds > 864000)) ||
               !Number.isInteger(daysPerWeek) ||
               daysPerWeek < 1 ||
               daysPerWeek > 7
