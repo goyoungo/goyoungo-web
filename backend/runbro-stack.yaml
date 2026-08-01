@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Secure Garmin sync and Gemini plus Codex analysis pipeline for GO.YOUNGO RUNBRO
+Description: Secure Garmin sync and direct Codex analysis pipeline for GO.YOUNGO RUNBRO
 
 Parameters:
   KakaoAppId:
@@ -26,11 +26,6 @@ Parameters:
     NoEcho: true
     Default: ""
     Description: Strava API application client secret
-  GeminiApiKey:
-    Type: String
-    NoEcho: true
-    Default: ""
-    Description: Optional Gemini API key for Gemini 3.6 Flash first-pass analysis
   GarminCodeBucket:
     Type: String
     Default: ""
@@ -47,7 +42,7 @@ Parameters:
     Description: S3 key containing the packaged RUNBRO analysis worker zip
   CodexImageUri:
     Type: String
-    Description: ECR image URI for the RUNBRO Codex verification Lambda
+    Description: ECR image URI for the RUNBRO Codex analysis Lambda
   CodexAuthKey:
     Type: String
     Default: "system/codex/auth.json"
@@ -179,28 +174,6 @@ Resources:
               Bool:
                 aws:SecureTransport: false
 
-  RunbroGeminiDeadLetterQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: !Sub "${AWS::StackName}-gemini-dlq.fifo"
-      FifoQueue: true
-      ContentBasedDeduplication: false
-      MessageRetentionPeriod: 86400
-      SqsManagedSseEnabled: true
-
-  RunbroGeminiQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: !Sub "${AWS::StackName}-gemini.fifo"
-      FifoQueue: true
-      ContentBasedDeduplication: false
-      MessageRetentionPeriod: 3600
-      VisibilityTimeout: 360
-      SqsManagedSseEnabled: true
-      RedrivePolicy:
-        deadLetterTargetArn: !GetAtt RunbroGeminiDeadLetterQueue.Arn
-        maxReceiveCount: 3
-
   RunbroCodexDeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
@@ -284,7 +257,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - sqs:SendMessage
-                Resource: !GetAtt RunbroGeminiQueue.Arn
+                Resource: !GetAtt RunbroCodexQueue.Arn
         - PolicyName: RunbroLogs
           PolicyDocument:
             Version: "2012-10-17"
@@ -328,7 +301,7 @@ Resources:
           STRAVA_CLIENT_ID: !Ref StravaClientId
           STRAVA_CLIENT_SECRET: !Ref StravaClientSecret
           RUNBRO_GARMIN_BUCKET: !Ref RunbroGarminBucket
-          RUNBRO_ANALYSIS_QUEUE_URL: !Ref RunbroGeminiQueue
+          RUNBRO_ANALYSIS_QUEUE_URL: !Ref RunbroCodexQueue
       Code:
         ZipFile: |
           "use strict";
@@ -1193,6 +1166,9 @@ Resources:
               runType,
               distanceKm: Math.round(distance * 100) / 100,
               movingSeconds: Math.round(movingSeconds),
+              elapsedSeconds: Number.isFinite(Number(latest.elapsedSeconds))
+                ? Math.round(Number(latest.elapsedSeconds))
+                : null,
               paceSecondsPerKm: Math.round(pace),
               paceDeltaSecondsVs28DayAverage: paceDelta,
               paceDeltaSecondsVsGoal: goalPace == null
@@ -1201,6 +1177,12 @@ Resources:
               distanceDeltaPercentVs28DayAverage: distanceDeltaPercent,
               elevationGainMeters: Number.isFinite(Number(latest.elevationGain))
                 ? Math.max(0, Math.round(Number(latest.elevationGain)))
+                : null,
+              averageHeartRateBpm: Number.isFinite(latestAverageHr)
+                ? Math.round(latestAverageHr)
+                : null,
+              maxHeartRateBpm: Number.isFinite(Number(latest.maxHr))
+                ? Math.round(Number(latest.maxHr))
                 : null,
               heartRateIntensity,
               heartRateAvailable: heartRateIntensity !== "unavailable",
@@ -1216,113 +1198,98 @@ Resources:
             };
           }
 
-          function aggregateForAnalysis(dashboard, clientInput) {
+          function recentRunsForAnalysis(activities) {
             const now = Date.now();
-            const weeks = [0, 0, 0, 0];
-            let totalDistance = 0;
-            let totalSeconds = 0;
-            let totalHeartRate = 0;
-            let heartRateCount = 0;
-            for (const activity of dashboard.activities) {
-              const age = Math.floor((now - new Date(activity.date).getTime()) / 86400000);
-              if (age >= 0 && age < 28) {
-                weeks[Math.min(3, Math.floor(age / 7))] += Number(activity.distanceKm || 0);
-                totalDistance += Number(activity.distanceKm || 0);
-                totalSeconds += Number(activity.movingSeconds || 0);
-                if (Number.isFinite(Number(activity.averageHr))) {
-                  totalHeartRate += Number(activity.averageHr);
-                  heartRateCount += 1;
-                }
-              }
-            }
-            const serverRunCount = dashboard.activities.filter((activity) =>
-              now - new Date(activity.date).getTime() <= 28 * 86400000
-            ).length;
+            const runs = (activities || []).filter((activity) => {
+              const date = new Date(activity.date);
+              const distance = Number(activity.distanceKm);
+              const movingSeconds = Number(activity.movingSeconds);
+              const age = Math.floor((now - date.getTime()) / 86400000);
+              return (
+                Number.isFinite(date.getTime()) &&
+                age >= 0 &&
+                age < 84 &&
+                Number.isFinite(distance) &&
+                distance > 0 &&
+                Number.isFinite(movingSeconds) &&
+                movingSeconds > 0
+              );
+            }).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 60);
+            return runs.map((activity, index) => {
+              const distance = Number(activity.distanceKm);
+              const movingSeconds = Number(activity.movingSeconds);
+              const previous = runs[index + 1];
+              const numberOrNull = (value, min, max) => {
+                const parsed = Number(value);
+                return Number.isFinite(parsed) && parsed >= min && parsed <= max
+                  ? parsed
+                  : null;
+              };
+              return {
+                date: String(activity.date).slice(0, 10),
+                distanceKm: Math.round(distance * 100) / 100,
+                movingSeconds: Math.round(movingSeconds),
+                elapsedSeconds: numberOrNull(activity.elapsedSeconds, movingSeconds, 172800),
+                paceSecondsPerKm: Math.round(movingSeconds / distance),
+                elevationGainMeters: numberOrNull(activity.elevationGain, 0, 20000),
+                averageHeartRateBpm: numberOrNull(activity.averageHr, 30, 230),
+                maxHeartRateBpm: numberOrNull(activity.maxHr, 30, 240),
+                daysSincePreviousRun: previous
+                  ? Math.max(
+                      0,
+                      Math.round(
+                        (new Date(activity.date).getTime() -
+                          new Date(previous.date).getTime()) / 86400000
+                      )
+                    )
+                  : null
+              };
+            });
+          }
+
+          function aggregateForAnalysis(dashboard) {
+            const now = Date.now();
             const race = dashboard.profile ? {
-                date: dashboard.profile.raceDate,
-                distanceKm: dashboard.profile.distanceKm,
-                goalTimeSeconds: dashboard.profile.goalTimeSeconds,
-                daysPerWeek: dashboard.profile.daysPerWeek
-              } : null;
+              date: dashboard.profile.raceDate,
+              distanceKm: dashboard.profile.distanceKm,
+              goalTimeSeconds: dashboard.profile.goalTimeSeconds,
+              daysPerWeek: dashboard.profile.daysPerWeek
+            } : null;
+            const recentRuns = recentRunsForAnalysis(dashboard.activities);
+            const snapshot = mcpRunningSnapshot(dashboard, 84);
+            const runCount28Days = recentRuns.filter((activity) => {
+              const age = Math.floor((now - new Date(activity.date).getTime()) / 86400000);
+              return age >= 0 && age < 28;
+            }).length;
             return {
+              periodDays: 84,
               race,
               latestRun: latestRunForAnalysis(dashboard.activities, race),
-              runCount28Days: serverRunCount,
-              weeklyDistanceKmOldestToNewest:
-                weeks.slice().reverse().map((value) => Math.round(value * 10) / 10),
-              averagePaceSecondsPerKm:
-                totalDistance ? Math.round(totalSeconds / totalDistance) : null,
-              averageHeartRateBpm:
-                heartRateCount ? Math.round(totalHeartRate / heartRateCount) : null,
-              estimatedVdot: clientInput ? clientInput.estimatedVdot : null,
-              runTypeCounts: clientInput ? clientInput.runTypeCounts : null,
-              heartZoneMinutes: clientInput ? clientInput.heartZoneMinutes : null,
-              health: dashboard.health ? {
-                sleepHours: dashboard.health.sleepHours,
-                hrv: dashboard.health.hrv,
-                restingHeartRate: dashboard.health.restingHr,
-                trainingReadiness: dashboard.health.trainingReadiness
-              } : (clientInput ? clientInput.health : null)
-            };
-          }
-
-          function analysisBand(value, low, high) {
-            if (value == null || value === "") return "unavailable";
-            if (!Number.isFinite(Number(value))) return "unavailable";
-            if (Number(value) < low) return "low";
-            if (Number(value) > high) return "high";
-            return "middle";
-          }
-
-          function privacyPreservingAggregate(aggregate) {
-            const zones = Array.isArray(aggregate.heartZoneMinutes)
-              ? aggregate.heartZoneMinutes.map((value) => Number(value || 0))
-              : [];
-            const zoneTotal = zones.reduce((sum, value) => sum + value, 0);
-            return {
-              race: aggregate.race,
-              latestRun: aggregate.latestRun,
-              runCount28Days: aggregate.runCount28Days,
-              weeklyDistanceKmOldestToNewest:
-                aggregate.weeklyDistanceKmOldestToNewest,
-              averagePaceSecondsPerKm: aggregate.averagePaceSecondsPerKm,
-              estimatedVdot: aggregate.estimatedVdot,
-              runTypeCounts: aggregate.runTypeCounts,
-              heartZoneDistributionPercent: zoneTotal
-                ? zones.map((value) => Math.round(value / zoneTotal * 100))
-                : null,
-              recoveryBands: aggregate.health ? {
-                sleep: analysisBand(aggregate.health.sleepHours, 6, 8.5),
-                hrvAvailable: Number.isFinite(Number(aggregate.health.hrv)),
-                restingHeartRate: analysisBand(
-                  aggregate.health.restingHeartRate,
-                  50,
-                  75
-                ),
-                trainingReadiness: analysisBand(
-                  aggregate.health.trainingReadiness,
-                  40,
-                  70
-                )
-              } : null,
+              runCount28Days,
+              totals: snapshot.totals,
+              weeklyTrendOldestToNewest: snapshot.weeklyTrendOldestToNewest,
+              automaticClassification: snapshot.automaticClassification,
+              heartRateZones: snapshot.heartRateZones,
+              recovery: snapshot.recovery,
+              recentRuns,
               privacy:
-                "No account ID, token, route, coordinates, activity title, exact start time, exact HRV, or exact resting heart rate is included."
+                "No account ID, token, route, coordinates, activity title, or exact start time is included."
             };
           }
 
           async function analyze(event) {
             const userPk = await verifyKakaoUser(event);
-            const body = parseBody(event, 4096);
+            parseBody(event, 1024);
             const dashboard = await combinedDashboardFor(userPk);
             const activeJob = dashboard.analysisJob;
             if (
               activeJob &&
-              ["queued", "gemini_processing", "codex_queued"].includes(activeJob.status) &&
+              ["queued", "codex_queued", "codex_processing"].includes(activeJob.status) &&
               Date.now() - new Date(activeJob.requestedAt || 0).getTime() < 15 * 60 * 1000
             ) {
               return response(202, { ...dashboard, analysisJob: activeJob });
             }
-            const aggregate = aggregateForAnalysis(dashboard, validatedAnalysisInput(body));
+            const aggregate = aggregateForAnalysis(dashboard);
             if (!aggregate.race || !aggregate.latestRun || aggregate.runCount28Days < 2) {
               throw new HttpError(
                 409,
@@ -1357,7 +1324,7 @@ Resources:
                 MessageBody: JSON.stringify({
                   userPk,
                   jobId,
-                  aggregate: privacyPreservingAggregate(aggregate)
+                  aggregate
                 }),
                 MessageGroupId: userPk,
                 MessageDeduplicationId: jobId
@@ -1920,7 +1887,7 @@ Resources:
                 restingHeartRateBpm: dashboard.health.restingHr || null,
                 trainingReadiness: dashboard.health.trainingReadiness || null
               } : null,
-              geminiFirstPass: dashboard.analysis ? {
+              previousAnalysis: dashboard.analysis ? {
                 title: dashboard.analysis.title || null,
                 summary: dashboard.analysis.summary || null,
                 points: Array.isArray(dashboard.analysis.points)
@@ -2018,7 +1985,7 @@ Resources:
               {
                 name: "get_running_snapshot",
                 title: "RUNBRO 러닝 요약 가져오기",
-                description: "카카오 계정에 연결된 목표 레이스, 4~12주 러닝 추세, 자동 분류, VDOT 추정, 심박존, 회복 지표와 Gemini 1차 분석을 익명 집계로 가져옵니다. 경로와 활동명은 반환하지 않습니다.",
+                description: "카카오 계정에 연결된 목표 레이스, 4~12주 러닝 추세, 자동 분류, VDOT 추정, 심박존, 회복 지표와 최근 저장된 분석을 익명 집계로 가져옵니다. 경로와 활동명은 반환하지 않습니다.",
                 inputSchema: {
                   type: "object",
                   properties: {
@@ -2208,7 +2175,7 @@ Resources:
               return mcpToolResult(
                 id,
                 snapshot,
-                "RUNBRO의 익명 러닝 집계와 Gemini 1차 분석을 불러왔습니다."
+                "RUNBRO의 익명 러닝 집계와 최근 저장된 분석을 불러왔습니다."
               );
             }
             if (name === "save_verified_analysis") {
@@ -2234,7 +2201,7 @@ Resources:
                   status: "chatgpt_verified",
                   verdict: verified.verdict,
                   note: verified.verificationNote,
-                  models: ["gemini-3.6-flash", "chatgpt"],
+                  models: ["chatgpt"],
                   generatedAt
                 }
               };
@@ -2389,93 +2356,6 @@ Resources:
             }
           };
 
-  RunbroGeminiFunctionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub "${AWS::StackName}-gemini-lambda-role"
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: RunbroGeminiWorker
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - sqs:ChangeMessageVisibility
-                  - sqs:DeleteMessage
-                  - sqs:GetQueueAttributes
-                  - sqs:ReceiveMessage
-                Resource: !GetAtt RunbroGeminiQueue.Arn
-              - Effect: Allow
-                Action:
-                  - sqs:SendMessage
-                Resource:
-                  - !GetAtt RunbroCodexQueue.Arn
-                  - !GetAtt RunbroAnalysisResultQueue.Arn
-              - Effect: Allow
-                Action:
-                  - dynamodb:UpdateItem
-                Resource: !GetAtt RunbroTable.Arn
-        - PolicyName: RunbroGeminiLogs
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-gemini:*"
-
-  RunbroGeminiFunctionLogGroup:
-    Type: AWS::Logs::LogGroup
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-gemini"
-      RetentionInDays: 7
-
-  RunbroGeminiFunction:
-    Type: AWS::Lambda::Function
-    DependsOn:
-      - RunbroGeminiFunctionLogGroup
-    Properties:
-      FunctionName: !Sub "${AWS::StackName}-gemini"
-      Description: Privacy-preserving Gemini first-pass analysis for RUNBRO
-      Runtime: nodejs22.x
-      Architectures:
-        - arm64
-      Handler: gemini_worker.handler
-      MemorySize: 256
-      Timeout: 60
-      ReservedConcurrentExecutions: 5
-      Role: !GetAtt RunbroGeminiFunctionRole.Arn
-      Environment:
-        Variables:
-          RUNBRO_TABLE_NAME: !Ref RunbroTable
-          GEMINI_API_KEY: !Ref GeminiApiKey
-          GEMINI_MODEL: "gemini-3.6-flash"
-          CODEX_QUEUE_URL: !Ref RunbroCodexQueue
-          RESULT_QUEUE_URL: !Ref RunbroAnalysisResultQueue
-      Code:
-        S3Bucket: !Ref AnalysisCodeBucket
-        S3Key: !Ref AnalysisCodeKey
-
-  RunbroGeminiEventSource:
-    Type: AWS::Lambda::EventSourceMapping
-    Properties:
-      EventSourceArn: !GetAtt RunbroGeminiQueue.Arn
-      FunctionName: !Ref RunbroGeminiFunction
-      BatchSize: 1
-      Enabled: true
-      FunctionResponseTypes:
-        - ReportBatchItemFailures
-
   RunbroCodexFunctionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -2503,6 +2383,10 @@ Resources:
                 Action:
                   - sqs:SendMessage
                 Resource: !GetAtt RunbroAnalysisResultQueue.Arn
+              - Effect: Allow
+                Action:
+                  - dynamodb:UpdateItem
+                Resource: !GetAtt RunbroTable.Arn
               - Effect: Allow
                 Action:
                   - s3:GetObject
@@ -2539,7 +2423,7 @@ Resources:
       - RunbroCodexFunctionLogGroup
     Properties:
       FunctionName: !Sub "${AWS::StackName}-codex"
-      Description: Serialized Codex second-pass verification for RUNBRO
+      Description: Serialized direct Codex running analysis for RUNBRO
       PackageType: Image
       Architectures:
         - x86_64
@@ -2553,6 +2437,7 @@ Resources:
       Role: !GetAtt RunbroCodexFunctionRole.Arn
       Environment:
         Variables:
+          RUNBRO_TABLE_NAME: !Ref RunbroTable
           CODEX_AUTH_BUCKET: !Ref RunbroGarminBucket
           CODEX_AUTH_KEY: !Ref CodexAuthKey
           RESULT_QUEUE_URL: !Ref RunbroAnalysisResultQueue
@@ -2620,7 +2505,7 @@ Resources:
       - RunbroAnalysisFinalizerLogGroup
     Properties:
       FunctionName: !Sub "${AWS::StackName}-analysis-finalizer"
-      Description: Validates and stores Gemini plus Codex RUNBRO analysis
+      Description: Validates and stores direct Codex RUNBRO analysis
       Runtime: nodejs22.x
       Architectures:
         - arm64

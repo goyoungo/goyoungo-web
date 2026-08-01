@@ -1,12 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-    collectGeminiSse,
-    normalizeGeminiAnalysis,
-    validateVerifiedResult
+    validateCodexResult
 } from "../analysis-lib.mjs";
 
-function verifiedFixture() {
+function codexFixture() {
     return {
         analysis: {
             title: "훈련 일관성 우선",
@@ -58,58 +56,26 @@ function verifiedFixture() {
             key: index === 4,
             rest: Boolean(index % 2)
         })),
-        verdict: "confirmed",
-        verificationNote: "1차 분석의 방향과 기록 추세가 일치합니다."
+        analysisNote: "최근 12주 개별 러닝과 Garmin 회복 수치를 직접 비교했습니다."
     };
 }
 
-test("normalizes a five-point Gemini result", () => {
-    const result = normalizeGeminiAnalysis({
-        title: "  현재 흐름 유지  ",
-        summary: "주간 거리 급증 없이 일관성을 유지하세요.",
-        points: ["1", "2", "3", "4", "5"],
-        latestRunAnalysis: verifiedFixture().latestRunAnalysis
-    });
-    assert.equal(result.title, "현재 흐름 유지");
-    assert.equal(result.points.length, 5);
-});
-
-test("rejects malformed Gemini output", () => {
-    assert.throws(() => normalizeGeminiAnalysis({
-        title: "잘못된 결과",
-        summary: "근거 수가 부족합니다.",
-        points: ["1", "2"]
-    }));
-});
-
 test("validates a complete Codex result", () => {
-    const result = validateVerifiedResult(verifiedFixture());
+    const result = validateCodexResult(codexFixture());
     assert.equal(result.recommendation.type, "zone2");
     assert.equal(result.latestRunAnalysis.runType, "tempo");
     assert.equal(result.trainingPlan.length, 7);
-    assert.equal(result.verdict, "confirmed");
+    assert.match(result.analysisNote, /12주/);
 });
 
 test("rejects duplicate training dates", () => {
-    const fixture = verifiedFixture();
+    const fixture = codexFixture();
     fixture.trainingPlan[1].date = fixture.trainingPlan[0].date;
-    assert.throws(() => validateVerifiedResult(fixture), /duplicate_training_date/);
+    assert.throws(() => validateCodexResult(fixture), /duplicate_training_date/);
 });
 
 test("rejects an unsupported recommendation type", () => {
-    const fixture = verifiedFixture();
+    const fixture = codexFixture();
     fixture.recommendation.type = "sprint";
-    assert.throws(() => validateVerifiedResult(fixture), /invalid_recommendation_type/);
-});
-
-test("collectGeminiSse joins streamed text chunks", () => {
-    const source = [
-        'data: {"candidates":[{"content":{"parts":[{"thought":true,"text":"내부 추론"},{"text":"{\\"title\\":\\"상태\\""}]}}]}',
-        'data: {"candidates":[{"content":{"parts":[{"text":",\\"summary\\":\\"안정\\",\\"points\\":[\\"근거\\"]}"}]}}]}',
-        "data: [DONE]"
-    ].join("\n\n");
-    assert.equal(
-        collectGeminiSse(source),
-        '{"title":"상태","summary":"안정","points":["근거"]}'
-    );
+    assert.throws(() => validateCodexResult(fixture), /invalid_recommendation_type/);
 });

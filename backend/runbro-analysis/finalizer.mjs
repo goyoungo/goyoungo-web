@@ -8,7 +8,7 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import {
     safeErrorCode,
-    validateVerifiedResult
+    validateCodexResult
 } from "./analysis-lib.mjs";
 
 const tableName = process.env.RUNBRO_TABLE_NAME;
@@ -32,18 +32,17 @@ async function markFailed(userPk, jobId, errorCode) {
 }
 
 async function saveResult(userPk, jobId, rawResult) {
-    const verified = validateVerifiedResult(rawResult);
+    const result = validateCodexResult(rawResult);
     const generatedAt = new Date().toISOString();
     const analysis = {
-        ...verified.analysis,
-        latestRunAnalysis: verified.latestRunAnalysis,
-        recommendation: verified.recommendation,
-        trainingPlan: verified.trainingPlan,
+        ...result.analysis,
+        latestRunAnalysis: result.latestRunAnalysis,
+        recommendation: result.recommendation,
+        trainingPlan: result.trainingPlan,
         verification: {
-            status: "codex_verified",
-            verdict: verified.verdict,
-            note: verified.verificationNote,
-            models: ["gemini-3.6-flash", "codex"],
+            status: "codex_analyzed",
+            note: result.analysisNote,
+            models: ["codex"],
             generatedAt
         }
     };

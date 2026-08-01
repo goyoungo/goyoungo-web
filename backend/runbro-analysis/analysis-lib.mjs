@@ -28,24 +28,6 @@ function dateValue(value) {
     return normalized;
 }
 
-export function normalizeGeminiAnalysis(value) {
-    if (
-        !value ||
-        Array.isArray(value) ||
-        typeof value !== "object" ||
-        !Array.isArray(value.points) ||
-        value.points.length !== 5
-    ) {
-        throw new Error("invalid_gemini_result");
-    }
-    return {
-        title: text(value.title, 80, "gemini_title"),
-        summary: text(value.summary, 520, "gemini_summary"),
-        points: value.points.map((point) => text(point, 220, "gemini_point")),
-        latestRunAnalysis: normalizeLatestRunAnalysis(value.latestRunAnalysis)
-    };
-}
-
 function normalizeLatestRunAnalysis(value) {
     if (
         !value ||
@@ -82,30 +64,7 @@ function normalizeLatestRunAnalysis(value) {
     };
 }
 
-export function collectGeminiSse(source) {
-    if (typeof source !== "string" || source.length > 512 * 1024) {
-        throw new Error("gemini_stream_invalid");
-    }
-    let result = "";
-    for (const line of source.split(/\r?\n/)) {
-        const trimmed = line.trim();
-        if (!trimmed.startsWith("data:")) continue;
-        const payload = trimmed.slice(5).trim();
-        if (!payload || payload === "[DONE]") continue;
-        const chunk = JSON.parse(payload);
-        for (const part of chunk.candidates?.[0]?.content?.parts || []) {
-            if (part.thought !== true && typeof part.text === "string") {
-                result += part.text;
-            }
-        }
-    }
-    if (!result || result.length > 12000) {
-        throw new Error("gemini_empty_result");
-    }
-    return result;
-}
-
-export function validateVerifiedResult(value) {
+export function validateCodexResult(value) {
     if (!value || Array.isArray(value) || typeof value !== "object") {
         throw new Error("invalid_verified_result");
     }
@@ -184,11 +143,10 @@ export function validateVerifiedResult(value) {
             )
         },
         trainingPlan: normalizedPlan,
-        verdict: value.verdict === "confirmed" ? "confirmed" : "adjusted",
-        verificationNote: text(
-            value.verificationNote,
+        analysisNote: text(
+            value.analysisNote,
             180,
-            "verification_note"
+            "analysis_note"
         )
     };
 }

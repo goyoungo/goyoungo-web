@@ -10,7 +10,7 @@ RUNBRO는 목표 레이스, 컨디션, 러닝 활동을 카카오 계정 기준�
 - 추천 내용과 근거를 함께 제시하는 다음 훈련 제안
 - 날짜가 지정된 7일 계획과 월간 훈련 달력
 - Garmin Connect 로그인·MFA와 최근 러닝·수면·HRV·훈련 준비도 동기화
-- Gemini 3.6 Flash 1차 분석과 Codex 2차 자동 교차검증
+- 최근 12주 개별 러닝과 회복 수치를 사용하는 Codex 직접 분석
 - 연결 토큰, 러닝 기록, 프로필 전체 삭제
 
 ## Garmin Connect
@@ -41,7 +41,7 @@ Garmin Lambda만 갱신할 때는 기존 스크립트를 사용합니다.
 bash backend/deploy-runbro-garmin.sh
 ```
 
-Gemini·Codex 자동 분석 파이프라인을 배포할 때는 AWS CloudShell에서 다음 스크립트를 사용합니다. CloudShell은 Docker를 기본 제공하므로 Codex Lambda 컨테이너를 빌드해 ECR에 올리고, Gemini·결과 저장 Lambda ZIP과 CloudFormation 스택을 함께 갱신합니다.
+Codex 자동 분석 파이프라인을 배포할 때는 AWS CloudShell에서 다음 스크립트를 사용합니다. CloudShell은 Docker를 기본 제공하므로 Codex Lambda 컨테이너를 빌드해 ECR에 올리고, 결과 저장 Lambda ZIP과 CloudFormation 스택을 함께 갱신합니다.
 
 ```text
 export AWS_REGION=ap-northeast-3
@@ -69,7 +69,6 @@ aws cloudformation deploy \
     OAuthStateSecret=<secure-random-secret> \
     StravaClientId=<strava-client-id> \
     StravaClientSecret=<strava-client-secret> \
-    GeminiApiKey=<gemini-api-key> \
     GarminCodeBucket=<artifact-bucket> \
     GarminCodeKey=<artifact-key> \
     AnalysisCodeBucket=<artifact-bucket> \
@@ -83,12 +82,10 @@ aws cloudformation deploy \
 
 OpenAI API는 사용하지 않습니다. 카카오 로그인 사용자가 분석을 요청하면 공개 API는 즉시 작업 번호만 반환하고 다음 순서로 비동기 처리합니다.
 
-1. API Lambda가 비식별 집계와 작업 번호를 암호화된 Gemini FIFO 대기열에 넣습니다.
-2. Gemini Lambda가 무료 티어의 `gemini-3.6-flash`로 1차 분석합니다.
-3. Codex FIFO 대기열이 하나의 Codex Lambda에 작업을 직렬 전달합니다.
-4. Codex Lambda가 읽기 전용·비대화형 모드로 1차 분석을 교차검증합니다.
-5. 결과 저장 Lambda가 JSON 형식, 문자열 길이, 훈련 유형, 7일 계획을 다시 검사한 뒤 DynamoDB에 저장합니다.
-6. RUNBRO 화면은 작업 상태를 조회해 완료된 결과를 자동으로 반영합니다.
+1. API Lambda가 최근 12주 개별 러닝, 주간 추세, 심박존, 회복 수치와 작업 번호를 암호화된 Codex FIFO 대기열에 넣습니다.
+2. 하나의 Codex Lambda가 작업을 직렬로 받아 읽기 전용·비대화형 모드에서 직접 분석합니다.
+3. 결과 저장 Lambda가 JSON 형식, 문자열 길이, 훈련 유형, 7일 계획을 다시 검사한 뒤 DynamoDB에 저장합니다.
+4. RUNBRO 화면은 작업 상태를 조회해 완료된 결과를 자동으로 반영합니다.
 
 기존 ChatGPT 앱용 OAuth/MCP 경로는 이전 연결 호환성을 위해 보호된 상태로 남아 있지만 RUNBRO 화면에서는 호출하지 않습니다.
 
@@ -107,7 +104,7 @@ node --check assets/runbro.js
 - 카카오 사용자 ID는 HMAC-SHA256으로 가명 처리합니다.
 - Strava 액세스·리프레시 토큰은 사용자·공급자 암호화 컨텍스트와 함께 KMS로 암호화합니다.
 - Garmin 토큰과 데이터는 공개 접근이 차단된 전용 S3 버킷에서 KMS로 암호화합니다.
-- Gemini와 Codex에는 이름, 계정 ID, 활동 경로, 위치, 활동명, 정확한 시작 시각, 정확한 HRV·안정시 심박을 보내지 않습니다. 러닝 거리·페이스·목표와 범주화한 회복 상태만 전달합니다.
+- Codex에는 최근 12주 개별 러닝의 날짜, 거리, 시간, 페이스, 고도, 평균·최대 심박과 Garmin 회복 수치를 전달합니다. 이름, 계정 ID, 활동 경로, 위치, 활동명, 정확한 시작 시각은 전달하지 않습니다.
 - SQS 메시지는 SSE-SQS로 암호화하고 1시간 후 삭제하며, 처리 실패 대기열도 1일 후 삭제합니다.
 - Codex 인증 캐시는 RUNBRO S3 버킷에서 KMS로 암호화하고 Codex Lambda 역할만 읽고 갱신할 수 있습니다. 이전 객체 버전은 1일 후 삭제합니다.
 - Codex는 사용자별 세션을 이어 쓰지 않고 작업마다 임시 디렉터리에서 새 비대화형 세션으로 실행합니다.

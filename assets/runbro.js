@@ -1001,10 +1001,10 @@
         var jobStatus = analysisJob && analysisJob.status;
         var jobLabels = {
             queued: "분석 요청 대기",
-            gemini_processing: "GEMINI 1차 분석 중",
-            codex_queued: "CODEX 교차검증 중",
+            codex_queued: "CODEX 분석 대기",
+            codex_processing: "CODEX 상세 분석 중",
             auth_required: "CODEX 인증 확인 필요",
-            failed: "자동 검증 실패"
+            failed: "상세 분석 실패"
         };
         if (jobLabels[jobStatus]) {
             badge.hidden = false;
@@ -1013,11 +1013,11 @@
             badge.textContent = jobLabels[jobStatus];
             badge.title = "";
             automationStatus.textContent = {
-                queued: "분석 요청을 안전한 대기열에 등록했습니다.",
-                gemini_processing: "Gemini가 비식별 러닝 집계를 분석하고 있습니다.",
-                codex_queued: "Codex가 1차 분석과 기록 추세를 교차검증하고 있습니다.",
-                auth_required: "자동 검증 서비스 인증 갱신이 필요합니다.",
-                failed: "자동 검증을 완료하지 못했습니다. 잠시 후 다시 분석해 주세요."
+                queued: "상세 러닝 분석 요청을 안전한 대기열에 등록했습니다.",
+                codex_queued: "Codex 상세 러닝 분석을 기다리고 있습니다.",
+                codex_processing: "Codex가 최근 12주 개별 러닝과 회복 수치를 분석하고 있습니다.",
+                auth_required: "Codex 분석 서비스 인증 갱신이 필요합니다.",
+                failed: "상세 분석을 완료하지 못했습니다. 잠시 후 다시 분석해 주세요."
             }[jobStatus];
             return;
         }
@@ -1026,28 +1026,19 @@
             badge.textContent = "";
             badge.removeAttribute("title");
             automationStatus.textContent =
-                "분석을 실행하면 Gemini 1차 분석과 Codex 2차 검증이 자동으로 진행됩니다.";
+                "분석을 실행하면 Codex가 최근 12주 상세 기록을 직접 분석합니다.";
             return;
         }
         badge.hidden = false;
-        badge.classList.toggle("is-adjusted", verification.verdict === "adjusted");
-        badge.classList.toggle(
-            "is-single",
-            !["chatgpt_verified", "codex_verified"].includes(verification.status)
-        );
-        badge.textContent = verification.status === "codex_verified"
-            ? "GEMINI × CODEX 검증 완료"
-            : verification.status === "chatgpt_verified"
-                ? "GEMINI × CHATGPT 검증 완료"
-            : verification.status === "pending_chatgpt"
-                ? "GEMINI 1차 분석 · 새 검증 필요"
-                : "RUNBRO 분석";
+        badge.classList.remove("is-adjusted");
+        badge.classList.add("is-single");
+        badge.textContent = ["codex_analyzed", "codex_verified"].includes(verification.status)
+            ? "CODEX 분석 완료"
+            : "RUNBRO 분석";
         badge.title = verification.note || "";
-        automationStatus.textContent = verification.status === "codex_verified"
-            ? "Gemini 분석을 Codex가 대조하고 형식과 안전 기준을 확인해 저장한 결과입니다."
-            : verification.status === "chatgpt_verified"
-                ? "기존 ChatGPT 교차검증으로 저장된 결과입니다."
-                : "새 자동 분석을 실행하면 Codex 교차검증 결과로 갱신됩니다.";
+        automationStatus.textContent = ["codex_analyzed", "codex_verified"].includes(verification.status)
+            ? "최근 12주 개별 러닝과 Garmin 회복 수치를 Codex가 직접 분석해 저장한 결과입니다."
+            : "새 상세 분석을 실행하면 Codex 직접 분석 결과로 갱신됩니다.";
     }
 
     function renderLatestRunAnalysis(analysis, activities) {
@@ -1531,7 +1522,7 @@
     }
 
     function isPendingAnalysis(status) {
-        return ["queued", "gemini_processing", "codex_queued"].includes(status);
+        return ["queued", "codex_queued", "codex_processing"].includes(status);
     }
 
     function analysisFailureMessage(job) {
@@ -1560,17 +1551,15 @@
             renderDashboard(dashboard);
             var job = dashboard.analysisJob || {};
             if (job.status === "complete") {
-                setFormStatus("Gemini 분석과 Codex 교차검증을 완료했습니다.");
+                setFormStatus("Codex 상세 러닝 분석을 완료했습니다.");
                 return dashboard;
             }
             if (job.status === "failed" || job.status === "auth_required") {
                 throw new Error(analysisFailureMessage(job));
             }
-            setFormStatus(
-                job.status === "codex_queued"
-                    ? "Codex가 1차 분석을 교차검증하고 있습니다."
-                    : "Gemini가 러닝 기록을 분석하고 있습니다."
-            );
+            setFormStatus(job.status === "codex_processing"
+                ? "Codex가 최근 12주 상세 러닝 기록을 분석하고 있습니다."
+                : "Codex 상세 러닝 분석을 기다리고 있습니다.");
             return pollAnalysisJob(jobId, garminDashboard, token, attempt + 1);
         });
     }
@@ -1585,9 +1574,7 @@
             var combined = mergeProviderDashboards(values[0], garminDashboard);
             return apiRequest("/analyze", {
                 method: "POST",
-                body: JSON.stringify({
-                    analysisInput: analysisInputForDashboard(combined)
-                })
+                body: "{}"
             });
         }).then(function (analyzed) {
             var dashboard = normalizeDashboard(

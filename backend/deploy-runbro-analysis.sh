@@ -44,7 +44,6 @@ IMAGE_URI="${ECR_URL}/${ECR_REPO_NAME}:${IMAGE_TAG}"
 ANALYSIS_TAG="$(
   {
     sha256sum "${ANALYSIS_DIR}/analysis-lib.mjs"
-    sha256sum "${ANALYSIS_DIR}/gemini_worker.mjs"
     sha256sum "${ANALYSIS_DIR}/finalizer.mjs"
   } | sha256sum | cut -c1-16
 )"
@@ -59,11 +58,10 @@ docker build \
 docker push "${IMAGE_URI}"
 
 cp "${ANALYSIS_DIR}/analysis-lib.mjs" "${BUILD_DIR}/analysis-lib.mjs"
-cp "${ANALYSIS_DIR}/gemini_worker.mjs" "${BUILD_DIR}/gemini_worker.mjs"
 cp "${ANALYSIS_DIR}/finalizer.mjs" "${BUILD_DIR}/finalizer.mjs"
 (
   cd "${BUILD_DIR}"
-  zip -q analysis-workers.zip analysis-lib.mjs gemini_worker.mjs finalizer.mjs
+  zip -q analysis-workers.zip analysis-lib.mjs finalizer.mjs
 )
 
 ARTIFACT_KEY="runbro/analysis/${ANALYSIS_TAG}/analysis-workers.zip"
