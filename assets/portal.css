@@ -188,10 +188,11 @@ a {
 
 .portal-profile h1 {
     margin: 0;
-    font-size: clamp(54px, 11vw, 88px);
+    font-size: clamp(40px, 11vw, 80px);
     font-weight: 950;
     line-height: 0.84;
     letter-spacing: -0.09em;
+    white-space: nowrap;
 }
 
 .portal-intro {
