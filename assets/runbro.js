@@ -99,7 +99,7 @@
             !Number.isInteger(minutes) ||
             !Number.isInteger(seconds) ||
             hours < 0 ||
-            hours > 240 ||
+            hours > 70 ||
             minutes < 0 ||
             minutes > 59 ||
             seconds < 0 ||
@@ -1639,7 +1639,7 @@
             setFormStatus("레이스 이름, 날짜, 거리를 확인해 주세요.", true);
             return;
         }
-        if (!profile.goalTimeSeconds || profile.goalTimeSeconds < 300 || profile.goalTimeSeconds > 864000) {
+        if (!profile.goalTimeSeconds || profile.goalTimeSeconds < 300 || profile.goalTimeSeconds > 252000) {
             setFormStatus("목표 기록을 시간·분·초로 정확하게 입력해 주세요.", true);
             return;
         }

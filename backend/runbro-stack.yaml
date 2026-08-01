@@ -623,7 +623,7 @@ Resources:
               !Number.isFinite(distanceKm) ||
               distanceKm < 1 ||
               distanceKm > 250 ||
-              (goalTimeSeconds != null && (!Number.isFinite(goalTimeSeconds) || goalTimeSeconds < 300 || goalTimeSeconds > 864000)) ||
+              (goalTimeSeconds != null && (!Number.isFinite(goalTimeSeconds) || goalTimeSeconds < 300 || goalTimeSeconds > 252000)) ||
               !Number.isInteger(daysPerWeek) ||
               daysPerWeek < 1 ||
               daysPerWeek > 7
