@@ -1258,6 +1258,224 @@ img {
     }
 }
 
+/* Global SNOWBRO navigation */
+.has-site-sidebar {
+    --site-sidebar-width: 252px;
+}
+
+.site-sidebar {
+    position: fixed;
+    z-index: 18;
+    top: 68px;
+    bottom: 0;
+    left: 0;
+    width: var(--site-sidebar-width);
+    overflow-y: auto;
+    border-right: 1px solid var(--line-strong);
+    background: rgba(247, 242, 232, 0.97);
+    backdrop-filter: blur(18px);
+}
+
+.site-sidebar-inner {
+    min-height: 100%;
+    padding: 22px 14px 32px;
+}
+
+.site-sidebar-home {
+    min-height: 58px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--text);
+    color: var(--text);
+    text-decoration: none;
+}
+
+.site-sidebar-mark {
+    width: 42px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    flex: none;
+    background: var(--accent);
+    color: #fffaf0;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+}
+
+.site-sidebar-home strong,
+.site-sidebar-home small {
+    display: block;
+}
+
+.site-sidebar-home strong {
+    font-size: 14px;
+    letter-spacing: -0.02em;
+}
+
+.site-sidebar-home small {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.site-sidebar-nav {
+    margin-top: 20px;
+}
+
+.site-sidebar-label {
+    margin: 22px 8px 8px;
+    color: var(--faint);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+}
+
+.site-sidebar-link {
+    min-height: 40px;
+    padding: 8px 9px;
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    align-items: center;
+    gap: 5px;
+    border: 1px solid transparent;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 750;
+    line-height: 1.35;
+    text-decoration: none;
+}
+
+.site-sidebar-link > span:first-child {
+    color: var(--faint);
+    font-size: 10px;
+    font-weight: 900;
+    text-align: center;
+}
+
+.site-sidebar-link:hover,
+.site-sidebar-link:focus-visible {
+    border-color: var(--line-strong);
+    background: var(--surface);
+    color: var(--text);
+}
+
+.site-sidebar-link.is-current {
+    border-color: var(--text);
+    background: var(--text);
+    color: #fffaf0;
+}
+
+.site-sidebar-link.is-current > span:first-child {
+    color: var(--accent);
+}
+
+.has-site-sidebar .page-root {
+    width: calc(100% - var(--site-sidebar-width));
+    margin-left: var(--site-sidebar-width);
+}
+
+.site-nav-toggle,
+.site-nav-backdrop {
+    display: none;
+}
+
+.breadcrumbs {
+    min-height: 28px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    color: var(--faint);
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.breadcrumbs a {
+    color: var(--muted);
+    text-underline-offset: 4px;
+}
+
+.breadcrumbs a:hover,
+.breadcrumbs a:focus-visible {
+    color: var(--accent);
+}
+
+.breadcrumbs [aria-current="page"] {
+    color: var(--text);
+}
+
+@media (max-width: 1080px) {
+    .site-sidebar {
+        top: 60px;
+        width: min(86vw, 300px);
+        transform: translateX(-102%);
+        transition: transform 180ms ease;
+        box-shadow: var(--shadow);
+    }
+
+    .site-nav-open .site-sidebar {
+        transform: translateX(0);
+    }
+
+    .has-site-sidebar .page-root {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .site-nav-toggle {
+        min-height: 36px;
+        padding: 6px 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        border: 1px solid var(--text);
+        border-radius: 0;
+        background: transparent;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .site-nav-toggle:hover,
+    .site-nav-toggle:focus-visible,
+    .site-nav-toggle[aria-expanded="true"] {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #fffaf0;
+    }
+
+    .site-nav-backdrop {
+        position: fixed;
+        z-index: 17;
+        inset: 60px 0 0;
+        width: 100%;
+        border: 0;
+        background: rgba(23, 21, 18, 0.52);
+    }
+
+    .site-nav-open .site-nav-backdrop {
+        display: block;
+    }
+}
+
+@media (max-width: 420px) {
+    .site-nav-toggle {
+        width: 40px;
+        padding-inline: 7px;
+    }
+
+    .site-nav-toggle span:last-child,
+    .has-site-sidebar .brand-link span:last-child {
+        display: none;
+    }
+}
+
 /* Alpine Editorial renewal */
 .login-screen {
     position: fixed;

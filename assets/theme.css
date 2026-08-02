@@ -153,6 +153,27 @@ html[data-theme="dark"] .shuttle-image {
     background: var(--surface);
 }
 
+html[data-theme="dark"] .site-sidebar {
+    border-right-color: var(--line-strong);
+    background: rgba(23, 21, 18, 0.97);
+}
+
+html[data-theme="dark"] .site-sidebar-home,
+html[data-theme="dark"] .site-nav-toggle {
+    border-color: var(--line-strong);
+}
+
+html[data-theme="dark"] .site-sidebar-link:hover,
+html[data-theme="dark"] .site-sidebar-link:focus-visible {
+    background: var(--surface-3);
+}
+
+html[data-theme="dark"] .site-sidebar-link.is-current {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fffaf0;
+}
+
 @media (max-width: 720px) {
     .site-header {
         gap: 8px;

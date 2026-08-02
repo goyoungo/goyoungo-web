@@ -178,6 +178,102 @@
             '" target="_blank" rel="noopener noreferrer">' + esc(label) + "</a>";
     }
 
+    var restaurantPageIds = [
+        "welpark", "phoenix", "yongpyong", "high1", "konjiam", "jisan",
+        "o2", "vivaldi", "yangji", "elysian", "muju"
+    ];
+
+    function sidebarLinks(items, currentPageId) {
+        return items.map(function (item) {
+            var isCurrent = item.id === currentPageId;
+            return [
+                '<a class="site-sidebar-link' + (isCurrent ? " is-current" : "") + '" href="' + esc(item.href) + '"',
+                isCurrent ? ' aria-current="page"' : "",
+                ">",
+                '<span aria-hidden="true">' + esc(item.icon || "•") + "</span>",
+                "<span>" + esc(item.title) + "</span>",
+                "</a>"
+            ].join("");
+        }).join("");
+    }
+
+    function createSiteNavigation(currentPageId) {
+        if (document.getElementById("siteSidebar")) return;
+
+        var shell = document.querySelector(".site-shell");
+        var header = shell && shell.querySelector(".site-header");
+        var main = shell && shell.querySelector(".page-root");
+        if (!shell || !header || !main) return;
+
+        var restaurantLinks = data.navigation.filter(function (item) {
+            return restaurantPageIds.indexOf(item.id) !== -1;
+        });
+        var utilityLinks = data.navigation.filter(function (item) {
+            return restaurantPageIds.indexOf(item.id) === -1;
+        });
+
+        var sidebar = document.createElement("aside");
+        sidebar.id = "siteSidebar";
+        sidebar.className = "site-sidebar";
+        sidebar.setAttribute("aria-label", "SNOWBRO 전체 메뉴");
+        sidebar.innerHTML = [
+            '<div class="site-sidebar-inner">',
+            '<a class="site-sidebar-home" href="/snowbro/">',
+            '<span class="site-sidebar-mark" aria-hidden="true">SNOW</span>',
+            '<span><strong>SNOWBRO</strong><small>스키장 정보 공유</small></span>',
+            "</a>",
+            '<nav class="site-sidebar-nav" aria-label="SNOWBRO 페이지">',
+            '<a class="site-sidebar-link site-sidebar-root' + (currentPageId === "home" ? " is-current" : "") + '" href="/snowbro/"' +
+                (currentPageId === "home" ? ' aria-current="page"' : "") + ">",
+            '<span aria-hidden="true">⌂</span><span>SNOWBRO 홈</span></a>',
+            '<p class="site-sidebar-label">스키장 맛집</p>',
+            sidebarLinks(restaurantLinks, currentPageId),
+            '<p class="site-sidebar-label">기타 정보</p>',
+            sidebarLinks(utilityLinks, currentPageId),
+            '<p class="site-sidebar-label">GO.YOUNGO</p>',
+            '<a class="site-sidebar-link" href="/runbro/"><span aria-hidden="true">R</span><span>RUNBRO</span></a>',
+            '<a class="site-sidebar-link" href="/"><span aria-hidden="true">GO</span><span>메인으로</span></a>',
+            "</nav>",
+            "</div>"
+        ].join("");
+        shell.insertBefore(sidebar, main);
+
+        var toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "site-nav-toggle";
+        toggle.setAttribute("aria-controls", "siteSidebar");
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.innerHTML = '<span aria-hidden="true">☰</span><span>메뉴</span>';
+
+        var headerActions = header.querySelector(".site-header-actions");
+        header.insertBefore(toggle, headerActions || header.lastChild);
+
+        var backdrop = document.createElement("button");
+        backdrop.type = "button";
+        backdrop.className = "site-nav-backdrop";
+        backdrop.setAttribute("aria-label", "메뉴 닫기");
+        document.body.appendChild(backdrop);
+        document.body.classList.add("has-site-sidebar");
+
+        function setOpen(open) {
+            document.body.classList.toggle("site-nav-open", open);
+            toggle.setAttribute("aria-expanded", open ? "true" : "false");
+        }
+
+        toggle.addEventListener("click", function () {
+            setOpen(!document.body.classList.contains("site-nav-open"));
+        });
+        backdrop.addEventListener("click", function () {
+            setOpen(false);
+        });
+        sidebar.addEventListener("click", function (event) {
+            if (event.target.closest("a")) setOpen(false);
+        });
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") setOpen(false);
+        });
+    }
+
     function phoneLink(phone, label) {
         var dial = String(phone || "").replace(/[^\d+]/g, "");
         if (!dial) return textOrDash("");
@@ -200,7 +296,11 @@
 
     function hero(page) {
         return [
-            '<a class="back-link" href="/snowbro/" aria-label="스노우브로 홈으로 돌아가기">← 전체 정보</a>',
+            '<nav class="breadcrumbs" aria-label="현재 위치">',
+            '<a href="/">GO.YOUNGO</a><span aria-hidden="true">›</span>',
+            '<a href="/snowbro/">SNOWBRO</a><span aria-hidden="true">›</span>',
+            '<span aria-current="page">' + esc(page.title) + "</span>",
+            "</nav>",
             '<header class="page-hero">',
             '<div class="page-icon" aria-hidden="true">' + esc(page.icon) + "</div>",
             '<p class="eyebrow">GO.YOUNGO</p>',
@@ -1186,6 +1286,7 @@
 
     function renderCurrentPage() {
         var pageId = document.body.dataset.page || "home";
+        createSiteNavigation(pageId);
         if (pageId === "home") {
             renderHome();
             return;
