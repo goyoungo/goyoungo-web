@@ -372,7 +372,10 @@ Resources:
               if (!allowed.has(key)) throw new HttpError(400, "수정할 수 없는 항목입니다: " + key);
             }
             const fields = {};
-            if (Object.hasOwn(source, "name")) fields.name = cleanText(source.name, "이름", 100);
+            if (Object.hasOwn(source, "name")) {
+              fields.name = cleanText(source.name, "이름", 100);
+              if (!fields.name) throw new HttpError(400, "업체명을 입력해 주세요.");
+            }
             if (Object.hasOwn(source, "address")) fields.address = cleanText(source.address, "주소", 300);
             if (Object.hasOwn(source, "phone")) fields.phone = cleanText(source.phone, "연락처", 40);
             if (Object.hasOwn(source, "hours")) fields.hours = cleanText(source.hours, "영업시간", 500);
