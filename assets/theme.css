@@ -28,47 +28,106 @@ html[data-theme="dark"] {
     --theme-control-border: #89796a;
 }
 
+.site-header {
+    --header-text: #26231f;
+    --header-line: #48403a;
+    --header-line-soft: rgba(72, 64, 58, 0.18);
+    --header-accent: #e05a3f;
+    --header-accent-soft: rgba(224, 90, 63, 0.11);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    min-height: 56px;
+    padding: 0 clamp(16px, 3vw, 42px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--header-line-soft);
+    background: rgba(255, 252, 247, 0.94);
+    color: var(--header-text);
+    backdrop-filter: blur(16px);
+}
+
+.site-header .brand-link {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--header-text);
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+}
+
+.site-header .brand-dot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    border-radius: 0;
+    background: var(--header-accent);
+    box-shadow: 0 0 0 4px var(--header-accent-soft);
+}
+
 .site-header-actions {
     min-width: 0;
+    margin-left: auto;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.site-header-actions #logoutBtn,
-.theme-mode-select {
-    min-height: 40px;
-    width: 96px;
-}
-
+.site-header .quiet-button,
 .site-header-actions #logoutBtn {
+    min-height: 34px;
+    width: auto;
     margin: 0;
+    padding: 6px 10px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 6px 9px;
-}
-
-.theme-mode-select {
-    padding: 6px 26px 6px 9px;
-    box-sizing: border-box;
-    border: 1px solid var(--theme-control-border);
+    gap: 6px;
+    border: 1px solid var(--header-line);
     border-radius: 0;
-    background: var(--theme-control-bg);
-    color: var(--text);
+    background: transparent;
+    color: var(--header-text);
     cursor: pointer;
     font-family: inherit;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 800;
     line-height: 1.4;
 }
 
-.theme-mode-select:hover {
-    border-color: var(--accent);
+.site-header .quiet-button:hover,
+.site-header .quiet-button:focus-visible,
+.site-header-actions #logoutBtn:hover,
+.site-header-actions #logoutBtn:focus-visible {
+    border-color: var(--header-accent);
+    background: var(--header-accent);
+    color: #fff;
 }
 
-.theme-mode-select:focus-visible {
-    border-color: var(--accent);
+.site-header .account-button {
+    min-width: 58px;
+}
+
+.site-header .site-nav-toggle {
+    min-height: 34px;
+    padding: 6px 10px;
+    border: 1px solid var(--header-line);
+    background: transparent;
+    color: var(--header-text);
+    font-size: 11px;
+    font-weight: 850;
+}
+
+.site-header .site-nav-toggle:hover,
+.site-header .site-nav-toggle:focus-visible,
+.site-header .site-nav-toggle[aria-expanded="true"] {
+    border-color: var(--header-accent);
+    background: var(--header-accent);
+    color: #fff;
 }
 
 html[data-theme="dark"],
@@ -85,8 +144,12 @@ html[data-theme="dark"] body {
 }
 
 html[data-theme="dark"] .site-header {
-    border-bottom-color: var(--line-strong);
-    background: rgba(23, 21, 18, 0.94);
+    --header-text: #f6eee4;
+    --header-line: #89796a;
+    --header-line-soft: rgba(246, 238, 228, 0.17);
+    --header-accent: #ff7650;
+    --header-accent-soft: rgba(255, 118, 80, 0.16);
+    background: rgba(33, 30, 25, 0.95);
 }
 
 html[data-theme="dark"] .login-screen {
@@ -177,6 +240,8 @@ html[data-theme="dark"] .site-sidebar-link.is-current {
 
 @media (max-width: 720px) {
     .site-header {
+        min-height: 54px;
+        padding: 0 14px;
         gap: 8px;
     }
 
@@ -185,31 +250,23 @@ html[data-theme="dark"] .site-sidebar-link.is-current {
         gap: 6px;
     }
 
-    .theme-mode-select {
-        min-height: 36px;
-        width: 86px;
-        padding-left: 7px;
-        font-size: 11px;
-    }
-
+    .site-header .quiet-button,
     .site-header-actions #logoutBtn {
-        min-height: 36px;
-        width: 86px;
-        padding-right: 9px;
-        padding-left: 9px;
+        min-height: 34px;
     }
 }
 
-@media (max-width: 420px) {
-    .brand-link span:last-child {
-        max-width: 132px;
+@media (max-width: 520px) {
+    .site-header .site-nav-toggle {
+        width: 38px;
+        padding-inline: 7px;
     }
 
-    .theme-mode-select {
-        width: 78px;
+    .has-site-sidebar .site-header .brand-link span:last-child {
+        display: inline;
     }
 
-    .site-header-actions #logoutBtn {
-        width: 78px;
+    .site-header #themeLabel {
+        display: none;
     }
 }

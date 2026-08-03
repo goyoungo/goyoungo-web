@@ -1266,7 +1266,7 @@ img {
 .site-sidebar {
     position: fixed;
     z-index: 18;
-    top: 68px;
+    top: 56px;
     bottom: 0;
     left: 0;
     width: var(--site-sidebar-width);
@@ -1497,7 +1497,7 @@ img {
 
 @media (max-width: 1080px) {
     .site-sidebar {
-        top: 60px;
+        top: 54px;
         width: min(86vw, 300px);
         transform: translateX(-102%);
         box-shadow: var(--shadow);
@@ -1521,7 +1521,7 @@ img {
     }
 
     .site-nav-toggle {
-        min-height: 36px;
+        min-height: 34px;
         padding: 6px 10px;
         display: inline-flex;
         align-items: center;
@@ -1547,7 +1547,7 @@ img {
     .site-nav-backdrop {
         position: fixed;
         z-index: 17;
-        inset: 60px 0 0;
+        inset: 54px 0 0;
         width: 100%;
         border: 0;
         background: rgba(23, 21, 18, 0.52);

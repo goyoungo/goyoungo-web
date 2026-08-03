@@ -33,11 +33,17 @@
         }
     }
 
+    function modeLabel(mode) {
+        return {
+            system: "시스템",
+            light: "라이트",
+            dark: "다크"
+        }[mode] || "시스템";
+    }
+
     function syncControl() {
-        var select = document.getElementById("themeModeSelect");
-        if (select && select.value !== selectedMode) {
-            select.value = selectedMode;
-        }
+        var label = document.getElementById("themeLabel");
+        if (label) label.textContent = modeLabel(selectedMode);
     }
 
     function applyTheme(mode, persist) {
@@ -60,51 +66,38 @@
     }
 
     function createThemeControl() {
-        if (document.getElementById("themeModeSelect")) return;
-
         var header = document.querySelector(".site-header");
         if (!header) return;
 
-        var actions = document.createElement("div");
-        actions.className = "site-header-actions";
+        var actions = header.querySelector(".site-header-actions");
+        if (!actions) {
+            actions = document.createElement("div");
+            actions.className = "site-header-actions";
+        }
 
-        var label = document.createElement("label");
-        label.className = "visually-hidden";
-        label.htmlFor = "themeModeSelect";
-        label.textContent = "화면 모드";
+        var button = document.getElementById("themeButton");
+        if (!button) {
+            button = document.createElement("button");
+            button.id = "themeButton";
+            button.className = "quiet-button";
+            button.type = "button";
+            button.setAttribute("aria-label", "화면 모드 변경");
+            button.innerHTML = '<span aria-hidden="true">◐</span><span id="themeLabel">시스템</span>';
+            button.addEventListener("click", function () {
+                var next = MODES[(MODES.indexOf(selectedMode) + 1) % MODES.length];
+                applyTheme(next, true);
+            });
+        }
 
-        var select = document.createElement("select");
-        select.id = "themeModeSelect";
-        select.className = "theme-mode-select";
-        select.setAttribute("aria-label", "화면 모드");
-        select.title = "화면 모드";
-
-        [
-            { value: "light", label: "라이트" },
-            { value: "dark", label: "다크" },
-            { value: "system", label: "시스템" }
-        ].forEach(function (optionData) {
-            var option = document.createElement("option");
-            option.value = optionData.value;
-            option.textContent = optionData.label;
-            select.appendChild(option);
-        });
-
-        select.value = selectedMode;
-        select.addEventListener("change", function () {
-            applyTheme(select.value, true);
-        });
-
-        actions.appendChild(label);
-        actions.appendChild(select);
+        syncControl();
+        actions.appendChild(button);
 
         var loginButton = document.getElementById("logoutBtn");
-        if (loginButton && loginButton.parentNode === header) {
-            header.insertBefore(actions, loginButton);
+        if (loginButton) {
+            loginButton.classList.add("quiet-button", "account-button");
             actions.appendChild(loginButton);
-        } else {
-            header.appendChild(actions);
         }
+        header.appendChild(actions);
     }
 
     applyTheme(selectedMode, false);
