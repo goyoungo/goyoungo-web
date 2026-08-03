@@ -478,6 +478,70 @@ body[data-login-open="true"] {
     color: var(--accent);
 }
 
+.about-main {
+    align-items: start;
+}
+
+.about-card {
+    width: min(100%, 820px);
+}
+
+.about-hero {
+    padding: clamp(32px, 6vw, 58px);
+    border-bottom: 1px solid var(--line-strong);
+}
+
+.about-hero h1 {
+    margin: 0;
+    font-size: clamp(34px, 7vw, 58px);
+    line-height: 1;
+    letter-spacing: -0.06em;
+}
+
+.about-hero > p:last-child {
+    max-width: 600px;
+    margin: 20px 0 0;
+    color: var(--muted);
+    line-height: 1.8;
+}
+
+.about-section {
+    padding: clamp(24px, 5vw, 42px);
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 18px;
+    border-bottom: 1px solid var(--line);
+}
+
+.about-index {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.about-section h2 {
+    margin: 0 0 12px;
+    font-size: 20px;
+    letter-spacing: -0.04em;
+}
+
+.about-section p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.85;
+}
+
+.about-section a {
+    color: var(--accent);
+    font-weight: 800;
+    text-underline-offset: 3px;
+}
+
+.about-footer {
+    border-top: 0;
+}
+
 html[data-theme="dark"] .portal-card,
 html[data-theme="dark"] .portal-service {
     background-color: rgba(33, 30, 25, 0.94);
