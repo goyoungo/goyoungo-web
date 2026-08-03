@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /backend/
+Disallow: /scripts/
+Disallow: /runbro/callback.html
+Disallow: /runbro/chatgpt-connect.html
+
+Sitemap: https://goyoungo.com/sitemap.xml
