@@ -27,7 +27,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1196663152",
         "name": "둔내한방순대국",
         "address": "강원 횡성군 두원길 3",
-        "memo": "",
+        "memo": "카레순대국 파는 집.",
         "driveMinutes": 3,
         "menus": [
           "순댓국 (고기만/순대만 가능)",
@@ -44,7 +44,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "37084680",
         "name": "마루",
         "address": "강원 횡성군 고원로398번길 6-20",
-        "memo": "24.10.11 날치알쌈 포장 포차.",
+        "memo": "날치알쌈 포장 포차.",
         "driveMinutes": 3,
         "menus": [
           "가스통장작삼겹살",
@@ -61,7 +61,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1315857249",
         "name": "브라보스낵",
         "address": "강원 횡성군 고원로 451",
-        "memo": "25.12.08 떡볶이 맛집. 국물떡볶이, 국물라볶이 추천.",
+        "memo": "떡볶이 맛집. 국물떡볶이, 국물라볶이 추천.",
         "driveMinutes": 3,
         "menus": [
           "국물떡복이",
@@ -76,7 +76,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15520675",
         "name": "선비마을",
         "address": "강원 횡성군 우용로 98",
-        "memo": "24.12.12 오리주물럭 맛집.",
+        "memo": "오리주물럭 맛집.",
         "driveMinutes": 3,
         "menus": [
           "오리주물럭",
@@ -93,7 +93,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "38275723",
         "name": "소문난집식당",
         "address": "강원 횡성군 두원길 1",
-        "memo": "26.01.11 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "산청흑돼지",
@@ -110,7 +110,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1111030372",
         "name": "웰리반점",
         "address": "강원 횡성군 고원로 429",
-        "memo": "22.12.15- 맛집. 차돌짬뽕 강추. 짜장면 추천. 주방장 바뀌고 비추.",
+        "memo": "맛집. 차돌짬뽕 강추. 짜장면 추천. 주방장 바뀌고 비추.",
         "driveMinutes": 3,
         "menus": [
           "코스메뉴 런치B (2인이상)",
@@ -126,7 +126,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "2033685259",
         "name": "장군집",
         "address": "강원 횡성군 두원길 55",
-        "memo": "26.01.11 고깃집.",
+        "memo": "고깃집.",
         "driveMinutes": 3,
         "menus": [
           "삼겹살(200g)",
@@ -142,7 +142,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "37370416",
         "name": "한우 무한리필 라오니아",
         "address": "강원 횡성군 고원로398번길 6",
-        "memo": "",
+        "memo": "가성비 고기집.",
         "driveMinutes": 3,
         "menus": [
           "성인",
@@ -158,7 +158,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1342752867",
         "name": "화이트크로우브루잉컴퍼니",
         "address": "강원 평창군 고원로 65",
-        "memo": "",
+        "memo": "브루어리. 병맥은 고라니 비추. 시즈널 쿨벅, 하이홉 강추.",
         "driveMinutes": 3,
         "menus": [
           "바베큐 샘플러",
@@ -175,7 +175,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15520844",
         "name": "횡성한우본가",
         "address": "강원 횡성군 고원로 391-4",
-        "memo": "24.12.12 소머리국밥 맛집.",
+        "memo": "소머리국밥 맛집.",
         "driveMinutes": 3,
         "menus": [
           "한우본가한상 3인세트",
@@ -191,7 +191,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1418192234",
         "name": "고원곰탕",
         "address": "강원 횡성군 고원로 305",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 4,
         "menus": [
           "솥밥 곰탕",
@@ -206,7 +206,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "2057167607",
         "name": "미소분식당",
         "address": "강원 횡성군 고원로 313",
-        "memo": "26.01.11 분식집. 간이 좀 쎈편.",
+        "memo": "분식집. 간이 좀 쎈편.",
         "driveMinutes": 4,
         "menus": [
           "즉석떡볶이",
@@ -223,7 +223,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15520866",
         "name": "두부사랑",
         "address": "강원 횡성군 고원로 212",
-        "memo": "",
+        "memo": "맛집. 새우젓으로 간을 해 시원깔끔한 두부버섯전골 추천.",
         "driveMinutes": 5,
         "menus": [
           "두부양념구이",
@@ -240,7 +240,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1844224792",
         "name": "들꽃피는언덕",
         "address": "강원 횡성군 고원로 158-27",
-        "memo": "",
+        "memo": "막걸리 맛집. 앞마당 썰매로 유명. 삼겹살 쌈밥 추천.",
         "driveMinutes": 5,
         "menus": [
           "제육볶음 쌈밥정식(2인이상)",
@@ -257,7 +257,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "34157610",
         "name": "웅이네",
         "address": "강원 횡성군 청태산로 89",
-        "memo": "22.09.14 맛집. 옹심이메밀칼국수와 탕수육 추천.",
+        "memo": "맛집. 옹심이메밀칼국수와 탕수육 추천.",
         "driveMinutes": 5,
         "menus": [
           "짜장면 보",
@@ -274,7 +274,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11681904",
         "name": "단골식당",
         "address": "강원 횡성군 둔내로51번길 20",
-        "memo": "22.12.11 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 6,
         "menus": [
           "된장찌개",
@@ -291,7 +291,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1152978533",
         "name": "산더미 숯불구이",
         "address": "강원 횡성군 둔내로47번길 40-19",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 6,
         "menus": [
           "갈비살 1kg",
@@ -308,7 +308,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15758766",
         "name": "언덕위에장독대",
         "address": "강원 횡성군 둔내로 93-12",
-        "memo": "24.11.18 제육쌈밥 맛집.",
+        "memo": "제육쌈밥 맛집.",
         "driveMinutes": 6,
         "menus": [
           "장독대묵은지찜",
@@ -324,7 +324,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15758855",
         "name": "옛날집",
         "address": "강원 횡성군 둔내로51번길 15",
-        "memo": "23.01.02 맛집. 옛날식 돈까스도 맛있음. 뚝도리도 추천.",
+        "memo": "맛집. 옛날식 돈까스도 맛있음. 뚝도리도 추천.",
         "driveMinutes": 6,
         "menus": [
           "순대국밥",
@@ -340,7 +340,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1682297767",
         "name": "인더하우스",
         "address": "강원 횡성군 둔내로 62-2",
-        "memo": "",
+        "memo": "이탈리안피자 맛집.",
         "driveMinutes": 6,
         "menus": [
           "마르게리타피자",
@@ -355,7 +355,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11681858",
         "name": "자매식당",
         "address": "강원 횡성군 둔내로51번길 14",
-        "memo": "",
+        "memo": "맛집. 칼만두국, 장칼국수 추천.",
         "driveMinutes": 6,
         "menus": [
           "찐만두",
@@ -371,7 +371,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15521513",
         "name": "장가네뼈해장국",
         "address": "강원 횡성군 둔내로 64-1",
-        "memo": "",
+        "memo": "맛집. 솥밥에 뼈해장국 최고.",
         "driveMinutes": 6,
         "menus": [],
         "memoRecommendCount": 1,
@@ -381,7 +381,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1326500073",
         "name": "청태산막국수",
         "address": "강원 횡성군 둔내로 68",
-        "memo": "23.11.30 맛집. 만두국, 비빔막국수, 감자전 추천.",
+        "memo": "맛집. 만두국, 비빔막국수, 감자전 추천.",
         "driveMinutes": 6,
         "menus": [
           "비빔막국수",
@@ -398,7 +398,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15521446",
         "name": "태기산막국수",
         "address": "강원 횡성군 둔내로 73",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 6,
         "menus": [
           "물막국수",
@@ -415,7 +415,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15521355",
         "name": "통나무집",
         "address": "강원 횡성군 고원로 173",
-        "memo": "23.11.30 소고기 맛집.",
+        "memo": "소고기 맛집.",
         "driveMinutes": 6,
         "menus": [
           "모둠구이(150g)",
@@ -432,7 +432,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "2012356961",
         "name": "피제이 피자 둔내점",
         "address": "강원 횡성군 둔내로 123",
-        "memo": "26.01.11 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 6,
         "menus": [
           "뉴욕페페로니 m"
@@ -445,7 +445,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "13452760",
         "name": "횡성한우피아",
         "address": "강원 횡성군 고원로 141",
-        "memo": "",
+        "memo": "갈비탕 맛집. 한우구이도 추천.",
         "driveMinutes": 6,
         "menus": [
           "횡성한우꽃등심 1++(150g)",
@@ -462,7 +462,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15519881",
         "name": "둔내막국수",
         "address": "강원 횡성군 둔내로 30",
-        "memo": "23.11.19 맛집. 수육 추천.",
+        "memo": "맛집. 수육 추천.",
         "driveMinutes": 7,
         "menus": [
           "돼지수육",
@@ -479,7 +479,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "605490236",
         "name": "둔내뼈짬뽕",
         "address": "강원 횡성군 경강로둔방10길 14-1",
-        "memo": "",
+        "memo": "3 맛집.",
         "driveMinutes": 7,
         "menus": [
           "뼈짬뽕",
@@ -496,7 +496,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1965855760",
         "name": "둔내숯불닭갈비",
         "address": "강원 횡성군 둔내로48번길 3-7",
-        "memo": "25.08.11 소금구이 닭갈비 맛집.",
+        "memo": "소금구이 닭갈비 맛집.",
         "driveMinutes": 7,
         "menus": [
           "매운숯불닭갈비 (200g)",
@@ -511,7 +511,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "333773268",
         "name": "뚝배기장원",
         "address": "강원 횡성군 둔내로51번길 3-1",
-        "memo": "22.12.10 맛집. 짬뽕밥 추천.",
+        "memo": "맛집. 짬뽕밥 추천.",
         "driveMinutes": 7,
         "menus": [
           "얼큰이국밥",
@@ -528,7 +528,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11701126",
         "name": "문화정육점생고기숯불구이",
         "address": "강원 횡성군 둔방로 9",
-        "memo": "23.11.30 삼겹살 맛집.",
+        "memo": "삼겹살 맛집.",
         "driveMinutes": 7,
         "menus": [
           "항정살1인분200g",
@@ -545,7 +545,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1745712901",
         "name": "미가수제돈까스 둔내점",
         "address": "강원 횡성군 둔내로51번길 8",
-        "memo": "26.01.11 돈가스 맛집. 평이 극과 극인 집.",
+        "memo": "돈가스 맛집. 평이 극과 극인 집.",
         "driveMinutes": 7,
         "menus": [
           "미가정식",
@@ -561,7 +561,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11614939",
         "name": "미락",
         "address": "강원 횡성군 둔방로 8",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "제육볶음",
@@ -578,7 +578,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15521265",
         "name": "산속의곰탕",
         "address": "강원 횡성군 둔내로51번길 9",
-        "memo": "",
+        "memo": "맛집. 곰탕, 곱창전골 추천.",
         "driveMinutes": 7,
         "menus": [
           "곱창전골 大",
@@ -592,7 +592,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11883740",
         "name": "삼정",
         "address": "강원 횡성군 경강로 4536-3",
-        "memo": "",
+        "memo": "한우 맛집. 예약 필수.",
         "driveMinutes": 7,
         "menus": [
           "삼정한우",
@@ -609,7 +609,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1254210452",
         "name": "시장순대",
         "address": "강원 횡성군 둔내로 9-6",
-        "memo": "25.08.11 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "순대국밥",
@@ -626,7 +626,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1042315106",
         "name": "앙버거",
         "address": "강원 횡성군 경강로둔방10길 10-1",
-        "memo": "25.07.07 수제버거집.",
+        "memo": "수제버거집.",
         "driveMinutes": 7,
         "menus": [
           "비프더블불고기버거",
@@ -642,7 +642,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1307087805",
         "name": "어랑",
         "address": "강원 횡성군 둔방로13번길 13",
-        "memo": "24.12.16 맛집. 대구뽈탕, 통태알탕 추천.",
+        "memo": "맛집. 대구뽈탕, 통태알탕 추천.",
         "driveMinutes": 7,
         "menus": [
           "대구지리탕",
@@ -659,7 +659,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1927236705",
         "name": "착한낙지 횡성점",
         "address": "강원 횡성군 둔내로 51",
-        "memo": "22.12.15 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "낙지볶음",
@@ -676,7 +676,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11858251",
         "name": "청솔순대",
         "address": "강원 횡성군 둔내로51번길 10-1",
-        "memo": "23.02.28 늦게까지 하는 순대집.",
+        "memo": "늦게까지 하는 순대집.",
         "driveMinutes": 7,
         "menus": [
           "찹쌀순대",
@@ -693,7 +693,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15519886",
         "name": "청용막국수",
         "address": "강원 횡성군 경강로둔방6길 2",
-        "memo": "24.12.16 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "막국수/비빔막국수",
@@ -707,7 +707,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15758774",
         "name": "태극당베이커리",
         "address": "강원 횡성군 둔내로 60-2",
-        "memo": "22.12.27 빵집.",
+        "memo": "빵집.",
         "driveMinutes": 7,
         "menus": [],
         "memoRecommendCount": 1,
@@ -717,7 +717,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1635113941",
         "name": "해우소",
         "address": "강원 횡성군 둔내로51번길 5",
-        "memo": "24.12.16 맛집. 어탕, 해물순두부 추천.",
+        "memo": "맛집. 어탕, 해물순두부 추천.",
         "driveMinutes": 7,
         "menus": [
           "소고기샤브샤브",
@@ -732,7 +732,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "601645716",
         "name": "화수목",
         "address": "강원 횡성군 ",
-        "memo": "24.11.26 한우 맛집.",
+        "memo": "한우 맛집.",
         "driveMinutes": 8,
         "menus": [
           "화수목선물셋트",
@@ -749,7 +749,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1640188262",
         "name": "그림동화카페앤레포츠",
         "address": "강원 횡성군 검두재길 312-53",
-        "memo": "24.12.12 카페. 대추차, 감자빵 추천.",
+        "memo": "카페. 대추차, 감자빵 추천.",
         "driveMinutes": 10,
         "menus": [
           "atv사륜오토바이는 정상운영 합니다!",
@@ -765,7 +765,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1890737303",
         "name": "산일리오",
         "address": "강원 횡성군 경강로 5339",
-        "memo": "24.12.18 백곰왕 추천 뷰맛집 카페. 가격은 비싼편. 화수목 사장님이 오픈.",
+        "memo": "백곰왕 추천 뷰맛집 카페. 가격은 비싼편. 화수목 사장님이 오픈.",
         "driveMinutes": 15,
         "menus": [
           "펄른 피스타치오",
@@ -784,7 +784,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "33940965",
         "name": "겟빳소",
         "address": "강원 평창군 태기로 137",
-        "memo": "22.09.23 뒷풀이 술집.",
+        "memo": "뒷풀이 술집.",
         "driveMinutes": 3,
         "menus": [
           "석화",
@@ -801,7 +801,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1857893950",
         "name": "광명식당",
         "address": "강원 평창군 태기로 104",
-        "memo": "",
+        "memo": "맛집. 뚝배기불고기, 오삼불고기 추천. 아침식사 가능.",
         "driveMinutes": 3,
         "menus": [
           "토종닭백숙",
@@ -816,7 +816,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1406996231",
         "name": "기분좋은날",
         "address": "강원 평창군 안흥동길 6-10",
-        "memo": "",
+        "memo": "맛집. 막창, 뒷고기, 장어 추천.",
         "driveMinutes": 3,
         "menus": [
           "풍천민물장어 한마리(생물330g)",
@@ -833,7 +833,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1480983376",
         "name": "꼬꼬가 돌아왔닭 옛통",
         "address": "강원 평창군 태기로 104",
-        "memo": "24.01.12 배달 맛집. 골뱅이쫄면 강추. 순살양념, 닭똥집 추천.",
+        "memo": "배달 맛집. 골뱅이쫄면 강추. 순살양념, 닭똥집 추천.",
         "driveMinutes": 3,
         "menus": [
           "옛날통닭",
@@ -849,7 +849,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "37628242",
         "name": "꼬로베이",
         "address": "강원도 평창군 봉평면 무이리 780-4",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "평창 한우 채끝스테이크",
@@ -866,7 +866,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1826560677",
         "name": "꾸움",
         "address": "강원 평창군 태기로 137",
-        "memo": "",
+        "memo": "돼지고기 구이 맛집. 순두부찌게 추천.",
         "driveMinutes": 3,
         "menus": [
           "한우 큐브등심(150g)",
@@ -882,7 +882,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "19392097",
         "name": "덕고식당",
         "address": "강원 평창군 태기로 22",
-        "memo": "",
+        "memo": "오삼불고기 맛집. 닭볶음탕 추천.",
         "driveMinutes": 3,
         "menus": [
           "삼겹살",
@@ -899,7 +899,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1174748447",
         "name": "도야족발 평창점",
         "address": "강원 평창군 태기로 8",
-        "memo": "24.12.30 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "족발小",
@@ -916,7 +916,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "99159174",
         "name": "딥버거",
         "address": "강원도 평창군 봉평면 무이리 705-7",
-        "memo": "",
+        "memo": "수제햄버거 맛집.",
         "driveMinutes": 3,
         "menus": [
           "딥버거(소고기)",
@@ -932,7 +932,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "38640473",
         "name": "머시기쪽갈비생족발구이",
         "address": "강원 평창군 안흥동길 11",
-        "memo": "22.09.23 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "쪽갈비",
@@ -949,7 +949,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1195195046",
         "name": "메밀다방",
         "address": "강원 평창군 경강로 551",
-        "memo": "23.12.10 직접 원두 로스팅 해서 맷돌에 갈아서 내리는 커피 맛집.",
+        "memo": "직접 원두 로스팅 해서 맷돌에 갈아서 내리는 커피 맛집.",
         "driveMinutes": 3,
         "menus": [
           "생딸기크로플",
@@ -966,7 +966,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15551975",
         "name": "묵사발",
         "address": "강원 평창군 태기로 80-29",
-        "memo": "",
+        "memo": "맛집. 토종닭볶음탕, 묵사발 추천.",
         "driveMinutes": 3,
         "menus": [
           "메밀물막국수",
@@ -983,7 +983,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "21278678",
         "name": "미락식당",
         "address": "강원 평창군 태기로 34",
-        "memo": "",
+        "memo": "오삼불고기 맛집. 찹쌀 섞인 밥이라 맛있음. 김치찜 추천",
         "driveMinutes": 3,
         "menus": [
           "낙지볶음",
@@ -999,7 +999,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15783497",
         "name": "병천황토방순대 봉평점",
         "address": "강원 평창군 태기로 28",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "순대국",
@@ -1014,7 +1014,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1167275088",
         "name": "봉평짚불이네",
         "address": "강원 평창군 태기로 52-1",
-        "memo": "24.12.19 삼겹살 맛집. 가격은 비싼 편.",
+        "memo": "삼겹살 맛집. 가격은 비싼 편.",
         "driveMinutes": 3,
         "menus": [
           "짚불오겹살 (200g)",
@@ -1028,7 +1028,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1009744101",
         "name": "브레스 하우스",
         "address": "강원 평창군 태기로 137",
-        "memo": "23.12.29 휘팍 도보권 커피 맛집.",
+        "memo": "휘팍 도보권 커피 맛집.",
         "driveMinutes": 3,
         "menus": [
           "에스프레소"
@@ -1041,7 +1041,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "38623943",
         "name": "뽕뜨락피자 봉평점",
         "address": "강원 평창군 경강로 551",
-        "memo": "",
+        "memo": "배달 피자 맛집. 떡볶이도 추천.",
         "driveMinutes": 3,
         "menus": [
           "치킨in볼케이노",
@@ -1058,7 +1058,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15551915",
         "name": "삼성우렁촌",
         "address": "강원 평창군 태기로 45",
-        "memo": "",
+        "memo": "우렁쌈밥 맛집.",
         "driveMinutes": 3,
         "menus": [
           "우렁쌈밥 정식",
@@ -1075,7 +1075,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "30900007",
         "name": "소한마리국밥",
         "address": "강원 평창군 태기로 26",
-        "memo": "22.11.16 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "소머리국밥",
@@ -1091,7 +1091,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "34266454",
         "name": "솥뚜껑삼겹살도령과낙지낭자",
         "address": "강원 평창군 태기로 104",
-        "memo": "",
+        "memo": "생삼겹살, 김치 구워먹기 좋은 맛집. 김치찜도 추천.",
         "driveMinutes": 3,
         "menus": [
           "무쇠솥뚜껑생삼겹살 1인분 180g",
@@ -1106,7 +1106,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15551799",
         "name": "왕바우호프",
         "address": "강원 평창군 태기로 52-1",
-        "memo": "23.01.06 야식으로 노래부르며 거지부대찌게 먹는 집.",
+        "memo": "야식으로 노래부르며 거지부대찌게 먹는 집.",
         "driveMinutes": 3,
         "menus": [
           "거지부대찌개",
@@ -1122,7 +1122,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1025890119",
         "name": "외솔 송어",
         "address": "강원 평창군 태기로 318",
-        "memo": "24.12.21 배달 송어 맛집.",
+        "memo": "배달 송어 맛집.",
         "driveMinutes": 3,
         "menus": [
           "송어회 中",
@@ -1135,7 +1135,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1996812391",
         "name": "인생맛집",
         "address": "강원 평창군 경강로 551",
-        "memo": "",
+        "memo": "맛집. 간장게장, 닭도리탕, 제육볶음, 생선구이정식 추천.",
         "driveMinutes": 3,
         "menus": [
           "간장게장정식 (1인)",
@@ -1152,7 +1152,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1137694640",
         "name": "일미리금계찜닭 휘닉스평창점",
         "address": "강원 평창군 태기로 93",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "잔치국수",
@@ -1169,7 +1169,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1083274522",
         "name": "장금이감자탕",
         "address": "강원 평창군 태기로 104",
-        "memo": "22.12.11 맛집. 뼈해장국 추천.",
+        "memo": "맛집. 뼈해장국 추천.",
         "driveMinutes": 3,
         "menus": [
           "닭발",
@@ -1185,7 +1185,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1929276646",
         "name": "쟈기포차",
         "address": "강원 평창군 태기로 137",
-        "memo": "24.01.12 휘팍 인근 술집.",
+        "memo": "휘팍 인근 술집.",
         "driveMinutes": 3,
         "menus": [
           "생맥주",
@@ -1201,7 +1201,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1564311945",
         "name": "청년피자 휘닉스파크점",
         "address": "강원 평창군 태기로 335",
-        "memo": "",
+        "memo": "피자집.",
         "driveMinutes": 3,
         "menus": [
           "토핑농장",
@@ -1218,7 +1218,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1383986451",
         "name": "카페 이루아",
         "address": "강원 평창군 태기로 303",
-        "memo": "23.12.29 커피 맛집.",
+        "memo": "커피 맛집.",
         "driveMinutes": 3,
         "menus": [
           "스페셜티",
@@ -1233,7 +1233,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "13580550",
         "name": "태양반점",
         "address": "강원 평창군 태기로 32-1",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "볶음밥",
@@ -1249,7 +1249,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1640561050",
         "name": "태영생막창 봉평점",
         "address": "강원 평창군 태기로 89",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "막창",
@@ -1266,7 +1266,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1909241837",
         "name": "파인리프",
         "address": "강원 평창군 태기로 396-6",
-        "memo": "24.11.19 카페.",
+        "memo": "카페.",
         "driveMinutes": 3,
         "menus": [
           "당근홀케이크",
@@ -1283,7 +1283,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "12812456",
         "name": "평창축협 대관령한우 일송정",
         "address": "강원 평창군 태기로 393",
-        "memo": "",
+        "memo": "맛집. 육회비빔밥, 된장찌개, 계란찜, 불고기 전골 추천.",
         "driveMinutes": 3,
         "menus": [
           "[1++명품한우]대관령한우 살치살",
@@ -1299,7 +1299,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "13283678",
         "name": "평창한우다래",
         "address": "강원 평창군 태기로 120",
-        "memo": "",
+        "memo": "맛집. 진리의 한우특수모둠 한판, 갈비탕, 불고기전골 추천.",
         "driveMinutes": 3,
         "menus": [
           "한우 불고기 전골 130g",
@@ -1315,7 +1315,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1134593291",
         "name": "한양불고기",
         "address": "강원 평창군 태기로 137",
-        "memo": "",
+        "memo": "맛집. 냉동삼겹살 추천.",
         "driveMinutes": 3,
         "menus": [
           "한양불고기",
@@ -1331,7 +1331,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1275529876",
         "name": "호승반점",
         "address": "강원 평창군 태기로 17",
-        "memo": "",
+        "memo": "맛집. 볶음밥, 탕수육, 알짬뽕 추천.",
         "driveMinutes": 3,
         "menus": [
           "짬뽕"
@@ -1344,7 +1344,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15552082",
         "name": "휘팍샤브샤브",
         "address": "강원 평창군 태기로 100",
-        "memo": "24.12.02 맛집. 야채는 좋은데, 고기가 냉동이라 별로.",
+        "memo": "맛집. 야채는 좋은데, 고기가 냉동이라 별로.",
         "driveMinutes": 3,
         "menus": [
           "소고기 샤브 1인(100g)",
@@ -1359,7 +1359,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15551895",
         "name": "흔들바위",
         "address": "강원 평창군 태기로 1",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "흔들바위산채정식",
@@ -1376,7 +1376,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1547611543",
         "name": "Cafe싼타&수제버거",
         "address": "강원 평창군 태기로 431",
-        "memo": "",
+        "memo": "미국식 수제버거 맛집. 사장님이 두산 야구팬.",
         "driveMinutes": 4,
         "menus": [
           "싼타버거170g",
@@ -1393,7 +1393,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "36830638",
         "name": "또래오래 휘닉스파크점",
         "address": "강원 평창군 태기로 443",
-        "memo": "24.12.02 치킨집.",
+        "memo": "치킨집.",
         "driveMinutes": 4,
         "menus": [
           "강서방족발과 쟁반막국수",
@@ -1426,7 +1426,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15782890",
         "name": "김가네손만두국",
         "address": "강원 평창군 태기로 475",
-        "memo": "",
+        "memo": "얼큰한 김치손만두국 맛집.",
         "driveMinutes": 5,
         "menus": [],
         "memoRecommendCount": 1
@@ -1435,7 +1435,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15551407",
         "name": "송원해장국막국수",
         "address": "강원 평창군 태기로 483",
-        "memo": "25.07.16 맛집. 황태해장국 추천.",
+        "memo": "맛집. 황태해장국 추천.",
         "driveMinutes": 5,
         "menus": [
           "감자부침",
@@ -1452,7 +1452,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15550980",
         "name": "평창한우마을 면온점",
         "address": "강원 평창군 진조길 57",
-        "memo": "22.10.02 맛집. 한우장국밥 추천.",
+        "memo": "맛집. 한우장국밥 추천.",
         "driveMinutes": 5,
         "menus": [
           "상차림비(1인,7세이하 무료)",
@@ -1468,7 +1468,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "12955683",
         "name": "메밀꽃향기",
         "address": "강원 평창군 이효석길 33-5",
-        "memo": "",
+        "memo": "맛집. 수제묵 강추.",
         "driveMinutes": 7,
         "menus": [
           "👍타타리 수제메밀묵",
@@ -1485,7 +1485,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "21668396",
         "name": "더덕향",
         "address": "강원 평창군 이효석길 122",
-        "memo": "25.07.01 맛집. 더덕구이정식, 보리굴비 추천.",
+        "memo": "맛집. 더덕구이정식, 보리굴비 추천.",
         "driveMinutes": 8,
         "menus": [
           "더덕제육낙지볶음 솥밥정찬",
@@ -1502,7 +1502,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11479224",
         "name": "메밀꽃필무렵",
         "address": "강원 평창군 이효석길 33-13",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 8,
         "menus": [
           "간장나물메밀국수(비빔)",
@@ -1519,7 +1519,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1645573820",
         "name": "샘물가든",
         "address": "강원 평창군 거품소길 63",
-        "memo": "24.01.12 피자와 멸치국수 맛집.",
+        "memo": "피자와 멸치국수 맛집.",
         "driveMinutes": 8,
         "menus": [
           "국수와커피"
@@ -1532,7 +1532,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11604737",
         "name": "쌍둥이네가벼슬식당",
         "address": "강원 평창군 이효석길 118-8",
-        "memo": "24.12.19 곤드레밥 맛집.",
+        "memo": "곤드레밥 맛집.",
         "driveMinutes": 8,
         "menus": [
           "황기삼계탕",
@@ -1548,7 +1548,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15782116",
         "name": "동이네막국수",
         "address": "강원 평창군 이효석길 144",
-        "memo": "",
+        "memo": "갈비탕 맛집.",
         "driveMinutes": 9,
         "menus": [
           "메밀물막국수",
@@ -1564,7 +1564,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1745026336",
         "name": "두꺼비막국수",
         "address": "강원 평창군 메밀꽃길 36",
-        "memo": "24.01.12 송어회 맛집.",
+        "memo": "송어회 맛집.",
         "driveMinutes": 9,
         "menus": [
           "물막국수",
@@ -1580,7 +1580,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1589889158",
         "name": "물레방아",
         "address": "강원 평창군 이효석길 152",
-        "memo": "24.01.12 솥밥 맛집.",
+        "memo": "솥밥 맛집.",
         "driveMinutes": 9,
         "menus": [
           "솥밥정식",
@@ -1596,7 +1596,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15550550",
         "name": "봉평고향막국수",
         "address": "강원 평창군 이효석길 142",
-        "memo": "23.11.30 막국수 신흥 강자 맛집.",
+        "memo": "막국수 신흥 강자 맛집.",
         "driveMinutes": 9,
         "menus": [
           "봉평전통메밀국수",
@@ -1613,7 +1613,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "13321079",
         "name": "허생원봉평메밀국수",
         "address": "강원 평창군 이효석길 134",
-        "memo": "",
+        "memo": "가성비 샤브샤브 맛집.",
         "driveMinutes": 9,
         "menus": [
           "샤브샤브 메밀칼국수",
@@ -1630,7 +1630,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15550431",
         "name": "금학칼국수",
         "address": "강원 평창군 기풍로 166-1",
-        "memo": "",
+        "memo": "장칼국수 맛집. 두부구이 강추. 콩나물밥 추천.",
         "driveMinutes": 10,
         "menus": [
           "장손칼국수",
@@ -1646,7 +1646,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "34268787",
         "name": "남촌막국수",
         "address": "강원 평창군 동이장터길 5",
-        "memo": "23.12.11 맛집. 들기름막국수,칼국수(2인),메밀부침,메밀전병 추천.",
+        "memo": "맛집. 들기름막국수,칼국수(2인),메밀부침,메밀전병 추천.",
         "driveMinutes": 10,
         "menus": [
           "한돈수육",
@@ -1663,7 +1663,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1228855459",
         "name": "늘봄먹거리",
         "address": "강원 평창군 장촌길 3",
-        "memo": "23.11.19 메밀칼국수 맛집.",
+        "memo": "메밀칼국수 맛집.",
         "driveMinutes": 10,
         "menus": [
           "메밀싹비빔밥",
@@ -1680,7 +1680,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1996760021",
         "name": "밥",
         "address": "강원 평창군 기풍로 170",
-        "memo": "23.11.30 맛집. 오삼불고기, 능이닭곰탕 추천.",
+        "memo": "맛집. 오삼불고기, 능이닭곰탕 추천.",
         "driveMinutes": 10,
         "menus": [
           "냉동삼겹살(국내산)",
@@ -1697,7 +1697,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1843458653",
         "name": "봉평다님길",
         "address": "강원 평창군 봉평북로 1-7",
-        "memo": "25.11.25 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 10,
         "menus": [
           "강원도 메밀간장 숯불닭갈비 300g",
@@ -1714,7 +1714,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11590101",
         "name": "봉평메밀미가연",
         "address": "강원 평창군 기풍로 108",
-        "memo": "23.09.20 맛집. 육회 비빔국수 추천.",
+        "memo": "맛집. 육회 비빔국수 추천.",
         "driveMinutes": 10,
         "menus": [
           "[명품] 메밀싹 육회",
@@ -1731,7 +1731,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "20969904",
         "name": "봉평차이나",
         "address": "강원 평창군 기풍로 136",
-        "memo": "",
+        "memo": "맛집. 갈비 짬뽕, 쟁반짜장(2인) 추천.",
         "driveMinutes": 10,
         "menus": [
           "메밀쟁반짜장",
@@ -1748,7 +1748,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11693416",
         "name": "봉평현대막국수",
         "address": "강원 평창군 동이장터길 17",
-        "memo": "",
+        "memo": "맛집. 비빔막국수에 육수 추가, 수육 추천.",
         "driveMinutes": 10,
         "menus": [
           "메밀물막국수",
@@ -1764,7 +1764,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1807166093",
         "name": "빠삭",
         "address": "강원 평창군 기풍8길 51-3",
-        "memo": "",
+        "memo": "돈까스 맛집. 돈볶이 추천.",
         "driveMinutes": 10,
         "menus": [
           "눈꽃치즈돈가스",
@@ -1777,7 +1777,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1910141235",
         "name": "아리곳간 봉평점",
         "address": "강원 평창군 허생원장터길 11",
-        "memo": "24.01.12 오란다 맛집.",
+        "memo": "오란다 맛집.",
         "driveMinutes": 10,
         "menus": [
           "찹쌀단호박유과",
@@ -1793,7 +1793,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15550469",
         "name": "옥봉식당",
         "address": "강원 평창군 동이장터길 13-1",
-        "memo": "",
+        "memo": "맛집. 순대국밥, 순대모듬 추천.",
         "driveMinutes": 10,
         "menus": [
           "순대곱창전골 중",
@@ -1810,7 +1810,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "36690239",
         "name": "월이 메밀 닭강정",
         "address": "강원 평창군 기풍3길 33",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 10,
         "menus": [
           "메밀닭강정 순살(순한/보통맛 선택)",
@@ -1827,7 +1827,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "32203385",
         "name": "자금성",
         "address": "강원 평창군 기풍3길 31",
-        "memo": "",
+        "memo": "맛집. 쟁반짜장 추천.",
         "driveMinutes": 10,
         "menus": [
           "쟁반짜장",
@@ -1843,7 +1843,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15550886",
         "name": "팔석정송어횟집",
         "address": "강원 평창군 보래령로 16-10",
-        "memo": "24.12.19 송어회 맛집.",
+        "memo": "송어회 맛집.",
         "driveMinutes": 11,
         "menus": [
           "송어회1kg 2~3인",
@@ -1860,7 +1860,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15550936",
         "name": "다키닥팜",
         "address": "강원도 평창군 봉평면 유포리 81",
-        "memo": "",
+        "memo": "숯불 오리고기 구이 맛집. 예약 필수.",
         "driveMinutes": 12,
         "menus": [
           "생오리 숯불구이(500g)",
@@ -1877,7 +1877,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "33165578",
         "name": "복을찾는사람들",
         "address": "강원 평창군 ",
-        "memo": "24.12.30 가성비 백반 맛집.",
+        "memo": "가성비 백반 맛집.",
         "driveMinutes": 13,
         "menus": [
           "낙지볶음",
@@ -1893,7 +1893,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15553003",
         "name": "산밑에집",
         "address": "강원 평창군 평창대로 1828",
-        "memo": "24.10.11 닭볶음탕 맛집. 수제비사리 3개 필수. 미리 전화 주문.",
+        "memo": "닭볶음탕 맛집. 수제비사리 3개 필수. 미리 전화 주문.",
         "driveMinutes": 15,
         "menus": [
           "민물매운탕(소)",
@@ -1909,7 +1909,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1119843359",
         "name": "운두령",
         "address": "강원도 평창군 용평면 노동리 387-12",
-        "memo": "22.09.28 맛집. 매운탕 강추.",
+        "memo": "맛집. 매운탕 강추.",
         "driveMinutes": 30,
         "menus": [
           "송어회4인분",
@@ -1928,7 +1928,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1200722229",
         "name": "모나용평 더 샬레 레스토랑",
         "address": "강원 평창군 올림픽로 715",
-        "memo": "23.01.18 곱창전골 맛집. 가격은 비싼편.",
+        "memo": "곱창전골 맛집. 가격은 비싼편.",
         "driveMinutes": 3,
         "menus": [
           "갈비구이 정식",
@@ -1944,7 +1944,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "19773576",
         "name": "모두랑용평셀프한우마을",
         "address": "강원 평창군 올림픽로 715",
-        "memo": "",
+        "memo": "3 육회비빔밥 맛집.",
         "driveMinutes": 3,
         "menus": [
           "한우국밥",
@@ -1960,7 +1960,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1443639774",
         "name": "큰맘할매순대국 용평리조트점",
         "address": "강원 평창군 올림픽로 715",
-        "memo": "25.01.04 용평 타워프라자 내 먹을만한 맛집.",
+        "memo": "용평 타워프라자 내 먹을만한 맛집.",
         "driveMinutes": 3,
         "menus": [
           "순대국",
@@ -1977,7 +1977,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1454895584",
         "name": "그집앞 대관령본점",
         "address": "강원 평창군 솔봉로 296",
-        "memo": "24.01.14 고깃집.",
+        "memo": "고깃집.",
         "driveMinutes": 4,
         "menus": [
           "꽃갈비살",
@@ -1993,7 +1993,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1630476938",
         "name": "더델리베이커리",
         "address": "강원 평창군 솔봉로 278-9",
-        "memo": "24.09.25 베이커리.",
+        "memo": "베이커리.",
         "driveMinutes": 4,
         "menus": [
           "마늘빵(대)",
@@ -2010,7 +2010,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1561345043",
         "name": "솔봉갈비",
         "address": "강원 평창군 솔봉로 296",
-        "memo": "22.10.12 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 4,
         "menus": [
           "한돈수제생돼지갈비",
@@ -2027,7 +2027,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1521415908",
         "name": "용산골",
         "address": "강원 평창군 솔봉로 296",
-        "memo": "23.01.18 갈매기살 맛집.",
+        "memo": "갈매기살 맛집.",
         "driveMinutes": 4,
         "menus": [
           "한우한마리",
@@ -2044,7 +2044,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1105275222",
         "name": "알앤티",
         "address": "강원 평창군 솔봉로 247",
-        "memo": "24.09.25 햄버거 맛집.",
+        "memo": "햄버거 맛집.",
         "driveMinutes": 5,
         "menus": [
           "RT BURGER 알티버거",
@@ -2060,7 +2060,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1962806729",
         "name": "카페로천",
         "address": "강원 평창군 솔봉로 173-32",
-        "memo": "22.12.25 카페.",
+        "memo": "카페.",
         "driveMinutes": 5,
         "menus": [
           "아메리카노",
@@ -2077,7 +2077,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1102363087",
         "name": "하설채 대관령본점",
         "address": "강원 평창군 수호랑로 967",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 5,
         "menus": [
           "한우 생등심",
@@ -2094,7 +2094,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "13588185",
         "name": "고향이야기",
         "address": "강원 평창군 눈마을길 9",
-        "memo": "",
+        "memo": "맛집. 곤드레돌솥밥, 오삼불고기 추천.",
         "driveMinutes": 6,
         "menus": [
           "한우생등심",
@@ -2110,7 +2110,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1655116736",
         "name": "금강숯불닭갈비 메밀막국수",
         "address": "강원 평창군 강변길 87",
-        "memo": "",
+        "memo": "맛집. 간장닭갈비 추천, 막국수 별로.",
         "driveMinutes": 6,
         "menus": [
           "양념숯불닭갈비",
@@ -2127,7 +2127,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11710936",
         "name": "금천회관",
         "address": "강원 평창군 대관령로 92",
-        "memo": "",
+        "memo": "맛집. 물갈비, 오삼불고기 추천.",
         "driveMinutes": 6,
         "menus": [
           "물갈비",
@@ -2144,7 +2144,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11681872",
         "name": "납작식당",
         "address": "강원 평창군 올림픽로 35",
-        "memo": "",
+        "memo": "오삼불고기 맛집.",
         "driveMinutes": 6,
         "menus": [
           "오삼불고기",
@@ -2161,7 +2161,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11711415",
         "name": "노다지",
         "address": "강원 평창군 올림픽로 153",
-        "memo": "",
+        "memo": "맛집. 횡계에서 가장 음식 깔끔하고 맛있다고 함.",
         "driveMinutes": 6,
         "menus": [
           "곤드레돌솥밥 정식",
@@ -2178,7 +2178,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1332863375",
         "name": "대관령 가마솥 설렁탕",
         "address": "강원 평창군 올림픽로 151",
-        "memo": "24.09.25 설렁탕 맛집.",
+        "memo": "설렁탕 맛집.",
         "driveMinutes": 6,
         "menus": [
           "설렁탕",
@@ -2194,7 +2194,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1621130570",
         "name": "대관령감자빵",
         "address": "강원 평창군 눈마을2길 17",
-        "memo": "",
+        "memo": "빵집.",
         "driveMinutes": 6,
         "menus": [
           "달달감자빵",
@@ -2211,7 +2211,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1038040162",
         "name": "돈우리",
         "address": "강원 평창군 눈마을2길 15",
-        "memo": "",
+        "memo": "점심식사 오삼불고기 맛집.",
         "driveMinutes": 6,
         "menus": [
           "생삼겹살",
@@ -2227,7 +2227,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1202636051",
         "name": "만국식당",
         "address": "강원 평창군 올림픽로 191",
-        "memo": "22.12.27 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 6,
         "menus": [
           "대관령 황태감자찌개",
@@ -2243,7 +2243,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15561620",
         "name": "명미횟집",
         "address": "강원 평창군 해당화3길 33",
-        "memo": "22.10.12 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 6,
         "menus": [
           "자연산 광어,가자미,잡어,돌삼치,전복치,도다리.놀래미,도미",
@@ -2259,7 +2259,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1551055411",
         "name": "방림메밀막국수 대관령",
         "address": "강원 평창군 눈마을길 13",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 6,
         "menus": [
           "메밀물막국수",
@@ -2276,7 +2276,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1590924274",
         "name": "시골밥상",
         "address": "강원 평창군 대관령로 82",
-        "memo": "24.12.01 보쌈 맛집.",
+        "memo": "보쌈 맛집.",
         "driveMinutes": 6,
         "menus": [],
         "memoRecommendCount": 1
@@ -2285,7 +2285,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "19593776",
         "name": "원조맷돌순두부",
         "address": "강원 평창군 송천길 10",
-        "memo": "25.10.23 오삼불고기 맛집. 두부전골 추천.",
+        "memo": "오삼불고기 맛집. 두부전골 추천.",
         "driveMinutes": 6,
         "menus": [
           "두부전골",
@@ -2301,7 +2301,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15560909",
         "name": "원칼국수",
         "address": "강원 평창군 대관령로 74-1",
-        "memo": "24.10.11 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 6,
         "menus": [
           "손칼국수",
@@ -2317,7 +2317,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "13047339",
         "name": "축협대관령한우타운",
         "address": "강원 평창군 올림픽로 38",
-        "memo": "24.01.05 맛집. 된장찌개 강추. 육회 추천.",
+        "memo": "맛집. 된장찌개 강추. 육회 추천.",
         "driveMinutes": 6,
         "menus": [
           "대관령한우 등심구이",
@@ -2334,7 +2334,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1551077525",
         "name": "한촌설렁탕 평창점",
         "address": "강원 평창군 올림픽로 177",
-        "memo": "22.10.12 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 6,
         "menus": [
           "설렁탕",
@@ -2351,7 +2351,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11681873",
         "name": "황태덕장",
         "address": "강원 평창군 눈마을길 21",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 6,
         "menus": [
           "황태해장국(1인)",
@@ -2367,7 +2367,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11691698",
         "name": "황태회관",
         "address": "강원 평창군 눈마을길 19",
-        "memo": "",
+        "memo": "맛집. 아땡가기 전 해장하기 좋음.",
         "driveMinutes": 6,
         "menus": [
           "황태구이정식",
@@ -2383,7 +2383,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "34363040",
         "name": "교동짬뽕",
         "address": "강원 평창군 횡계길 30",
-        "memo": "",
+        "memo": "탕수육 맛집. 순두부짬뽕 추천.",
         "driveMinutes": 7,
         "menus": [
           "교동짬뽕",
@@ -2400,7 +2400,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1078747527",
         "name": "길자네 냉동삼겹살",
         "address": "강원 평창군 대관령로 110",
-        "memo": "25.10.23 냉삼 맛집.",
+        "memo": "냉삼 맛집.",
         "driveMinutes": 7,
         "menus": [
           "한우차돌",
@@ -2414,7 +2414,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "38404118",
         "name": "단골집",
         "address": "강원 평창군 대관령로 91",
-        "memo": "",
+        "memo": "추어탕 맛집. 오삼, 보쌈도 추천.",
         "driveMinutes": 7,
         "menus": [
           "보쌈",
@@ -2431,7 +2431,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1297461672",
         "name": "대관령 가마솥치킨",
         "address": "강원 평창군 대관령로 109",
-        "memo": "24.09.25 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "후라이드치킨",
@@ -2447,7 +2447,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "13010931",
         "name": "대관령 바우골",
         "address": "강원 평창군 눈마을길 39",
-        "memo": "22.10.12 고기 맛집.",
+        "memo": "고기 맛집.",
         "driveMinutes": 7,
         "menus": [
           "생갈비살(한우),1++(9)",
@@ -2464,7 +2464,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15561131",
         "name": "대관령감자옹심이",
         "address": "강원 평창군 대관령면 경강로 5193",
-        "memo": "26.03.16 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "순옹심이",
@@ -2481,7 +2481,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "480090059",
         "name": "대관령돈까스",
         "address": "강원 평창군 횡계2길 8-5",
-        "memo": "22.12.27 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "돈까스",
@@ -2498,7 +2498,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1822726100",
         "name": "대관령돈드럼통",
         "address": "강원 평창군 대관령로 120",
-        "memo": "25.10.23 돼지고기 구이 맛집.",
+        "memo": "돼지고기 구이 맛집.",
         "driveMinutes": 7,
         "menus": [
           "대표신현민",
@@ -2515,7 +2515,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1972566352",
         "name": "대관령뚝배기식당",
         "address": "강원 평창군 횡계2길 7-8",
-        "memo": "25.11.20 오삼불고기 맛집. 영업시간 랜덤, 예약 안됨.",
+        "memo": "오삼불고기 맛집. 영업시간 랜덤, 예약 안됨.",
         "driveMinutes": 7,
         "menus": [
           "병천순대국밥",
@@ -2531,7 +2531,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "32756802",
         "name": "대관령반점",
         "address": "강원 평창군 횡계길 14",
-        "memo": "24.01.05 진태원 대신 갈만한 탕수육 맛집.",
+        "memo": "진태원 대신 갈만한 탕수육 맛집.",
         "driveMinutes": 7,
         "menus": [
           "삼선짜장",
@@ -2548,7 +2548,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "32820768",
         "name": "대관령설렁탕",
         "address": "강원 평창군 대관령마루길 65",
-        "memo": "24.12.01 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "도가니 전골 (대)",
@@ -2564,7 +2564,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11681869",
         "name": "대관령숯불회관",
         "address": "강원 평창군 횡계2길 3",
-        "memo": "",
+        "memo": "맛집. 등심 추천.",
         "driveMinutes": 7,
         "menus": [
           "생등심(130g)",
@@ -2579,7 +2579,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15561501",
         "name": "대관령할매감자탕",
         "address": "강원 평창군 눈마을길 39",
-        "memo": "24.12.01 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "감자탕 소",
@@ -2595,7 +2595,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15560912",
         "name": "대박식당",
         "address": "강원 평창군 대관령로 122",
-        "memo": "",
+        "memo": "고기 맛집. 삼겹살, 소고기, 깍두기 볶음밥 추천.",
         "driveMinutes": 7,
         "menus": [
           "새우살",
@@ -2611,7 +2611,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11785602",
         "name": "도암식당",
         "address": "강원 평창군 대관령로 103",
-        "memo": "",
+        "memo": "맛집. 주물럭전골, 오삼불고기 추천.",
         "driveMinutes": 7,
         "menus": [
           "오삼불고기",
@@ -2628,7 +2628,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1019677083",
         "name": "도야족발 대관령점",
         "address": "강원 평창군 횡계길 24",
-        "memo": "22.10.12 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "도야족발(소)",
@@ -2645,7 +2645,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1540430844",
         "name": "돈꼬창고",
         "address": "강원 평창군 송천길 30",
-        "memo": "24.10.11 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "생삼결살",
@@ -2662,7 +2662,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "38275237",
         "name": "드림야식",
         "address": "강원 평창군 횡계2길 8-1",
-        "memo": "23.02.03 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [],
         "memoRecommendCount": 1,
@@ -2672,7 +2672,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1837897655",
         "name": "루&루 베이커리",
         "address": "강원 평창군 횡계길 3",
-        "memo": "24.10.11 빵집",
+        "memo": "빵집",
         "driveMinutes": 7,
         "menus": [
           "에스프레소",
@@ -2688,7 +2688,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15561698",
         "name": "봉평메밀촌",
         "address": "강원 평창군 꽃밭양지길 4",
-        "memo": "23.11.17 막국수 맛집. 메밀전병, 비빔막국수, 물막국수 추천.",
+        "memo": "막국수 맛집. 메밀전병, 비빔막국수, 물막국수 추천.",
         "driveMinutes": 7,
         "menus": [
           "물막국수",
@@ -2704,7 +2704,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11842225",
         "name": "부산식육식당",
         "address": "강원 평창군 대관령로 108",
-        "memo": "22.10.12 고기 맛집. 기름진 냉동삼겹살 추천.",
+        "memo": "고기 맛집. 기름진 냉동삼겹살 추천.",
         "driveMinutes": 7,
         "menus": [
           "토시살(150g)",
@@ -2720,7 +2720,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "33582738",
         "name": "새벽 대관령본점",
         "address": "강원 평창군 횡계길 10",
-        "memo": "24.01.14 국밥 맛집.",
+        "memo": "국밥 맛집.",
         "driveMinutes": 7,
         "menus": [
           "갈비탕",
@@ -2737,7 +2737,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1471478555",
         "name": "수미카페",
         "address": "강원 평창군 횡계길 24",
-        "memo": "",
+        "memo": "감자빵 맛집.",
         "driveMinutes": 7,
         "menus": [
           "수미감자빵",
@@ -2753,7 +2753,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1600435806",
         "name": "심야식당 대관령본점",
         "address": "강원 평창군 눈마을길 39",
-        "memo": "22.12.27 간단히 사케 즐기는 맛집.",
+        "memo": "간단히 사케 즐기는 맛집.",
         "driveMinutes": 7,
         "menus": [
           "아보카도 명란구이",
@@ -2770,7 +2770,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15560790",
         "name": "아바이왕순대",
         "address": "강원 평창군 횡계2길 7-10",
-        "memo": "22.10.12 빠따킹 추천 맛집.",
+        "memo": "빠따킹 추천 맛집.",
         "driveMinutes": 7,
         "menus": [
           "오삼불고기",
@@ -2787,7 +2787,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11785626",
         "name": "용평회관",
         "address": "강원 평창군 횡계2길 15",
-        "memo": "",
+        "memo": "고급 한우 구이 맛집.",
         "driveMinutes": 7,
         "menus": [
           "등심(150g)",
@@ -2804,7 +2804,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1746916338",
         "name": "장수왕족발보쌈",
         "address": "강원 평창군 횡계길 31",
-        "memo": "22.10.12 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "족발-(대)3~4인분",
@@ -2821,7 +2821,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11845634",
         "name": "진태원",
         "address": "강원도 평창군 대관령면 횡계리 325-18",
-        "memo": "",
+        "memo": "탕수육 맛집.",
         "driveMinutes": 7,
         "menus": [
           "탕수육 중",
@@ -2838,7 +2838,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11845629",
         "name": "춘화분식",
         "address": "강원 평창군 횡계길 36",
-        "memo": "23.01.05 빠따킹 추천 분식집.",
+        "memo": "빠따킹 추천 분식집.",
         "driveMinutes": 7,
         "menus": [],
         "memoRecommendCount": 0,
@@ -2848,7 +2848,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "12989507",
         "name": "큰우리본점",
         "address": "강원 평창군 대관령로 192",
-        "memo": "",
+        "memo": "빠따킹 추천 숯불삼겹 맛집.",
         "driveMinutes": 7,
         "menus": [
           "생등심 (국내산,160g)",
@@ -2864,7 +2864,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1864063379",
         "name": "평창사리포차",
         "address": "강원 평창군 송천3길 17",
-        "memo": "22.10.26 맛집. 감자전 추천.",
+        "memo": "맛집. 감자전 추천.",
         "driveMinutes": 7,
         "menus": [
           "사리포차 감자전",
@@ -2881,7 +2881,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "33948989",
         "name": "평창한우마을 대관령점",
         "address": "강원 평창군 경강로 5195-25",
-        "memo": "24.09.25 맛집. 장국밥 추천.",
+        "memo": "맛집. 장국밥 추천.",
         "driveMinutes": 7,
         "menus": [
           "한우개별구입",
@@ -2897,7 +2897,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "31191194",
         "name": "횡계유명통닭",
         "address": "강원 평창군 횡계길 13",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "후라이드",
@@ -2914,7 +2914,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "20327122",
         "name": "흥일회관",
         "address": "강원 평창군 횡계길 42",
-        "memo": "22.12.27 맛집. 물갈비, 오삼불고기 추천.",
+        "memo": "맛집. 물갈비, 오삼불고기 추천.",
         "driveMinutes": 7,
         "menus": [
           "삼계탕",
@@ -2931,7 +2931,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1198994999",
         "name": "대관령김치찌개집",
         "address": "강원 평창군 경강로 5103",
-        "memo": "",
+        "memo": "맛집. 24시간 영업.",
         "driveMinutes": 8,
         "menus": [
           "김치찌개"
@@ -2944,7 +2944,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11785672",
         "name": "대관령추어탕",
         "address": "강원 평창군 대관령로 202-12",
-        "memo": "24.01.14 추어탕 맛집.",
+        "memo": "추어탕 맛집.",
         "driveMinutes": 8,
         "menus": [
           "능이백숙",
@@ -2961,7 +2961,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15559948",
         "name": "차항가든",
         "address": "강원 평창군 ",
-        "memo": "24.12.01 백숙 맛집. 감자 꼭 추가!",
+        "memo": "백숙 맛집. 감자 꼭 추가!",
         "driveMinutes": 8,
         "menus": [],
         "memoRecommendCount": 1,
@@ -2971,7 +2971,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15559841",
         "name": "퉁자네집",
         "address": "강원 평창군 갈골길 11",
-        "memo": "24.12.18 맛집. 백반정식 추천.",
+        "memo": "맛집. 백반정식 추천.",
         "driveMinutes": 8,
         "menus": [],
         "memoRecommendCount": 1,
@@ -2981,7 +2981,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "32204333",
         "name": "가시머리식당",
         "address": "강원 평창군 대관령마루길 369",
-        "memo": "",
+        "memo": "맛집. 막국수, 만두국, 수육 추천.",
         "driveMinutes": 12,
         "menus": [
           "비빔막국수",
@@ -2997,7 +2997,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "20306247",
         "name": "남경식당",
         "address": "강원 평창군 대관령마루길 347",
-        "memo": "22.10.12 맛집. 막국수, 만두국 추천.",
+        "memo": "맛집. 막국수, 만두국 추천.",
         "driveMinutes": 12,
         "menus": [
           "돼지수육 중",
@@ -3014,7 +3014,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1507233491",
         "name": "스위스램",
         "address": "강원 평창군 대관령마루길 365-12",
-        "memo": "25.09.26 양고기 맛집.",
+        "memo": "양고기 맛집.",
         "driveMinutes": 12,
         "menus": [
           "스위스램 갈비",
@@ -3031,7 +3031,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15560992",
         "name": "이촌쉼터",
         "address": "강원 평창군 꽃밭양지길 405",
-        "memo": "22.12.27 찐 강원도 옹심이 맛집.",
+        "memo": "찐 강원도 옹심이 맛집.",
         "driveMinutes": 12,
         "menus": [
           "옹심이칼국수",
@@ -3048,7 +3048,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "21074624",
         "name": "대관령양떼식당",
         "address": "강원 평창군 대관령마루길 428",
-        "memo": "24.09.25 김치찌게(2인 이상) 맛집.",
+        "memo": "김치찌게(2인 이상) 맛집.",
         "driveMinutes": 13,
         "menus": [
           "한방토종닭",
@@ -3064,7 +3064,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1047214092",
         "name": "유명식당",
         "address": "강원 평창군 대관령면 전나무길 5-5",
-        "memo": "25.08.13 막국수와 수육 맛집.",
+        "memo": "막국수와 수육 맛집.",
         "driveMinutes": 13,
         "menus": [
           "돼지수육 소",
@@ -3081,7 +3081,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11644083",
         "name": "두일막국수",
         "address": "강원 평창군 ",
-        "memo": "22.10.12 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 19,
         "menus": [
           "메밀물막국수",
@@ -3098,7 +3098,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1433610014",
         "name": "자매식당",
         "address": "강원 평창군 진부중앙로 44",
-        "memo": "22.12.10 맛집. 낙지삼겹 추천.",
+        "memo": "맛집. 낙지삼겹 추천.",
         "driveMinutes": 19,
         "menus": [
           "민물매운탕 1인",
@@ -3115,7 +3115,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "31378606",
         "name": "감자네",
         "address": "강원 평창군 방아다리로 360",
-        "memo": "24.09.29 맛집. 닭볶음탕+곤드레밥, 감자전 추천.",
+        "memo": "맛집. 닭볶음탕+곤드레밥, 감자전 추천.",
         "driveMinutes": 20,
         "menus": [
           "뚝배기양념오리 한마리세트 (4인추천)",
@@ -3132,7 +3132,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15293378",
         "name": "금학칼국수",
         "address": "강원 강릉시 대학길 12-6",
-        "memo": "25.11.25 맛집. 콩나물밥 추천.",
+        "memo": "맛집. 콩나물밥 추천.",
         "driveMinutes": 38,
         "menus": [
           "장칼국수",
@@ -3164,7 +3164,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "35487835",
         "name": "교동짬뽕",
         "address": "강원 정선군 고한로 89-2",
-        "memo": "22.09.22 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "짜장",
@@ -3181,7 +3181,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "21052152",
         "name": "구공탄구이",
         "address": "강원 정선군 고한2길 71",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "돼지모듬셋트",
@@ -3198,7 +3198,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1711583756",
         "name": "꼬들구이",
         "address": "강원 정선군 고한4길 34",
-        "memo": "22.10.26 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "특수부위 모둠 한판(500g)",
@@ -3215,7 +3215,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "19497051",
         "name": "낙원회관",
         "address": "강원 정선군 고한6길 18",
-        "memo": "24.02.17- 맛집",
+        "memo": "맛집",
         "driveMinutes": 3,
         "menus": [
           "안창살 130g",
@@ -3231,7 +3231,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15570146",
         "name": "너라면나김밥",
         "address": "강원 정선군 고한5길 18",
-        "memo": "25.02.06 찌개류 맛집. 분식집 아님.",
+        "memo": "찌개류 맛집. 분식집 아님.",
         "driveMinutes": 3,
         "menus": [
           "동태찌개-중",
@@ -3247,7 +3247,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1158228012",
         "name": "다모토리",
         "address": "강원 정선군 고한2길 51",
-        "memo": "25.02.21 전, 막걸리 괜찮은 술집.",
+        "memo": "전, 막걸리 괜찮은 술집.",
         "driveMinutes": 3,
         "menus": [],
         "memoRecommendCount": 1
@@ -3256,7 +3256,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1816163276",
         "name": "대왕참치",
         "address": "강원 정선군 고한6길 12",
-        "memo": "22.09.22 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "솥뚜껑냉삼겹살(200g)1인분",
@@ -3273,7 +3273,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "547754866",
         "name": "마포구이",
         "address": "강원 정선군 고한5길 5-2",
-        "memo": "25.12.04 갈매기살 맛집. 김치가 너무 맛있음.",
+        "memo": "갈매기살 맛집. 김치가 너무 맛있음.",
         "driveMinutes": 3,
         "menus": [
           "생삼겹살",
@@ -3289,7 +3289,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1226502288",
         "name": "맘스터치 정선하이원점",
         "address": "강원 정선군 하이원길 500",
-        "memo": "22.10.12 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "간장마늘치킨",
@@ -3304,7 +3304,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1127910753",
         "name": "미향횟집",
         "address": "강원 정선군 고한4길 58-3",
-        "memo": "24.02.17 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "광어 우럭"
@@ -3317,7 +3317,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "478101336",
         "name": "배고픈사람들모여라",
         "address": "강원 정선군 고한로 24",
-        "memo": "23.01.05 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [],
         "memoRecommendCount": 1,
@@ -3327,7 +3327,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "36144022",
         "name": "부어치킨 강원랜드점",
         "address": "강원 정선군 고한로 155-1",
-        "memo": "22.12.26 하이원 배달 치킨 맛집.",
+        "memo": "하이원 배달 치킨 맛집.",
         "driveMinutes": 3,
         "menus": [
           "크리스피치킨",
@@ -3343,7 +3343,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1993201139",
         "name": "상상초콜릿",
         "address": "강원 정선군 고한4길 38-6",
-        "memo": "26.01.23 초콜릿 맛집.",
+        "memo": "초콜릿 맛집.",
         "driveMinutes": 3,
         "menus": [
           "쿠키답례품",
@@ -3360,7 +3360,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1443384375",
         "name": "엄니밥상",
         "address": "강원 정선군 고한로 34",
-        "memo": "25.02.06 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "이면수구이 백반",
@@ -3377,7 +3377,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1512240432",
         "name": "와와김밥",
         "address": "강원 정선군 고한로 51",
-        "memo": "23.01.05 분식집.",
+        "memo": "분식집.",
         "driveMinutes": 3,
         "menus": [
           "어묵탕",
@@ -3394,7 +3394,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15569706",
         "name": "우리집손두부",
         "address": "강원 정선군 고한로 167",
-        "memo": "23.06.23 맛집. 음식 미리 예약하고 가는 것 추천.",
+        "memo": "맛집. 음식 미리 예약하고 가는 것 추천.",
         "driveMinutes": 3,
         "menus": [
           "두부전골1인",
@@ -3410,7 +3410,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "32862799",
         "name": "원할머니보쌈족발 강원랜드점",
         "address": "강원 정선군 고한로 47",
-        "memo": "24.01.19 맛집. 점심특선 보쌈정식 추천.",
+        "memo": "맛집. 점심특선 보쌈정식 추천.",
         "driveMinutes": 3,
         "menus": [
           "반반 실비&보쌈김치 보쌈 (소)",
@@ -3426,7 +3426,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1483980816",
         "name": "윤식당",
         "address": "강원 정선군 물한리길 46",
-        "memo": "",
+        "memo": "김치찜 맛집. 수육 추천.",
         "driveMinutes": 3,
         "menus": [
           "김치찜+수육",
@@ -3441,7 +3441,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15569788",
         "name": "은호식당",
         "address": "강원 정선군 고한2길 75-1",
-        "memo": "",
+        "memo": "매운 닭도리탕 맛집.",
         "driveMinutes": 3,
         "menus": [
           "매운닭도리탕",
@@ -3457,7 +3457,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "20259750",
         "name": "정선메밀촌막국수",
         "address": "강원 정선군 고한로 79",
-        "memo": "",
+        "memo": "맛집. 현지인들은 안가는 관광 맛집이라 함.",
         "driveMinutes": 3,
         "menus": [
           "메밀촌 막국수",
@@ -3474,7 +3474,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15794005",
         "name": "짜글이네집",
         "address": "강원 정선군 고한로 20",
-        "memo": "24.01.19 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "짜글이",
@@ -3490,7 +3490,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15571221",
         "name": "참숯구이",
         "address": "강원 정선군 고한2길 40",
-        "memo": "",
+        "memo": "돼지고기 맛집.",
         "driveMinutes": 3,
         "menus": [
           "치마살 180g 국내산한우",
@@ -3507,7 +3507,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1107242729",
         "name": "청년다방 강원정선점",
         "address": "강원 정선군 고한로 45",
-        "memo": "25.02.21 분식집.",
+        "memo": "분식집.",
         "driveMinutes": 3,
         "menus": [
           "말차크림차돌떡볶이",
@@ -3523,7 +3523,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "2097318243",
         "name": "카츠 오테",
         "address": "강원 정선군 고한읍 고한로 47",
-        "memo": "26.01.03 돈까스 맛집.",
+        "memo": "돈까스 맛집.",
         "driveMinutes": 3,
         "menus": [
           "모듬 카츠 정식",
@@ -3540,7 +3540,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1376632115",
         "name": "킹콩식당",
         "address": "강원 정선군 고한2길 71",
-        "memo": "24.11.18 고깃집.",
+        "memo": "고깃집.",
         "driveMinutes": 3,
         "menus": [
           "돼지갈비",
@@ -3556,7 +3556,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "31413897",
         "name": "하이원리조트 오리엔",
         "address": "강원 정선군 하이원길 265",
-        "memo": "23.01.05 새우 맛집.",
+        "memo": "새우 맛집.",
         "driveMinutes": 3,
         "menus": [
           "오리엔 황제짬뽕",
@@ -3573,7 +3573,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1748137360",
         "name": "하이원리조트 운암정",
         "address": "강원 정선군 하이원길 265",
-        "memo": "26.01.02- 한옥 카페. 비싼 값에 비해 평범한 맛.",
+        "memo": "한옥 카페. 비싼 값에 비해 평범한 맛.",
         "driveMinutes": 3,
         "menus": [
           "해님꽃",
@@ -3590,7 +3590,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "31058075",
         "name": "하이원한마음실비식당",
         "address": "강원 정선군 고한로 39",
-        "memo": "12.09.22 고깃집. 점심은 국밥종류 추천.",
+        "memo": "고깃집. 점심은 국밥종류 추천.",
         "driveMinutes": 3,
         "menus": [
           "등심",
@@ -3606,7 +3606,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1877484471",
         "name": "한돈돼지고기우정식당",
         "address": "강원 정선군 고한2길 67",
-        "memo": "22.09.22 가성비 맛집. 황제갈비살만 추천.",
+        "memo": "가성비 맛집. 황제갈비살만 추천.",
         "driveMinutes": 3,
         "menus": [
           "황제갈비살",
@@ -3623,7 +3623,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1839261107",
         "name": "함백산실비식당",
         "address": "강원 정선군 고한로 95",
-        "memo": "",
+        "memo": "푸드파이트하기 괜찮은 가성비 식당.",
         "driveMinutes": 3,
         "menus": [
           "프라임",
@@ -3640,7 +3640,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15570298",
         "name": "함흥평양냉면",
         "address": "강원 정선군 고한로 83-1",
-        "memo": "24.02.17 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 3,
         "menus": [
           "함흥비빔냉면(고구마)",
@@ -3657,7 +3657,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "762435277",
         "name": "호떡당 하이원점",
         "address": "강원 정선군 ",
-        "memo": "22.11.07 호떡 맛집.",
+        "memo": "호떡 맛집.",
         "driveMinutes": 3,
         "menus": [
           "꿀호떡"
@@ -3668,7 +3668,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1584621715",
         "name": "홍콩반점",
         "address": "강원 정선군 고한로 81",
-        "memo": "24.02.17 중식당.",
+        "memo": "중식당.",
         "driveMinutes": 3,
         "menus": [
           "탕수육 소",
@@ -3685,7 +3685,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1423169287",
         "name": "화로상회 정선고한점",
         "address": "강원 정선군 고한6길 30-1",
-        "memo": "23.01.13 무한리필 고기집.",
+        "memo": "무한리필 고기집.",
         "driveMinutes": 3,
         "menus": [
           "성인(초등 5학년부터)",
@@ -3701,7 +3701,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1470628198",
         "name": "보문식당",
         "address": "강원 정선군 ",
-        "memo": "25.01.16 국밥 맛집.",
+        "memo": "국밥 맛집.",
         "driveMinutes": 4,
         "menus": [
           "돼지국밥",
@@ -3717,7 +3717,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "35418230",
         "name": "한우리식당 한우하이원",
         "address": "강원 정선군 지장천로 705",
-        "memo": "24.01.20 한우 소고기 맛집. 살치살, 등심 추천.",
+        "memo": "한우 소고기 맛집. 살치살, 등심 추천.",
         "driveMinutes": 4,
         "menus": [
           "한우등심 1++",
@@ -3734,7 +3734,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1192999691",
         "name": "650우화정",
         "address": "강원 정선군 사북3길 29",
-        "memo": "24.02.17 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 5,
         "menus": [
           "안창살",
@@ -3751,7 +3751,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15572817",
         "name": "대성춘",
         "address": "강원 정선군 사북중앙로 57",
-        "memo": "",
+        "memo": "간짜장 맛집. 탕수육 추천.",
         "driveMinutes": 5,
         "menus": [
           "자장면",
@@ -3768,7 +3768,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15573896",
         "name": "돈나라우나라",
         "address": "강원 정선군 사북중앙로 6-2",
-        "memo": "22.10.26 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 5,
         "menus": [
           "등심",
@@ -3784,7 +3784,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1186542482",
         "name": "보스짬뽕",
         "address": "강원 정선군 사북중앙로 22",
-        "memo": "25.02.06 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 5,
         "menus": [
           "보스짬뽕",
@@ -3800,7 +3800,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "19852503",
         "name": "찬이네감자탕",
         "address": "강원 정선군 사북중앙로 35",
-        "memo": "25.01.17 매운 갈비찜 맛집. 볶음밥 추천.",
+        "memo": "매운 갈비찜 맛집. 볶음밥 추천.",
         "driveMinutes": 5,
         "menus": [
           "곤드레 감자탕 소",
@@ -3816,7 +3816,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15570052",
         "name": "함백산돌솥밥",
         "address": "강원 정선군 상갈래길 1",
-        "memo": "",
+        "memo": "맛집. 단맛이 강한편.",
         "driveMinutes": 5,
         "menus": [
           "곤드레돌솥정식",
@@ -3833,7 +3833,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1449784272",
         "name": "효자관",
         "address": "강원 정선군 사북중앙로 71",
-        "memo": "25.12.25 굴짬뽕 맛집.",
+        "memo": "굴짬뽕 맛집.",
         "driveMinutes": 5,
         "menus": [
           "양장피",
@@ -3848,7 +3848,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "31387667",
         "name": "정선송어횟집",
         "address": "강원 정선군 강원남로 6486",
-        "memo": "24.11.19 송어회 맛집.",
+        "memo": "송어회 맛집.",
         "driveMinutes": 6,
         "menus": [
           "송어회(1인분)",
@@ -3865,7 +3865,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15577494",
         "name": "부길한식당",
         "address": "강원 정선군 무릉1로 112",
-        "memo": "",
+        "memo": "곤드레밥 맛집.",
         "driveMinutes": 12,
         "menus": [
           "해물탕-중",
@@ -3881,7 +3881,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "37000063",
         "name": "억새꽃맛집",
         "address": "강원 정선군 무릉1로 115-1",
-        "memo": "23.03.12 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 12,
         "menus": [
           "(1)제육+곤드레 2인세트(된찌포함)",
@@ -3898,7 +3898,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1431333892",
         "name": "동네짬뽕",
         "address": "강원 정선군 강원남로 5280",
-        "memo": "24.02.17 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 14,
         "menus": [],
         "memoRecommendCount": 1
@@ -3909,7 +3909,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1911135363",
         "name": "곤지암 웅골",
         "address": "경기 광주시 독고개길 308-3",
-        "memo": "25.01.06 묵은지 등갈비찜 맛집.",
+        "memo": "묵은지 등갈비찜 맛집.",
         "driveMinutes": 5,
         "menus": [
           "묵은지 등갈비찜(대)",
@@ -3925,7 +3925,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "31159517",
         "name": "궁평식당",
         "address": "경기 광주시 도척윗로 188",
-        "memo": "26.01.23 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "흑돼지 두툼목살",
@@ -3942,7 +3942,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "2067262245",
         "name": "곤지암 화담숲 오감 해물누룽지탕",
         "address": "경기 광주시 경충대로 665",
-        "memo": "26.02.19 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 9,
         "menus": [
           "녹두듬뿍해물누룽지탕<속 편한 보양식>",
@@ -3959,7 +3959,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "18050673",
         "name": "김경자대구왕뽈찜",
         "address": "경기 광주시 곤지암로 90-1",
-        "memo": "25.07.02 푸짐한 아구찜 맛집.",
+        "memo": "푸짐한 아구찜 맛집.",
         "driveMinutes": 9,
         "menus": [
           "해물아구찜(소)",
@@ -3973,7 +3973,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1101390326",
         "name": "대성정육식당",
         "address": "경기 광주시 곤지암로 74-1",
-        "memo": "24.12.08 돼지고기 맛집.",
+        "memo": "돼지고기 맛집.",
         "driveMinutes": 9,
         "menus": [
           "특수부위(600g)",
@@ -3990,7 +3990,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1561283581",
         "name": "동동국수본점",
         "address": "경기 광주시 도척로 20",
-        "memo": "",
+        "memo": "육개장 맛집.",
         "driveMinutes": 9,
         "menus": [
           "육곱탕(소곱창육개장 + 밥)",
@@ -4007,7 +4007,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "35166575",
         "name": "우해정 곤지암점",
         "address": "경기 광주시 곤지암천로 248",
-        "memo": "26.01.22 돼지갈비 맛집.",
+        "memo": "돼지갈비 맛집.",
         "driveMinutes": 9,
         "menus": [
           "한돈 부드러운 돼지갈비",
@@ -4023,7 +4023,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "37067234",
         "name": "청실홍실",
         "address": "경기 광주시 곤지암로 88-21",
-        "memo": "25.07.02 오리전골 맛집. 물 넣고 끓이면 무한 오리전골!",
+        "memo": "오리전골 맛집. 물 넣고 끓이면 무한 오리전골!",
         "driveMinutes": 9,
         "menus": [
           "상황버섯 훈제오리 전골 한마리",
@@ -4039,7 +4039,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11727438",
         "name": "최미자소머리국밥",
         "address": "경기 광주시 도척로 58",
-        "memo": "23.12.29 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 9,
         "menus": [
           "소머리국밥 특",
@@ -4056,7 +4056,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "20128398",
         "name": "한가네사태집",
         "address": "경기 광주시 곤지암로 81",
-        "memo": "25.07.02 칼칼한 고추장찌개 맛집. 반주하기 좋음.",
+        "memo": "칼칼한 고추장찌개 맛집. 반주하기 좋음.",
         "driveMinutes": 9,
         "menus": [],
         "memoRecommendCount": 1,
@@ -4067,7 +4067,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "36379236",
         "name": "쭈꾸미일당백",
         "address": "경기 광주시 곤지암로 39",
-        "memo": "25.07.02 쭈삼 맛집.",
+        "memo": "쭈삼 맛집.",
         "driveMinutes": 10,
         "menus": [
           "쭈꾸미1인분(300g)-사리별도",
@@ -4084,7 +4084,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "18049795",
         "name": "청산칼국수",
         "address": "경기 광주시 곤지암로50번길 11",
-        "memo": "",
+        "memo": "전설급 맛집.",
         "driveMinutes": 10,
         "menus": [
           "칼국수",
@@ -4101,7 +4101,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "18050259",
         "name": "구일가든",
         "address": "경기 광주시 경충대로 540",
-        "memo": "26.01.22 소머리국밥 맛집.",
+        "memo": "소머리국밥 맛집.",
         "driveMinutes": 11,
         "menus": [
           "소머리국밥",
@@ -4118,7 +4118,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1528447043",
         "name": "학성한우",
         "address": "경기 광주시 경충대로498번길 127",
-        "memo": "26.04.12 최고의 한우 맛집.",
+        "memo": "최고의 한우 맛집.",
         "driveMinutes": 12,
         "menus": [
           "특수부위모듬(100g)",
@@ -4135,7 +4135,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1417314194",
         "name": "호운",
         "address": "경기 이천시 황무로 200",
-        "memo": "25.05.14 생선구이 맛집.",
+        "memo": "생선구이 맛집.",
         "driveMinutes": 15,
         "menus": [
           "고•제SET(고등어+제육+솥밥2개)",
@@ -4152,7 +4152,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "13301852",
         "name": "이천돌솥밥",
         "address": "경기 이천시 경충대로 3194",
-        "memo": "25.05.14 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 18,
         "menus": [
           "한정식(돌솥밥)-주중 판매(월~금)",
@@ -4170,7 +4170,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "37620545",
         "name": "설봉산 약수터집",
         "address": "경기 이천시 지산로 156",
-        "memo": "25.12.19 소금닭갈비 맛집.",
+        "memo": "소금닭갈비 맛집.",
         "driveMinutes": 5,
         "menus": [
           "닭소금구이",
@@ -4186,7 +4186,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1060262104",
         "name": "송화육개장",
         "address": "경기 이천시 지산로 162",
-        "memo": "",
+        "memo": "맛집. 김치랑 돌솥밥에 누릉지가 맛있다고 함.",
         "driveMinutes": 5,
         "menus": [],
         "memoRecommendCount": 1,
@@ -4197,7 +4197,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "116218805",
         "name": "아이성",
         "address": "경기 이천시 지산로103번길 66",
-        "memo": "23.11.13 중국집. 사천탕수육 추천.",
+        "memo": "중국집. 사천탕수육 추천.",
         "driveMinutes": 5,
         "menus": [
           "탕수육(대)",
@@ -4214,7 +4214,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "13573708",
         "name": "강민주의들밥 본점",
         "address": "경기 이천시 지산로22번길 17",
-        "memo": "23.01.07 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 6,
         "menus": [
           "들밥",
@@ -4231,7 +4231,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1729534738",
         "name": "할머니찐빵손만두",
         "address": "경기 이천시 마장면 이평리 465",
-        "memo": "25.12.12 만두라면 맛집.",
+        "memo": "만두라면 맛집.",
         "driveMinutes": 6,
         "menus": [],
         "memoRecommendCount": 1
@@ -4240,7 +4240,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "13573706",
         "name": "나고야",
         "address": "경기 이천시 덕평로 713",
-        "memo": "23.11.13 초밥 맛집.",
+        "memo": "초밥 맛집.",
         "driveMinutes": 7,
         "menus": [
           "초밥정식",
@@ -4257,7 +4257,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "38695562",
         "name": "덕평 마산아구 이천쌀밥",
         "address": "경기 이천시 덕평로882번길 2-9",
-        "memo": "23.01.07 한정식 맛집.",
+        "memo": "한정식 맛집.",
         "driveMinutes": 7,
         "menus": [
           "이천쌀밥한정식",
@@ -4274,7 +4274,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "18514716",
         "name": "덕평한우촌",
         "address": "경기 이천시 덕평로748번길 17",
-        "memo": "23.11.13 한우 맛집.",
+        "memo": "한우 맛집.",
         "driveMinutes": 7,
         "menus": [
           "토시살",
@@ -4290,7 +4290,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "13288345",
         "name": "마루&커피잇수다",
         "address": "경기 이천시 지산로 4",
-        "memo": "23.11.13 찌개류 맛집.",
+        "memo": "찌개류 맛집.",
         "driveMinutes": 7,
         "menus": [
           "꽃게탕",
@@ -4307,7 +4307,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1606157558",
         "name": "어야디야",
         "address": "경기 이천시 덕평로 802",
-        "memo": "24.01.09 맛집. 보리굴비정식 추천.",
+        "memo": "맛집. 보리굴비정식 추천.",
         "driveMinutes": 7,
         "menus": [
           "꼬막비빔밥",
@@ -4324,7 +4324,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1858306697",
         "name": "온정추어탕",
         "address": "경기 이천시 덕평로748번길 9",
-        "memo": "25.12.27 추어탕 맛집.",
+        "memo": "추어탕 맛집.",
         "driveMinutes": 7,
         "menus": [
           "추어탕",
@@ -4341,7 +4341,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "229948299",
         "name": "이천 엄지 장수촌",
         "address": "경기 이천시 덕평로 816-40",
-        "memo": "23.01.07 누룽지 닭백숙 맛집.",
+        "memo": "누룽지 닭백숙 맛집.",
         "driveMinutes": 7,
         "menus": [
           "닭갈비 해물찜 (1인)",
@@ -4357,7 +4357,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "34818419",
         "name": "영짬뽕",
         "address": "경기 이천시 덕평로 917",
-        "memo": "23.11.13 맛집. 알짬뽕 추천.",
+        "memo": "맛집. 알짬뽕 추천.",
         "driveMinutes": 8,
         "menus": [
           "알짬뽕",
@@ -4374,7 +4374,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "13577036",
         "name": "유정이네통영굴밥",
         "address": "경기 용인시 처인구 중부대로 2656",
-        "memo": "23.01.07 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 9,
         "menus": [
           "굴정식(2인이상)",
@@ -4391,7 +4391,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1982805189",
         "name": "이태리상회",
         "address": "경기 이천시 마장로 91",
-        "memo": "23.01.07 파스타 맛집.",
+        "memo": "파스타 맛집.",
         "driveMinutes": 9,
         "menus": [],
         "memoRecommendCount": 1
@@ -4400,7 +4400,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1228200860",
         "name": "소소식당",
         "address": "경기 이천시 양촌로6번길 13-6",
-        "memo": "23.11.13 돈까스 맛집.",
+        "memo": "돈까스 맛집.",
         "driveMinutes": 10,
         "menus": [
           "믹스카츠(등심+안심+생선+새우)",
@@ -4419,7 +4419,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1076083759",
         "name": "대풍삼계탕",
         "address": "강원 태백시 먹거리1길 21",
-        "memo": "23.01.05 맛집. 파김치 강추.",
+        "memo": "맛집. 파김치 강추.",
         "driveMinutes": 4,
         "menus": [
           "전복삼계탕",
@@ -4436,7 +4436,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11851760",
         "name": "맛나분식",
         "address": "강원 태백시 번영로 340",
-        "memo": "23.01.05 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 4,
         "menus": [
           "명품쫄면",
@@ -4453,7 +4453,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1008457815",
         "name": "미담",
         "address": "강원 태백시 황지로 213-1",
-        "memo": "23.01.05 쌀국수 맛집.",
+        "memo": "쌀국수 맛집.",
         "driveMinutes": 4,
         "menus": [
           "월남쌈",
@@ -4470,7 +4470,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15438614",
         "name": "승소 닭갈비",
         "address": "강원 태백시 번영로 347",
-        "memo": "24.11.19 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 4,
         "menus": [
           "태백물닭갈비",
@@ -4485,7 +4485,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15439624",
         "name": "태백닭갈비",
         "address": "강원 태백시 중앙남1길 10",
-        "memo": "",
+        "memo": "냉이향 가득 물닭갈비 맛집. 쫄면사리 강추.",
         "driveMinutes": 4,
         "menus": [
           "태백닭갈비1인분",
@@ -4502,7 +4502,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "35228059",
         "name": "보궁실비식당",
         "address": "강원 태백시 문화로2길 18",
-        "memo": "23.01.05 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 5,
         "menus": [
           "한우갈비살",
@@ -4519,7 +4519,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "37060588",
         "name": "태성각",
         "address": "강원 태백시 문화로 14",
-        "memo": "22.08.09 꽃게 짬뽕 맛집.",
+        "memo": "꽃게 짬뽕 맛집.",
         "driveMinutes": 5,
         "menus": [
           "짜장면",
@@ -4536,7 +4536,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11691779",
         "name": "원조태성실비식당",
         "address": "강원 태백시 감천로 4",
-        "memo": "",
+        "memo": "맛집.",
         "driveMinutes": 6,
         "menus": [
           "한우갈비살-180g",
@@ -4553,7 +4553,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "35161492",
         "name": "미친곱창",
         "address": "강원 태백시 서학로 1090",
-        "memo": "22.08.09 볶음밥 먹기 위해 곱창 먹는 맛집.",
+        "memo": "볶음밥 먹기 위해 곱창 먹는 맛집.",
         "driveMinutes": 7,
         "menus": [
           "소막창",
@@ -4587,7 +4587,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11851820",
         "name": "한서방칼국수",
         "address": "강원 태백시 강원남부로 468",
-        "memo": "23.01.05 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 10,
         "menus": [
           "닭칼국수",
@@ -4602,7 +4602,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15461625",
         "name": "강산막국수",
         "address": "강원 태백시 소도길 39-1",
-        "memo": "23.02.13 맛집. 감자전 추천.",
+        "memo": "맛집. 감자전 추천.",
         "driveMinutes": 11,
         "menus": [
           "물막국수",
@@ -4621,7 +4621,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1836677781",
         "name": "뚝배기짬뽕뚫어뽕 굴업본점",
         "address": "강원 홍천군 한서로 2161",
-        "memo": "25.11.12 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 8,
         "menus": [
           "뚝배기짬뽕",
@@ -4638,7 +4638,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "38248441",
         "name": "본토",
         "address": "강원 홍천군 한치골길 700",
-        "memo": "22.10.12 닭갈비 맛집.",
+        "memo": "닭갈비 맛집.",
         "driveMinutes": 8,
         "menus": [
           "숯불닭갈비(국내산)250g",
@@ -4654,7 +4654,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "20601514",
         "name": "설국 장작불설렁탕",
         "address": "강원 홍천군 한서로 2221",
-        "memo": "25.02.06 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 9,
         "menus": [
           "수육",
@@ -4671,7 +4671,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "31047425",
         "name": "탑골가든 본점",
         "address": "강원 춘천시 김유정로 427-12",
-        "memo": "22.10.29 닭갈비 맛집.",
+        "memo": "닭갈비 맛집.",
         "driveMinutes": 21,
         "menus": [
           "숯불 닭갈비 구이!",
@@ -4687,7 +4687,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1414540354",
         "name": "권할머니한우해장국흑염소",
         "address": "강원 춘천시 종자리로 268",
-        "memo": "25.11.03 왕갈비탕 맛집.",
+        "memo": "왕갈비탕 맛집.",
         "driveMinutes": 23,
         "menus": [
           "투뿔한우시래기 해장국",
@@ -4704,7 +4704,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "11590873",
         "name": "양지말화로구이",
         "address": "강원 홍천군 양지말길 17-4",
-        "memo": "26.03.20 고추장 불고기 맛집.",
+        "memo": "고추장 불고기 맛집.",
         "driveMinutes": 24,
         "menus": [
           "고추장 화로구이(200g)",
@@ -4723,7 +4723,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1773457234",
         "name": "강원도위가연탄불고기 용인양지본점",
         "address": "경기 용인시 처인구 남평로 73-4",
-        "memo": "23.01.07 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 6,
         "menus": [
           "고추장 불고기",
@@ -4740,7 +4740,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "20103498",
         "name": "산매동식당",
         "address": "경기 용인시 처인구 남평로231번길 3",
-        "memo": "23.11.13 돌판 오리고기 맛집.",
+        "memo": "돌판 오리고기 맛집.",
         "driveMinutes": 7,
         "menus": [
           "오리 돌구이",
@@ -4757,7 +4757,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "34744320",
         "name": "양지맛집 미역이랑배추랑",
         "address": "경기 용인시 처인구 죽양대로 2293",
-        "memo": "23.11.13 아욱국 맛집.",
+        "memo": "아욱국 맛집.",
         "driveMinutes": 7,
         "menus": [
           "배춧국 백반",
@@ -4774,7 +4774,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1960786782",
         "name": "양지석쇠불고기",
         "address": "경기 용인시 처인구 양지로 116",
-        "memo": "25.08.09 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 8,
         "menus": [
           "석쇠돼지불고기 (2인이상)",
@@ -4793,7 +4793,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1606711630",
         "name": "원더버거",
         "address": "강원 춘천시 북한강변길 688",
-        "memo": "25.07.07 버거 맛집.",
+        "memo": "버거 맛집.",
         "driveMinutes": 3,
         "menus": [],
         "memoRecommendCount": 1
@@ -4802,7 +4802,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "15648096",
         "name": "강촌스넥",
         "address": "강원 춘천시 강촌로 60-1",
-        "memo": "",
+        "memo": "바이커들에게도 유명한 떡볶이, 분식 맛집.",
         "driveMinutes": 9,
         "menus": [
           "떡볶이",
@@ -4818,7 +4818,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "37278349",
         "name": "호원가든",
         "address": "강원 춘천시 북한강변길 344",
-        "memo": "25.02.16 소금구이 닭갈비 맛집.",
+        "memo": "소금구이 닭갈비 맛집.",
         "driveMinutes": 10,
         "menus": [
           "숮불소금구이",
@@ -4835,7 +4835,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "1931911236",
         "name": "최가네진순두부 강촌본점",
         "address": "강원 춘천시 강촌로 327",
-        "memo": "26.03.26 순두부찌개 맛집.",
+        "memo": "순두부찌개 맛집.",
         "driveMinutes": 12,
         "menus": [
           "제육철판볶음",
@@ -4854,7 +4854,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "37769045",
         "name": "호텔 티롤 레스토랑",
         "address": "전북 무주군 만선로 185",
-        "memo": "24.09.26 돈까스 맛집.",
+        "memo": "돈까스 맛집.",
         "driveMinutes": 4,
         "menus": [],
         "memoRecommendCount": 1,
@@ -4864,7 +4864,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "20955845",
         "name": "무주뚝배기",
         "address": "전북 무주군 관동길 7",
-        "memo": "26.01.22 능이버섯전골 맛집",
+        "memo": "능이버섯전골 맛집",
         "driveMinutes": 6,
         "menus": [
           "능이버섯전골(중)",
@@ -4880,7 +4880,7 @@ window.NAVER_RESTAURANTS = {
         "naverId": "20256405",
         "name": "생두부촌 무주점",
         "address": "전북 무주군 설천면 만선로 20",
-        "memo": "24.12.25 맛집.",
+        "memo": "맛집.",
         "driveMinutes": 7,
         "menus": [
           "능이버섯해물 두부전골 2인",

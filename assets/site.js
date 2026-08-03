@@ -128,7 +128,7 @@
                     recommenders: [],
                     detractors: [],
                     score: 0,
-                    note: sourceItem.memo || "네이버 지도 등록 업체",
+                    note: sourceItem.memo || "",
                     hours: sourceItem.hours || ""
                 }, importedFields);
                 openSection.items.push(newItem);
