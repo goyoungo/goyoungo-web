@@ -148,7 +148,6 @@
         setLoading(ui, false);
         updateAccountButton(ui);
         dispatchAuthChange(true);
-        showAdminSetupIdentity(ui);
         returnFocus = null;
 
         if (typeof action === "function") {
@@ -213,40 +212,10 @@
         }
     }
 
-    // Temporary, same-origin account confirmation used only while bootstrapping the admin allowlist.
-    function showAdminSetupIdentity(ui) {
-        if (new URLSearchParams(window.location.search).get("admin-setup") !== "1") return;
-        var panel = document.getElementById("adminSetupIdentity");
-        if (!panel) {
-            panel = document.createElement("output");
-            panel.id = "adminSetupIdentity";
-            panel.style.cssText = "display:block;margin:16px auto;padding:16px;max-width:720px;border:2px solid currentColor;background:#fffaf0;color:#211d18;font-weight:800";
-            ui.mainContent.insertBefore(panel, ui.mainContent.firstChild);
-        }
-        var token = getAccessToken();
-        if (!token) {
-            panel.textContent = "관리자 계정 확인을 위해 먼저 카카오 로그인해 주세요.";
-            return;
-        }
-        panel.textContent = "현재 카카오 계정을 확인하는 중입니다…";
-        fetch("https://kapi.kakao.com/v1/user/access_token_info", {
-            headers: { Authorization: "Bearer " + token }
-        }).then(function (response) {
-            return response.json().then(function (payload) { return { ok: response.ok, payload: payload }; });
-        }).then(function (result) {
-            panel.textContent = result.ok && result.payload && result.payload.id
-                ? "관리자 Kakao ID: " + String(result.payload.id)
-                : "카카오 계정을 확인하지 못했습니다. 다시 로그인해 주세요.";
-        }).catch(function () {
-            panel.textContent = "카카오 계정을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.";
-        });
-    }
-
     function checkStatus(ui) {
         Kakao.Auth.getStatusInfo(function () {
             updateAccountButton(ui);
             dispatchAuthChange(isAuthenticated());
-            showAdminSetupIdentity(ui);
         });
     }
 
