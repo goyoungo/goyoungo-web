@@ -222,6 +222,10 @@
             '<span class="site-sidebar-mark" aria-hidden="true">SNOW</span>',
             '<span><strong>SNOWBRO</strong><small>스키장 정보 공유</small></span>',
             "</a>",
+            '<button class="site-sidebar-collapse" type="button" aria-controls="siteSidebar" aria-expanded="true" aria-label="사이드바 접기" title="사이드바 접기">',
+            '<span class="site-sidebar-collapse-icon" aria-hidden="true">&lsaquo;</span>',
+            '<span class="site-sidebar-collapse-text">사이드바 접기</span>',
+            "</button>",
             '<nav class="site-sidebar-nav" aria-label="SNOWBRO 페이지">',
             '<a class="site-sidebar-link site-sidebar-root' + (currentPageId === "home" ? " is-current" : "") + '" href="/snowbro/"' +
                 (currentPageId === "home" ? ' aria-current="page"' : "") + ">",
@@ -255,6 +259,32 @@
         document.body.appendChild(backdrop);
         document.body.classList.add("has-site-sidebar");
 
+        var collapse = sidebar.querySelector(".site-sidebar-collapse");
+
+        function storedCollapsed() {
+            try {
+                return localStorage.getItem("goyoungo-sidebar-collapsed") === "true";
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function setCollapsed(collapsed) {
+            document.body.classList.toggle("site-sidebar-collapsed", collapsed);
+            collapse.setAttribute("aria-expanded", collapsed ? "false" : "true");
+            collapse.setAttribute("aria-label", collapsed ? "사이드바 펼치기" : "사이드바 접기");
+            collapse.setAttribute("title", collapsed ? "사이드바 펼치기" : "사이드바 접기");
+            collapse.querySelector(".site-sidebar-collapse-icon").textContent = collapsed ? "›" : "‹";
+            collapse.querySelector(".site-sidebar-collapse-text").textContent = collapsed ? "사이드바 펼치기" : "사이드바 접기";
+            try {
+                localStorage.setItem("goyoungo-sidebar-collapsed", collapsed ? "true" : "false");
+            } catch (error) {
+                // Sidebar preference is optional when storage is unavailable.
+            }
+        }
+
+        setCollapsed(storedCollapsed());
+
         function setOpen(open) {
             document.body.classList.toggle("site-nav-open", open);
             toggle.setAttribute("aria-expanded", open ? "true" : "false");
@@ -262,6 +292,9 @@
 
         toggle.addEventListener("click", function () {
             setOpen(!document.body.classList.contains("site-nav-open"));
+        });
+        collapse.addEventListener("click", function () {
+            setCollapsed(!document.body.classList.contains("site-sidebar-collapsed"));
         });
         backdrop.addEventListener("click", function () {
             setOpen(false);

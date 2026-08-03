@@ -1922,6 +1922,145 @@
         });
     }
 
+    function initializeRunNavigation() {
+        if (el("runSidebar")) return;
+
+        var header = document.querySelector(".run-header");
+        var main = el("mainContent");
+        var brand = header && header.querySelector(".run-brand");
+        if (!header || !main || !brand) return;
+
+        var items = [
+            { id: "run-data", index: "01", label: "기록 연결" },
+            { id: "run-target", index: "02", label: "목표 레이스" },
+            { id: "run-readiness", index: "03", label: "현재 러닝 상태" },
+            { id: "run-trends", index: "04", label: "기록 추세" },
+            { id: "run-analysis", index: "05", label: "상세 분석" },
+            { id: "run-next", index: "06", label: "다음 훈련" },
+            { id: "run-calendar", index: "07", label: "훈련 달력" },
+            { id: "run-activity", index: "08", label: "러닝 기록" },
+            { id: "run-privacy", index: "09", label: "데이터 관리" }
+        ];
+
+        var sidebar = document.createElement("aside");
+        sidebar.id = "runSidebar";
+        sidebar.className = "run-sidebar";
+        sidebar.setAttribute("aria-label", "RUNBRO 전체 메뉴");
+        sidebar.innerHTML = [
+            '<div class="run-sidebar-inner">',
+            '<a class="run-sidebar-home" href="#mainContent">',
+            '<span class="run-sidebar-mark" aria-hidden="true">RUN</span>',
+            '<span><strong>RUNBRO</strong><small>러닝 기록 분석</small></span>',
+            '</a>',
+            '<button class="run-sidebar-collapse" type="button" aria-controls="runSidebar" aria-expanded="true" aria-label="사이드바 접기" title="사이드바 접기">',
+            '<span class="run-sidebar-collapse-icon" aria-hidden="true">&lsaquo;</span>',
+            '<span class="run-sidebar-collapse-text">사이드바 접기</span>',
+            '</button>',
+            '<nav class="run-sidebar-nav" aria-label="RUNBRO 페이지 내 이동">',
+            '<p class="run-sidebar-label">TRAINING</p>',
+            items.map(function (item) {
+                return '<a class="run-sidebar-link" href="#' + item.id + '" data-run-section="' + item.id + '">' +
+                    '<span aria-hidden="true">' + item.index + '</span><span>' + item.label + '</span></a>';
+            }).join(""),
+            '<p class="run-sidebar-label">GO.YOUNGO</p>',
+            '<a class="run-sidebar-link" href="/snowbro/"><span aria-hidden="true">S</span><span>SNOWBRO</span></a>',
+            '<a class="run-sidebar-link" href="/"><span aria-hidden="true">GO</span><span>메인으로</span></a>',
+            '</nav>',
+            '</div>'
+        ].join("");
+        document.body.insertBefore(sidebar, main);
+
+        var mobileToggle = document.createElement("button");
+        mobileToggle.type = "button";
+        mobileToggle.className = "run-nav-toggle";
+        mobileToggle.setAttribute("aria-controls", "runSidebar");
+        mobileToggle.setAttribute("aria-expanded", "false");
+        mobileToggle.innerHTML = '<span aria-hidden="true">☰</span><span>메뉴</span>';
+        header.insertBefore(mobileToggle, brand);
+
+        var backdrop = document.createElement("button");
+        backdrop.type = "button";
+        backdrop.className = "run-nav-backdrop";
+        backdrop.setAttribute("aria-label", "메뉴 닫기");
+        document.body.appendChild(backdrop);
+        document.body.classList.add("has-run-sidebar");
+
+        var collapse = sidebar.querySelector(".run-sidebar-collapse");
+        var sectionLinks = Array.prototype.slice.call(sidebar.querySelectorAll("[data-run-section]"));
+
+        function storedCollapsed() {
+            try {
+                return localStorage.getItem("goyoungo-sidebar-collapsed") === "true";
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function setCollapsed(collapsed) {
+            document.body.classList.toggle("run-sidebar-collapsed", collapsed);
+            collapse.setAttribute("aria-expanded", collapsed ? "false" : "true");
+            collapse.setAttribute("aria-label", collapsed ? "사이드바 펼치기" : "사이드바 접기");
+            collapse.setAttribute("title", collapsed ? "사이드바 펼치기" : "사이드바 접기");
+            collapse.querySelector(".run-sidebar-collapse-icon").textContent = collapsed ? "›" : "‹";
+            collapse.querySelector(".run-sidebar-collapse-text").textContent = collapsed ? "사이드바 펼치기" : "사이드바 접기";
+            try {
+                localStorage.setItem("goyoungo-sidebar-collapsed", collapsed ? "true" : "false");
+            } catch (error) {
+                // Sidebar preference is optional when storage is unavailable.
+            }
+        }
+
+        function setOpen(open) {
+            document.body.classList.toggle("run-nav-open", open);
+            mobileToggle.setAttribute("aria-expanded", open ? "true" : "false");
+        }
+
+        function setActive(sectionId) {
+            sectionLinks.forEach(function (link) {
+                var active = link.dataset.runSection === sectionId;
+                link.classList.toggle("is-current", active);
+                if (active) link.setAttribute("aria-current", "location");
+                else link.removeAttribute("aria-current");
+            });
+        }
+
+        setCollapsed(storedCollapsed());
+        setActive(window.location.hash.replace(/^#/, ""));
+
+        mobileToggle.addEventListener("click", function () {
+            setOpen(!document.body.classList.contains("run-nav-open"));
+        });
+        collapse.addEventListener("click", function () {
+            setCollapsed(!document.body.classList.contains("run-sidebar-collapsed"));
+        });
+        backdrop.addEventListener("click", function () { setOpen(false); });
+        sidebar.addEventListener("click", function (event) {
+            var link = event.target.closest("a");
+            if (!link) return;
+            setOpen(false);
+            if (link.dataset.runSection) setActive(link.dataset.runSection);
+        });
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") setOpen(false);
+        });
+        window.addEventListener("hashchange", function () {
+            setActive(window.location.hash.replace(/^#/, ""));
+        });
+
+        if ("IntersectionObserver" in window) {
+            var observer = new IntersectionObserver(function (entries) {
+                var visible = entries.filter(function (entry) { return entry.isIntersecting; });
+                if (!visible.length) return;
+                visible.sort(function (a, b) { return b.intersectionRatio - a.intersectionRatio; });
+                setActive(visible[0].target.id);
+            }, { rootMargin: "-18% 0px -62% 0px", threshold: [0.05, 0.25, 0.5] });
+            items.forEach(function (item) {
+                var section = el(item.id);
+                if (section) observer.observe(section);
+            });
+        }
+    }
+
     function initializeThemeButton() {
         function currentTheme() {
             try {
@@ -1959,6 +2098,7 @@
         tomorrow.setDate(tomorrow.getDate() + 1);
         el("raceDate").min = tomorrow.toISOString().slice(0, 10);
 
+        initializeRunNavigation();
         initializeThemeButton();
         el("raceForm").addEventListener("submit", saveProfile);
         el("garminLoginForm").addEventListener("submit", submitGarminLogin);
