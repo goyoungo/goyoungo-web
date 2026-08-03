@@ -2147,6 +2147,242 @@ body[data-login-open="true"] {
     font-size: 12px;
 }
 
+/* Kakao-verified restaurant administration */
+.venue-name {
+    position: relative;
+}
+
+.venue-name > span {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.venue-card-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.venue-card-heading h3 {
+    margin: 0;
+}
+
+.admin-edit-button {
+    min-height: 32px;
+    padding: 6px 9px;
+    border: 1px solid var(--accent);
+    border-radius: 0;
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.admin-edit-button:hover,
+.admin-edit-button:focus-visible {
+    background: var(--accent);
+    color: #fffaf0;
+}
+
+.admin-modal[hidden],
+.admin-edit-button[hidden] {
+    display: none !important;
+}
+
+.admin-modal {
+    position: fixed;
+    z-index: 1200;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    overflow-y: auto;
+    background: rgba(20, 18, 15, 0.72);
+}
+
+body[data-admin-modal-open="true"] {
+    overflow: hidden;
+}
+
+.admin-dialog {
+    width: min(760px, 100%);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding: clamp(22px, 4vw, 36px);
+    border: 1px solid var(--text);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 14px 14px 0 rgba(20, 18, 15, 0.32);
+}
+
+.admin-dialog-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.admin-dialog-head h2 {
+    margin: 4px 0 0;
+    font-size: clamp(22px, 4vw, 34px);
+}
+
+.admin-dialog-close {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--text);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+    font-size: 28px;
+    line-height: 1;
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.admin-form-grid label {
+    display: grid;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.admin-form-wide {
+    grid-column: 1 / -1;
+}
+
+.admin-form-grid input,
+.admin-form-grid select,
+.admin-form-grid textarea {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid var(--text);
+    border-radius: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+}
+
+.admin-form-grid textarea {
+    min-height: 92px;
+    resize: vertical;
+}
+
+.admin-form-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.admin-form-actions button {
+    cursor: pointer;
+}
+
+.admin-form-actions button:disabled,
+.admin-history button:disabled {
+    cursor: wait;
+    opacity: 0.55;
+}
+
+.admin-form-status {
+    flex: 1 1 180px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.admin-form-status.is-error {
+    color: #b53b26;
+}
+
+.admin-history {
+    margin-top: 26px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+}
+
+.admin-history h3 {
+    margin: 0 0 12px;
+}
+
+.admin-history ol {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.admin-history li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px;
+    border: 1px solid var(--line);
+}
+
+.admin-history li div {
+    display: grid;
+    gap: 3px;
+}
+
+.admin-history li span,
+.admin-history-empty {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.admin-history button {
+    padding: 8px 10px;
+    border: 1px solid var(--text);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+@media (max-width: 640px) {
+    .admin-modal {
+        align-items: end;
+        padding: 0;
+    }
+
+    .admin-dialog {
+        max-height: 92vh;
+        padding: 22px 18px;
+        box-shadow: none;
+    }
+
+    .admin-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-form-wide {
+        grid-column: auto;
+    }
+
+    .admin-history li {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
+
 /* Data, cards and controls */
 .toolbar {
     margin-bottom: 32px;

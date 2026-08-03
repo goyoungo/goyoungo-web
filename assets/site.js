@@ -14,6 +14,12 @@
     var voteAuthEpoch = 0;
     var rankingPage = null;
     var rankingRenderPending = false;
+    var currentRestaurantPage = null;
+    var adminState = { isAdmin: false, checking: false };
+    var adminControlsBound = false;
+    var voteControlsBound = false;
+    var voteAuthBound = false;
+    var rankingControlsBound = false;
     var localPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname) &&
         new URLSearchParams(window.location.search).has("preview");
 
@@ -186,6 +192,99 @@
         if (!/^https?:\/\//i.test(url || "")) return esc(label);
         return '<a class="' + (className || "text-link") + '" href="' + esc(url) +
             '" target="_blank" rel="noopener noreferrer">' + esc(label) + "</a>";
+    }
+
+    function restaurantItems(page) {
+        return page.sections.reduce(function (items, section) {
+            return items.concat(section.items || []);
+        }, []);
+    }
+
+    function findRestaurant(page, venueId) {
+        return restaurantItems(page).find(function (item) { return item.id === venueId; }) || null;
+    }
+
+    function applyRestaurantOverride(page, venueId, fields) {
+        var sourceSection = page.sections.find(function (section) {
+            return (section.items || []).some(function (item) { return item.id === venueId; });
+        });
+        if (!sourceSection) return false;
+        var itemIndex = sourceSection.items.findIndex(function (item) { return item.id === venueId; });
+        var item = sourceSection.items[itemIndex];
+        Object.keys(fields || {}).forEach(function (key) {
+            if (key !== "status") item[key] = fields[key];
+        });
+        if (fields && (fields.status === "open" || fields.status === "closed") && sourceSection.id !== fields.status) {
+            var targetSection = page.sections.find(function (section) { return section.id === fields.status; });
+            if (targetSection) {
+                sourceSection.items.splice(itemIndex, 1);
+                targetSection.items.push(item);
+            }
+        }
+        return true;
+    }
+
+    function updateOperatingCount(page) {
+        if (!page.naverSource) return;
+        var openSection = page.sections.find(function (section) { return section.id === "open"; });
+        if (openSection) page.naverSource.operatingCount = openSection.items.length;
+    }
+
+    async function fetchJson(path, options) {
+        var response = await fetch(voteApiUrl + path, options || {});
+        var payload = {};
+        try { payload = await response.json(); } catch (error) { payload = {}; }
+        if (!response.ok) {
+            var requestError = new Error(payload.message || "요청을 처리하지 못했습니다.");
+            requestError.status = response.status;
+            throw requestError;
+        }
+        return payload;
+    }
+
+    async function loadRestaurantOverrides(page) {
+        if (!voteApiUrl || localPreview) return;
+        var venueIds = restaurantItems(page).map(function (item) { return item.id; });
+        for (var start = 0; start < venueIds.length; start += 50) {
+            var chunk = venueIds.slice(start, start + 50);
+            try {
+                var payload = await fetchJson("/restaurant-overrides?venueIds=" + encodeURIComponent(chunk.join(",")));
+                Object.keys(payload.overrides || {}).forEach(function (venueId) {
+                    applyRestaurantOverride(page, venueId, payload.overrides[venueId].fields || {});
+                });
+            } catch (error) {
+                console.warn("Restaurant overrides unavailable", error && error.message);
+                break;
+            }
+        }
+        updateOperatingCount(page);
+    }
+
+    function setAdminUi(isAdmin) {
+        adminState.isAdmin = Boolean(isAdmin);
+        document.body.toggleAttribute("data-site-admin", adminState.isAdmin);
+        root.querySelectorAll("[data-admin-edit]").forEach(function (button) {
+            button.hidden = !adminState.isAdmin;
+        });
+    }
+
+    async function refreshAdminStatus() {
+        var token = getVoteToken();
+        if (!voteApiUrl || localPreview || !token || adminState.checking) {
+            if (!token) setAdminUi(false);
+            return;
+        }
+        adminState.checking = true;
+        try {
+            var payload = await fetchJson("/admin/me", {
+                headers: { Authorization: "Bearer " + token }
+            });
+            setAdminUi(payload.isAdmin === true);
+        } catch (error) {
+            setAdminUi(false);
+        } finally {
+            adminState.checking = false;
+        }
     }
 
     var restaurantPageIds = [
@@ -982,29 +1081,35 @@
             });
         });
 
-        root.addEventListener("click", function (event) {
-            var button = event.target.closest("[data-vote-choice]");
-            if (!button || !root.contains(button)) return;
-            var control = button.closest("[data-vote-control]");
-            if (!control) return;
-            submitVote(control.dataset.venueId, button.dataset.voteChoice);
-        });
-
-        document.addEventListener("goyoungo:authchange", function (event) {
-            var authenticated = event.detail && event.detail.authenticated;
-            voteAuthEpoch += 1;
-            voteVenueIds.forEach(function (venueId) {
-                var current = voteState.get(venueId) || defaultVoteState();
-                updateVoteState(venueId, {
-                    userChoice: null,
-                    loading: false,
-                    message: localPreview ? "운영 사이트에서 평가할 수 있습니다." : "",
-                    revision: current.revision + 1,
-                    readRequest: 0
-                });
+        if (!voteControlsBound) {
+            voteControlsBound = true;
+            root.addEventListener("click", function (event) {
+                var button = event.target.closest("[data-vote-choice]");
+                if (!button || !root.contains(button)) return;
+                var control = button.closest("[data-vote-control]");
+                if (!control) return;
+                submitVote(control.dataset.venueId, button.dataset.voteChoice);
             });
-            if (authenticated && !localPreview) loadVotes(voteVenueIds);
-        });
+        }
+
+        if (!voteAuthBound) {
+            voteAuthBound = true;
+            document.addEventListener("goyoungo:authchange", function (event) {
+                var authenticated = event.detail && event.detail.authenticated;
+                voteAuthEpoch += 1;
+                voteVenueIds.forEach(function (venueId) {
+                    var current = voteState.get(venueId) || defaultVoteState();
+                    updateVoteState(venueId, {
+                        userChoice: null,
+                        loading: false,
+                        message: localPreview ? "운영 사이트에서 평가할 수 있습니다." : "",
+                        revision: current.revision + 1,
+                        readRequest: 0
+                    });
+                });
+                if (authenticated && !localPreview) loadVotes(voteVenueIds);
+            });
+        }
 
         if (!localPreview) loadVotes(voteVenueIds);
     }
@@ -1041,10 +1146,222 @@
             '<span class="venue-map-action">📍 ' + mapLink + "</span>" + driveTime;
     }
 
+    function adminActionsHtml(item) {
+        return '<button class="admin-edit-button" type="button" data-admin-edit data-venue-id="' +
+            esc(item.id) + '"' + (adminState.isAdmin ? "" : " hidden") + '>관리자 수정</button>';
+    }
+
+    function adminModalHtml() {
+        return [
+            '<div class="admin-modal" data-admin-modal hidden>',
+            '<section class="admin-dialog" role="dialog" aria-modal="true" aria-labelledby="adminDialogTitle">',
+            '<div class="admin-dialog-head"><div><span class="eyebrow">ADMIN</span>',
+            '<h2 id="adminDialogTitle">맛집 정보 수정</h2></div>',
+            '<button class="admin-dialog-close" type="button" data-admin-close aria-label="수정 창 닫기">×</button></div>',
+            '<form data-admin-form><input type="hidden" name="venueId">',
+            '<div class="admin-form-grid">',
+            '<label>업체명<input name="name" required maxlength="100"></label>',
+            '<label>운영 상태<select name="status"><option value="open">운영 중</option><option value="closed">폐업</option></select></label>',
+            '<label class="admin-form-wide">주소<input name="address" maxlength="300"></label>',
+            '<label>연락처<input name="phone" maxlength="40" inputmode="tel"></label>',
+            '<label>차량 이동(분)<input name="driveMinutes" type="number" min="0" max="300"></label>',
+            '<label class="admin-form-wide">영업시간<textarea name="hours" maxlength="500"></textarea></label>',
+            '<label class="admin-form-wide">대표 메뉴 (한 줄에 하나)<textarea name="menus" maxlength="1100"></textarea></label>',
+            '<label class="admin-form-wide">메모<textarea name="note" maxlength="1000"></textarea></label>',
+            '<label class="admin-form-wide">네이버 지도 링크<input name="naverUrl" type="url" maxlength="500" placeholder="https://map.naver.com/..."></label>',
+            '</div>',
+            '<div class="admin-form-actions">',
+            '<button class="action-link primary" type="submit">저장</button>',
+            '<button class="action-link" type="button" data-admin-history>변경 이력</button>',
+            '<span class="admin-form-status" data-admin-status role="status" aria-live="polite"></span>',
+            '</div></form>',
+            '<section class="admin-history" data-admin-history-panel hidden aria-label="변경 이력"></section>',
+            '</section></div>'
+        ].join("");
+    }
+
+    function restaurantSectionId(page, venueId) {
+        var section = page.sections.find(function (candidate) {
+            return (candidate.items || []).some(function (item) { return item.id === venueId; });
+        });
+        return section && section.id === "closed" ? "closed" : "open";
+    }
+
+    function adminModal() {
+        return root.querySelector("[data-admin-modal]");
+    }
+
+    function setAdminStatus(message, error) {
+        var status = root.querySelector("[data-admin-status]");
+        if (!status) return;
+        status.textContent = message || "";
+        status.classList.toggle("is-error", Boolean(error));
+    }
+
+    function closeAdminModal() {
+        var modal = adminModal();
+        if (!modal) return;
+        modal.hidden = true;
+        document.body.removeAttribute("data-admin-modal-open");
+    }
+
+    function openAdminModal(venueId) {
+        if (!adminState.isAdmin || !currentRestaurantPage) return;
+        var item = findRestaurant(currentRestaurantPage, venueId);
+        var modal = adminModal();
+        if (!item || !modal) return;
+        var form = modal.querySelector("[data-admin-form]");
+        form.elements.venueId.value = item.id;
+        form.elements.name.value = item.name || "";
+        form.elements.address.value = item.address || "";
+        form.elements.phone.value = item.phone || "";
+        form.elements.hours.value = item.hours || "";
+        form.elements.menus.value = (item.menus || []).join("\n");
+        form.elements.note.value = item.note || "";
+        form.elements.driveMinutes.value = item.driveMinutes == null ? "" : item.driveMinutes;
+        form.elements.status.value = restaurantSectionId(currentRestaurantPage, item.id);
+        form.elements.naverUrl.value = item.naverUrl || "";
+        modal.querySelector("[data-admin-history-panel]").hidden = true;
+        modal.hidden = false;
+        document.body.dataset.adminModalOpen = "true";
+        setAdminStatus("", false);
+        form.elements.name.focus();
+    }
+
+    function adminRequestOptions(body) {
+        return {
+            method: "PUT",
+            headers: {
+                Authorization: "Bearer " + getVoteToken(),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+        };
+    }
+
+    function handleAdminRequestError(error) {
+        if (error && (error.status === 401 || error.status === 403)) {
+            setAdminUi(false);
+            if (error.status === 401 && window.GoyoungoAuth && typeof window.GoyoungoAuth.reauthenticate === "function") {
+                window.GoyoungoAuth.reauthenticate("관리자 기능을 계속하려면 카카오 로그인을 다시 해주세요.");
+            }
+        }
+        setAdminStatus(error && error.message ? error.message : "요청을 처리하지 못했습니다.", true);
+    }
+
+    async function saveAdminForm(form) {
+        var venueId = form.elements.venueId.value;
+        var submit = form.querySelector('[type="submit"]');
+        var menus = form.elements.menus.value.split(/\n|,/).map(function (menu) {
+            return menu.trim();
+        }).filter(Boolean).slice(0, 10);
+        var fields = {
+            name: form.elements.name.value,
+            address: form.elements.address.value,
+            phone: form.elements.phone.value,
+            hours: form.elements.hours.value,
+            menus: menus,
+            note: form.elements.note.value,
+            driveMinutes: form.elements.driveMinutes.value === "" ? null : Number(form.elements.driveMinutes.value),
+            status: form.elements.status.value,
+            naverUrl: form.elements.naverUrl.value
+        };
+        submit.disabled = true;
+        setAdminStatus("저장 중…", false);
+        try {
+            var payload = await fetchJson("/admin/restaurants/" + encodeURIComponent(venueId), adminRequestOptions({ fields: fields }));
+            applyRestaurantOverride(currentRestaurantPage, venueId, payload.fields || fields);
+            updateOperatingCount(currentRestaurantPage);
+            closeAdminModal();
+            renderRestaurants(currentRestaurantPage);
+            setAdminUi(true);
+        } catch (error) {
+            handleAdminRequestError(error);
+        } finally {
+            submit.disabled = false;
+        }
+    }
+
+    async function loadAdminHistory(venueId) {
+        var panel = root.querySelector("[data-admin-history-panel]");
+        if (!panel) return;
+        panel.hidden = false;
+        panel.innerHTML = '<p class="admin-history-empty">변경 이력을 불러오는 중…</p>';
+        try {
+            var payload = await fetchJson("/admin/restaurants/" + encodeURIComponent(venueId) + "/history", {
+                headers: { Authorization: "Bearer " + getVoteToken() }
+            });
+            var history = payload.history || [];
+            panel.innerHTML = history.length ? '<h3>최근 변경 이력</h3><ol>' + history.map(function (entry) {
+                var changed = Object.keys(entry.after || {}).join(", ") || "초기 상태";
+                return '<li><div><strong>' + esc(new Date(entry.updatedAt).toLocaleString("ko-KR")) +
+                    '</strong><span>' + esc(changed) + '</span></div><button type="button" data-admin-restore="' +
+                    esc(entry.revision) + '">이 변경 전으로 복원</button></li>';
+            }).join("") + "</ol>" : '<p class="admin-history-empty">아직 변경 이력이 없습니다.</p>';
+        } catch (error) {
+            panel.innerHTML = '<p class="admin-history-empty">' + esc(error.message) + "</p>";
+            handleAdminRequestError(error);
+        }
+    }
+
+    async function restoreAdminRevision(venueId, revision, button) {
+        button.disabled = true;
+        setAdminStatus("이전 정보로 복원 중…", false);
+        try {
+            var payload = await fetchJson("/admin/restaurants/" + encodeURIComponent(venueId), adminRequestOptions({
+                restoreRevision: revision
+            }));
+            applyRestaurantOverride(currentRestaurantPage, venueId, payload.fields || {});
+            updateOperatingCount(currentRestaurantPage);
+            closeAdminModal();
+            renderRestaurants(currentRestaurantPage);
+            setAdminUi(true);
+        } catch (error) {
+            button.disabled = false;
+            handleAdminRequestError(error);
+        }
+    }
+
+    function bindAdminControls() {
+        if (adminControlsBound) return;
+        adminControlsBound = true;
+        root.addEventListener("click", function (event) {
+            var edit = event.target.closest("[data-admin-edit]");
+            if (edit) {
+                openAdminModal(edit.dataset.venueId);
+                return;
+            }
+            if (event.target.closest("[data-admin-close]") || event.target.matches("[data-admin-modal]")) {
+                closeAdminModal();
+                return;
+            }
+            var history = event.target.closest("[data-admin-history]");
+            if (history) {
+                var form = root.querySelector("[data-admin-form]");
+                if (form) loadAdminHistory(form.elements.venueId.value);
+                return;
+            }
+            var restore = event.target.closest("[data-admin-restore]");
+            if (restore) {
+                var restoreForm = root.querySelector("[data-admin-form]");
+                if (restoreForm) restoreAdminRevision(restoreForm.elements.venueId.value, restore.dataset.adminRestore, restore);
+            }
+        });
+        root.addEventListener("submit", function (event) {
+            var form = event.target.closest("[data-admin-form]");
+            if (!form) return;
+            event.preventDefault();
+            saveAdminForm(form);
+        });
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && adminModal() && !adminModal().hidden) closeAdminModal();
+        });
+    }
+
     function restaurantRow(item) {
         return [
             '<tr data-venue="' + esc(item.id) + '" data-search="' + esc(restaurantSearchText(item)) + '">',
-            '<td class="venue-name">' + esc(item.name) + "</td>",
+            '<td class="venue-name"><span>' + esc(item.name) + "</span>" + adminActionsHtml(item) + "</td>",
             '<td class="menu-cell">' + tagsHtml(item.menus) + "</td>",
             '<td class="address-cell">' + restaurantAddressHtml(item) + "</td>",
             '<td class="phone-cell">' + phoneLink(item.phone) + "</td>",
@@ -1066,7 +1383,7 @@
         if (item.note) meta += "<p>💬 " + esc(item.note) + "</p>";
         return [
             '<article class="venue-card" data-venue="' + esc(item.id) + '" data-search="' + esc(restaurantSearchText(item)) + '">',
-            "<h3>" + esc(item.name) + "</h3>",
+            '<div class="venue-card-heading"><h3>' + esc(item.name) + "</h3>" + adminActionsHtml(item) + "</div>",
             tagsHtml(item.menus),
             '<div class="venue-meta">' + meta + "</div>",
             '<div class="venue-score">' + scoreHtml(item) + "</div>",
@@ -1123,6 +1440,8 @@
     }
 
     function bindRankingNavigation() {
+        if (rankingControlsBound) return;
+        rankingControlsBound = true;
         root.addEventListener("click", function (event) {
             var button = event.target.closest("[data-ranking-venue]");
             if (!button || !root.contains(button)) return;
@@ -1150,6 +1469,7 @@
     }
 
     function renderRestaurants(page) {
+        currentRestaurantPage = page;
         var total = page.sections.reduce(function (sum, section) {
             return sum + section.items.length;
         }, 0);
@@ -1186,18 +1506,22 @@
             page.sections.map(restaurantSection).join(""),
             '<div class="empty-state" id="searchEmpty" hidden>',
             '<span aria-hidden="true">🔎</span><h2>검색 결과가 없습니다</h2><p>다른 이름이나 메뉴로 검색해 보세요.</p>',
-            "</div>"
+            "</div>",
+            adminModalHtml()
         ].join("") : [
             '<div class="empty-state">',
             '<span aria-hidden="true">🍽️</span>',
             "<h2>등록된 맛집 정보가 아직 없습니다</h2>",
             "<p>원본 데이터에 유효한 항목이 추가되면 이 페이지에도 반영할 수 있습니다.</p>",
-            "</div>"
+            "</div>",
+            adminModalHtml()
         ].join("");
 
         root.innerHTML = '<div class="page-wrap">' + hero(page) + content + footer() + "</div>";
         bindRestaurantSearch(total);
         bindRankingNavigation();
+        bindAdminControls();
+        setAdminUi(adminState.isAdmin);
         if (total) bindVenueVoting(page);
     }
 
@@ -1327,7 +1651,7 @@
         ].join("");
     }
 
-    function renderCurrentPage() {
+    async function renderCurrentPage() {
         var pageId = document.body.dataset.page || "home";
         createSiteNavigation(pageId);
         if (pageId === "home") {
@@ -1339,6 +1663,8 @@
         if (!page) {
             renderUnknown();
         } else if (page.type === "restaurants") {
+            root.innerHTML = '<div class="page-wrap narrow"><div class="empty-state"><span aria-hidden="true">🍽️</span><p>맛집 정보를 불러오는 중입니다.</p></div></div>';
+            await loadRestaurantOverrides(page);
             renderRestaurants(page);
         } else if (page.type === "market") {
             renderMarket(page);
@@ -1352,6 +1678,14 @@
             renderUnknown();
         }
     }
+
+    document.addEventListener("goyoungo:authchange", function (event) {
+        if (event.detail && event.detail.authenticated) {
+            refreshAdminStatus();
+        } else {
+            setAdminUi(false);
+        }
+    });
 
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", renderCurrentPage, { once: true });
