@@ -104,6 +104,8 @@
                     Object.assign(existing, importedFields);
                     existing.menus = mergeMenuTags(sourceMenus, existing.menus);
                     if (!existing.address) existing.address = sourceItem.address;
+                    if (!existing.phone && sourceItem.phone) existing.phone = sourceItem.phone;
+                    if (!existing.hours && sourceItem.hours) existing.hours = sourceItem.hours;
                     if (!existing.note && sourceItem.memo) existing.note = sourceItem.memo;
                     return;
                 }
@@ -113,12 +115,12 @@
                     name: sourceItem.name,
                     menus: sourceMenus,
                     address: sourceItem.address,
-                    phone: "",
+                    phone: sourceItem.phone || "",
                     recommenders: [],
                     detractors: [],
                     score: 0,
                     note: sourceItem.memo || "네이버 지도 등록 업체",
-                    hours: ""
+                    hours: sourceItem.hours || ""
                 }, importedFields);
                 openSection.items.push(newItem);
                 allItems.push(newItem);
@@ -140,6 +142,14 @@
                     imported.source.menuSource.snapshotDate,
                 menuPlacesWithMenus: importedItems.filter(function (item) {
                     return Array.isArray(item.menus) && item.menus.length > 0;
+                }).length,
+                detailSnapshotDate: imported.source.detailSource &&
+                    imported.source.detailSource.snapshotDate,
+                placesWithPhone: importedItems.filter(function (item) {
+                    return Boolean(item.phone);
+                }).length,
+                placesWithHours: importedItems.filter(function (item) {
+                    return Boolean(item.hours);
                 }).length
             };
 

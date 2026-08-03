@@ -12,6 +12,13 @@ window.NAVER_RESTAURANTS = {
       "placesChecked": 303,
       "placesWithMenus": 286,
       "maxMenusPerPlace": 5
+    },
+    "detailSource": {
+      "title": "네이버 플레이스 연락처·영업시간",
+      "snapshotDate": "2026-08-03",
+      "placesChecked": 303,
+      "placesWithPhone": 275,
+      "placesWithHours": 202
     }
   },
   "pages": {
@@ -29,7 +36,9 @@ window.NAVER_RESTAURANTS = {
           "술국",
           "모듬수육"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1319-1019",
+        "hours": "월·화·목·금·토·일 06:00–20:00 · 라스트오더 19:30"
       },
       {
         "naverId": "37084680",
@@ -44,7 +53,9 @@ window.NAVER_RESTAURANTS = {
           "뚝배기 김치찌개",
           "김치찌개"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1406-1382",
+        "hours": "매일 16:00–익일 01:00 · 라스트오더 23:50"
       },
       {
         "naverId": "1315857249",
@@ -74,7 +85,9 @@ window.NAVER_RESTAURANTS = {
           "삼겹살",
           "한방탕 메뉴는 조리시간필요(예약필수)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-344-4455",
+        "hours": "영업시간(휴무일,브레이크타임)및 예약은 전화문의 주세요"
       },
       {
         "naverId": "38275723",
@@ -89,7 +102,9 @@ window.NAVER_RESTAURANTS = {
           "닭백숙 / 오리백숙",
           "삼겹살김치찌개"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-343-8825",
+        "hours": "월 06:00–22:00 · 라스트오더 21:10 / 화 정기휴무 (매주 화요일) / 수–일 06:00–22:00 · 라스트오더 21:10"
       },
       {
         "naverId": "1111030372",
@@ -104,7 +119,8 @@ window.NAVER_RESTAURANTS = {
           "탕수육 小",
           "칠리새우 12ps"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-345-1450"
       },
       {
         "naverId": "2033685259",
@@ -119,7 +135,8 @@ window.NAVER_RESTAURANTS = {
           "부속모듬(500g)",
           "맛보기매운국물닭발"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1378-8349"
       },
       {
         "naverId": "37370416",
@@ -133,7 +150,9 @@ window.NAVER_RESTAURANTS = {
           "미취학행",
           "36개월미만"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1437-9100",
+        "hours": "기본: 매일 11:00–22:00"
       },
       {
         "naverId": "1342752867",
@@ -148,7 +167,9 @@ window.NAVER_RESTAURANTS = {
           "퍼팔로윙스틱",
           "스모크 브리스켓 피자"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1498-1280",
+        "hours": "매장 식사: 월 정기휴무 (매주 월요일) / 화 정기휴무 (매주 화요일) / 수 정기휴무 (매주 수요일) / 목 정기휴무 (매주 목요일) / 금–일 11:00–20:00 · 라스트오더 19:00 | 맥주 테이크아웃: 월–목 09:00–18:00 / 금–일 11:00–20:00"
       },
       {
         "naverId": "15520844",
@@ -163,7 +184,8 @@ window.NAVER_RESTAURANTS = {
           "한우 육회비빔밥",
           "한우 소머리국밥"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1416-5597"
       },
       {
         "naverId": "1418192234",
@@ -176,7 +198,9 @@ window.NAVER_RESTAURANTS = {
           "보쌈수육(중)",
           "보쌈수육(대)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1333-1253",
+        "hours": "기본: 월–금 08:00–20:00 · 라스트오더 19:30 / 토–일 07:00–20:00 · 라스트오더 19:30"
       },
       {
         "naverId": "2057167607",
@@ -191,7 +215,9 @@ window.NAVER_RESTAURANTS = {
           "즉석쫄볶이",
           "해물라면"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-345-6896",
+        "hours": "월–금 10:00–19:00 · 라스트오더 18:30 / 토–일 09:00–19:00 · 라스트오더 18:30"
       },
       {
         "naverId": "15520866",
@@ -206,7 +232,9 @@ window.NAVER_RESTAURANTS = {
           "두부만두전골 1인(2인이상주문)",
           "두부제육찌개1인(2인이상주문)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-344-1577",
+        "hours": "기본: 매일 08:00–19:00 · 라스트오더 18:30"
       },
       {
         "naverId": "1844224792",
@@ -221,7 +249,9 @@ window.NAVER_RESTAURANTS = {
           "[당일불가]1++꽃등심 쌈밥정식",
           "[예약]토종닭볶음탕(3-4인)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-344-1808",
+        "hours": "기본: 월 정기휴무 (매주 월요일) / 화–일 11:00–21:00 · 브레이크 15:00–16:30 · 라스트오더 14:00, 20:00"
       },
       {
         "naverId": "34157610",
@@ -236,7 +266,9 @@ window.NAVER_RESTAURANTS = {
           "탕수육 소",
           "옹심이메밀칼국수"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-345-6420",
+        "hours": "기본: 월 정기휴무 (매주 월요일) / 화–일 11:00–20:00 · 브레이크 15:00–17:00"
       },
       {
         "naverId": "11681904",
@@ -251,7 +283,9 @@ window.NAVER_RESTAURANTS = {
           "청국장찌개",
           "불고기백반"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-342-1033",
+        "hours": "기본: 월 10:00–15:00 / 화 정기휴무 (매주 화요일) / 수–일 10:00–15:00"
       },
       {
         "naverId": "1152978533",
@@ -266,7 +300,9 @@ window.NAVER_RESTAURANTS = {
           "특갈비살 1kg",
           "LA갈비 1.2kg"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-342-7778",
+        "hours": "기본: 월·수·목·금·토·일 11:00–21:00 · 라스트오더 20:30 · 매달 1, 3번째 화요일 정기 휴무"
       },
       {
         "naverId": "15758766",
@@ -281,7 +317,8 @@ window.NAVER_RESTAURANTS = {
           "토종닭한방백숙",
           "토종닭볶음탕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1496-1561"
       },
       {
         "naverId": "15758855",
@@ -296,7 +333,8 @@ window.NAVER_RESTAURANTS = {
           "돈까스",
           "감자탕/매운뼈찜 대"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-342-1028"
       },
       {
         "naverId": "1682297767",
@@ -326,7 +364,8 @@ window.NAVER_RESTAURANTS = {
           "만두국",
           "된장칼국수"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-344-2317"
       },
       {
         "naverId": "15521513",
@@ -335,7 +374,8 @@ window.NAVER_RESTAURANTS = {
         "memo": "24.12.12+ 맛집. 솥밥에 뼈해장국 최고.",
         "driveMinutes": 6,
         "menus": [],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-345-5530"
       },
       {
         "naverId": "1326500073",
@@ -350,7 +390,9 @@ window.NAVER_RESTAURANTS = {
           "떡만두국",
           "감자전"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-345-1042",
+        "hours": "월–금 11:00–19:00 · 브레이크 15:00–17:00 / 토–일 11:00–19:00"
       },
       {
         "naverId": "15521446",
@@ -365,7 +407,9 @@ window.NAVER_RESTAURANTS = {
           "감자전",
           "메밀전병"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-342-1072",
+        "hours": "기본: 매일 10:00–19:30"
       },
       {
         "naverId": "15521355",
@@ -380,7 +424,9 @@ window.NAVER_RESTAURANTS = {
           "안심",
           "갈비살(150g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-344-3232",
+        "hours": "기본: 매일 11:00–21:00 · 라스트오더 20:30"
       },
       {
         "naverId": "2012356961",
@@ -391,7 +437,9 @@ window.NAVER_RESTAURANTS = {
         "menus": [
           "뉴욕페페로니 m"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-342-5955",
+        "hours": "월 12:00–22:00 / 화 정기휴무 (매주 화요일) / 수–토 12:00–22:00 / 일 13:00–22:00"
       },
       {
         "naverId": "13452760",
@@ -406,7 +454,9 @@ window.NAVER_RESTAURANTS = {
           "횡성한우부채살1++(150g)",
           "횡성한우살치살1++(150g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-342-9940",
+        "hours": "기본: 재료 소진시 일찍 마감할수 있습니다."
       },
       {
         "naverId": "15519881",
@@ -421,7 +471,9 @@ window.NAVER_RESTAURANTS = {
           "떡만두국",
           "칼만두국"
         ],
-        "memoRecommendCount": 2
+        "memoRecommendCount": 2,
+        "phone": "033-342-1644",
+        "hours": "기본: 월–수 11:00–19:00 · 라스트오더 16:30 / 목 정기휴무 (매주 목요일) / 금–일 11:00–19:00 · 라스트오더 16:30"
       },
       {
         "naverId": "605490236",
@@ -436,7 +488,9 @@ window.NAVER_RESTAURANTS = {
           "군만두",
           "뼈짬뽕전골(소)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-342-7474",
+        "hours": "기본: 월 정기휴무 (매주 월요일) / 화–일 11:00–20:00 · 브레이크 14:30–17:00 · 라스트오더 19:00"
       },
       {
         "naverId": "1965855760",
@@ -450,7 +504,8 @@ window.NAVER_RESTAURANTS = {
           "순한숯불닭갈비 (200g)",
           "잔치국수"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-343-4988"
       },
       {
         "naverId": "333773268",
@@ -465,7 +520,9 @@ window.NAVER_RESTAURANTS = {
           "소내장탕",
           "돼지머리수육"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-342-1129",
+        "hours": "4월초~11월말: 월–수 09:30–14:00 / 목 정기휴무 (매주 목요일) / 금–일 09:30–14:00 | 12월초~3월말: 월–수 09:30–18:00 / 목 정기휴무 (매주 목요일) / 금–일 09:30–18:00"
       },
       {
         "naverId": "11701126",
@@ -480,7 +537,9 @@ window.NAVER_RESTAURANTS = {
           "생삼겹살1인분200g",
           "목살"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-345-8987",
+        "hours": "기본: 정확한 영업시간은 전화로 확인부탁드립니다."
       },
       {
         "naverId": "1745712901",
@@ -495,7 +554,8 @@ window.NAVER_RESTAURANTS = {
           "미가돈가스",
           "샐러드바"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1351-9012"
       },
       {
         "naverId": "11614939",
@@ -510,7 +570,9 @@ window.NAVER_RESTAURANTS = {
           "오삼두루치기",
           "갈비김치찜"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-345-1477",
+        "hours": "기본: 월–화 11:00–20:00 · 브레이크 15:00–17:00 / 수 정기휴무 (매주 수요일) / 목–일 11:00–20:00 · 브레이크 15:00–17:00"
       },
       {
         "naverId": "15521265",
@@ -539,7 +601,9 @@ window.NAVER_RESTAURANTS = {
           "삼정특선 안심",
           "삼정특선 알등심"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-342-3365",
+        "hours": "기본: 월 11:30–20:30 · 브레이크 15:00–17:30 / 화 정기휴무 (매주 화요일) / 수–일 11:30–20:30 · 브레이크 15:00–17:30"
       },
       {
         "naverId": "1254210452",
@@ -554,7 +618,9 @@ window.NAVER_RESTAURANTS = {
           "순대",
           "토종순대"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-344-0022",
+        "hours": "기본: 월–토 11:30–22:00 · 라스트오더 21:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "1042315106",
@@ -569,7 +635,8 @@ window.NAVER_RESTAURANTS = {
           "스파이시 비프버거",
           "스파이시 치킨버거"
         ],
-        "memoRecommendCount": 2
+        "memoRecommendCount": 2,
+        "phone": "0507-1367-4535"
       },
       {
         "naverId": "1307087805",
@@ -584,7 +651,9 @@ window.NAVER_RESTAURANTS = {
           "대구뽈찜",
           "동태알탕"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 0,
+        "phone": "033-345-8859",
+        "hours": "월 정기휴무 (매주 월요일) / 화–일 11:30–20:30 · 브레이크 14:00–17:00 · 라스트오더 19:30"
       },
       {
         "naverId": "1927236705",
@@ -599,7 +668,9 @@ window.NAVER_RESTAURANTS = {
           "낙지덮밥",
           "낙지갈비탕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1439-9082",
+        "hours": "매일 10:00–21:00"
       },
       {
         "naverId": "11858251",
@@ -614,7 +685,9 @@ window.NAVER_RESTAURANTS = {
           "내장전골 대",
           "순대국밥"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-344-7768",
+        "hours": "기본: 월 08:00–21:00 / 화 정기휴무 (매주 화요일) / 수–일 08:00–21:00"
       },
       {
         "naverId": "15519886",
@@ -627,7 +700,8 @@ window.NAVER_RESTAURANTS = {
           "만둣국",
           "수육"
         ],
-        "memoRecommendCount": 2
+        "memoRecommendCount": 2,
+        "phone": "033-345-5526"
       },
       {
         "naverId": "15758774",
@@ -636,7 +710,8 @@ window.NAVER_RESTAURANTS = {
         "memo": "22.12.27 빵집.",
         "driveMinutes": 7,
         "menus": [],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-342-1454"
       },
       {
         "naverId": "1635113941",
@@ -666,7 +741,9 @@ window.NAVER_RESTAURANTS = {
           "셰프가 숙성한 투뿔갈비살/ 150g",
           "셰프가 숙성한 투뿔업진살/ 150g"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1433-9393",
+        "hours": "기본: 매일 11:00–21:15 · 라스트오더 20:30"
       },
       {
         "naverId": "1640188262",
@@ -681,7 +758,8 @@ window.NAVER_RESTAURANTS = {
           "쌍화차",
           "대추차"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "hours": "기본: 월 10:00–18:00 / 화 정기휴무 (매주 화요일) / 수 정기휴무 (매주 수요일) / 목 정기휴무 (매주 목요일) / 금 정기휴무 (매주 금요일) / 토 정기휴무 (매주 토요일) / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "1890737303",
@@ -696,7 +774,9 @@ window.NAVER_RESTAURANTS = {
           "자몽 1호 케이크",
           "미니 자몽 케이크"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 0,
+        "phone": "0507-1490-1339",
+        "hours": "산일리오 지정구역 외 모든 구역은 금연구역입니다"
       }
     ],
     "phoenix": [
@@ -713,7 +793,9 @@ window.NAVER_RESTAURANTS = {
           "부라타치즈꿀토마토",
           "소고기숙주볶음"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1458-9009",
+        "hours": "월–목 18:00–익일 02:00 / 금–토 18:00–익일 04:00 / 일 18:00–익일 02:00"
       },
       {
         "naverId": "1857893950",
@@ -743,7 +825,9 @@ window.NAVER_RESTAURANTS = {
           "한돈삼겹살(200g)",
           "대패부채살(200g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1389-7717",
+        "hours": "기본: 매일 11:30–23:00"
       },
       {
         "naverId": "1480983376",
@@ -758,7 +842,8 @@ window.NAVER_RESTAURANTS = {
           "순살 후라이드",
           "순살양념/반반"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-334-4880"
       },
       {
         "naverId": "37628242",
@@ -773,7 +858,9 @@ window.NAVER_RESTAURANTS = {
           "명란 리조토",
           "오늘의 브런치"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-332-2649",
+        "hours": "기본: 월 10:30–19:00 · 브레이크 15:30–16:30 · 라스트오더 18:10 / 수 정기휴무 (매주 수요일) / 목–일 10:30–19:00 · 브레이크 15:30–16:30 · 라스트오더 18:10"
       },
       {
         "naverId": "1826560677",
@@ -788,7 +875,8 @@ window.NAVER_RESTAURANTS = {
           "항정살(150g)",
           "가브리살(160g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "hours": "2526시즌은 3/1일까지 영업합니다."
       },
       {
         "naverId": "19392097",
@@ -803,7 +891,9 @@ window.NAVER_RESTAURANTS = {
           "두부버섯전골",
           "김치짜글이"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-334-0670",
+        "hours": "기본: 월–토 11:00–22:00 · 브레이크 13:00–17:00 · 라스트오더 20:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "1174748447",
@@ -818,7 +908,9 @@ window.NAVER_RESTAURANTS = {
           "보쌈 小",
           "보쌈中"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1350-5582",
+        "hours": "기본: 매일 15:30–22:00"
       },
       {
         "naverId": "99159174",
@@ -832,7 +924,9 @@ window.NAVER_RESTAURANTS = {
           "딥버거세트",
           "윙10조각"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-334-5979",
+        "hours": "딥버거평창 임시휴무: 매장 리뉴얼로 10월28일부터 11월20일까지 쉽니다"
       },
       {
         "naverId": "38640473",
@@ -847,7 +941,9 @@ window.NAVER_RESTAURANTS = {
           "생족발매운맛",
           "통갈매기"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-5500",
+        "hours": "월 정기휴무 (매주 월요일) / 화–일 16:30–22:30 · 라스트오더 21:30"
       },
       {
         "naverId": "1195195046",
@@ -862,7 +958,9 @@ window.NAVER_RESTAURANTS = {
           "메밀소금",
           "에소프레소"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1356-4090",
+        "hours": "기본: 월–화 11:00–18:00 / 수 정기휴무 (매주 수요일) / 목–일 11:00–18:00"
       },
       {
         "naverId": "15551975",
@@ -877,7 +975,9 @@ window.NAVER_RESTAURANTS = {
           "메밀묵",
           "감자전"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-333-3637",
+        "hours": "매일 10:00–20:00 · 라스트오더 19:00"
       },
       {
         "naverId": "21278678",
@@ -892,7 +992,8 @@ window.NAVER_RESTAURANTS = {
           "청국장",
           "묵은지김치찜(2인)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1405-2634"
       },
       {
         "naverId": "15783497",
@@ -905,7 +1006,9 @@ window.NAVER_RESTAURANTS = {
           "술국",
           "한방삼계탕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-333-3337",
+        "hours": "브레이크타임X.장보러가거나 갠적 용무로 문닫을때있어요"
       },
       {
         "naverId": "1167275088",
@@ -918,7 +1021,8 @@ window.NAVER_RESTAURANTS = {
           "잔치국수",
           "시골된장찌개(공기밥 미포함)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1495-8928"
       },
       {
         "naverId": "1009744101",
@@ -929,7 +1033,9 @@ window.NAVER_RESTAURANTS = {
         "menus": [
           "에스프레소"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1406-0529",
+        "hours": "기본: 월–금 11:00–22:00 · 라스트오더 21:30 / 토–일 10:00–23:00 · 브레이크 16:00–17:00 · 라스트오더 22:30"
       },
       {
         "naverId": "38623943",
@@ -944,7 +1050,9 @@ window.NAVER_RESTAURANTS = {
           "모모스테키(L)",
           "쓰리고(L)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1360-1455",
+        "hours": "기본: 월 정기휴무 (매주 월요일) / 화–일 10:00–익일 01:20"
       },
       {
         "naverId": "15551915",
@@ -959,7 +1067,9 @@ window.NAVER_RESTAURANTS = {
           "동태찌개",
           "얼큰순두부"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-333-6733",
+        "hours": "기본: 매일 09:00–20:30 · 라스트오더 20:00"
       },
       {
         "naverId": "30900007",
@@ -974,7 +1084,8 @@ window.NAVER_RESTAURANTS = {
           "얼큰 해물순두부",
           "수육"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-7174"
       },
       {
         "naverId": "34266454",
@@ -988,7 +1099,8 @@ window.NAVER_RESTAURANTS = {
           "매운낙지1인분",
           "고추장생삼겹살(1인분)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-334-7184"
       },
       {
         "naverId": "15551799",
@@ -1003,7 +1115,8 @@ window.NAVER_RESTAURANTS = {
           "돼지김치찌개",
           "번데기탕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-333-1770"
       },
       {
         "naverId": "1025890119",
@@ -1015,7 +1128,8 @@ window.NAVER_RESTAURANTS = {
           "송어회 中",
           "송어회 大"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-333-5656"
       },
       {
         "naverId": "1996812391",
@@ -1030,7 +1144,9 @@ window.NAVER_RESTAURANTS = {
           "꽃게탕 (밥별도)",
           "코다리해물조림 (2인) 밥별도"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1342-2365",
+        "hours": "월 정기휴무 (매주 월요일) / 화–목 11:00–20:30 · 브레이크 15:00–17:00 / 금–일 11:00–22:00"
       },
       {
         "naverId": "1137694640",
@@ -1045,7 +1161,9 @@ window.NAVER_RESTAURANTS = {
           "닭볶음탕(소)",
           "마라찜닭(소)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-333-3383",
+        "hours": "비시즌: 월–화 11:00–22:00 · 라스트오더 21:00 / 수 정기휴무 (매주 수요일) / 목–일 11:00–22:00 · 라스트오더 21:00 | 가을시즌: 월–화 11:00–22:00 · 라스트오더 21:00 / 수 정기휴무 (매주 수요일) / 목–일 11:00–22:00 · 라스트오더 21:00"
       },
       {
         "naverId": "1083274522",
@@ -1060,7 +1178,8 @@ window.NAVER_RESTAURANTS = {
           "묵은지 감자탕-중",
           "감자탕 대"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-333-2401"
       },
       {
         "naverId": "1929276646",
@@ -1075,7 +1194,8 @@ window.NAVER_RESTAURANTS = {
           "시메사바",
           "크리미 어니언 치킨 가라아게"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "hours": "26/27 겨울시즌에 만나요"
       },
       {
         "naverId": "1564311945",
@@ -1090,7 +1210,9 @@ window.NAVER_RESTAURANTS = {
           "매드쉬림프",
           "고기밭"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-3332",
+        "hours": "월–화 11:00–22:00 / 수 정기휴무 (매주 수요일) / 목–일 11:00–22:00"
       },
       {
         "naverId": "1383986451",
@@ -1120,7 +1242,8 @@ window.NAVER_RESTAURANTS = {
           "잡채밥",
           "짜장"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-332-8266"
       },
       {
         "naverId": "1640561050",
@@ -1135,7 +1258,9 @@ window.NAVER_RESTAURANTS = {
           "소갈비살1++",
           "삼겹살"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1385-9295",
+        "hours": "마감시간은 유동적입니다"
       },
       {
         "naverId": "1909241837",
@@ -1150,7 +1275,9 @@ window.NAVER_RESTAURANTS = {
           "애플파이",
           "딸기파이"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1427-1213",
+        "hours": "월–금 10:00–20:30 / 토–일 10:00–21:00"
       },
       {
         "naverId": "12812456",
@@ -1165,7 +1292,8 @@ window.NAVER_RESTAURANTS = {
           "[1++프리미엄]대관령한우 등심",
           "[1++명품육질]대관령한우 꽃갈비"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-333-7043"
       },
       {
         "naverId": "13283678",
@@ -1180,7 +1308,8 @@ window.NAVER_RESTAURANTS = {
           "한우 갈비탕",
           "우거지 해장국"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1415-9866"
       },
       {
         "naverId": "1134593291",
@@ -1195,7 +1324,8 @@ window.NAVER_RESTAURANTS = {
           "갈비탕",
           "소고기된장찌개"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-334-5223"
       },
       {
         "naverId": "1275529876",
@@ -1206,7 +1336,9 @@ window.NAVER_RESTAURANTS = {
         "menus": [
           "짬뽕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-334-7077",
+        "hours": "매일 11:00–20:00 · 격주 월요일 정기 휴무"
       },
       {
         "naverId": "15552082",
@@ -1219,7 +1351,9 @@ window.NAVER_RESTAURANTS = {
           "소고기샤브1인(미취학아동) 100g",
           "소고기추가(150g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1316-4948",
+        "hours": "월–화 11:00–22:00 · 브레이크 14:30–16:30 / 수 정기휴무 (매주 수요일) / 목–일 11:00–22:00 · 브레이크 14:30–16:30"
       },
       {
         "naverId": "15551895",
@@ -1234,7 +1368,9 @@ window.NAVER_RESTAURANTS = {
           "10세미만어린이2인1식",
           "솔잎고등어구이(포장가능)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1407-6788",
+        "hours": "영업시간: 월·화·목·금·토·일 10:30–20:00 · 브레이크 15:10–16:30 · 라스트오더 18:50"
       },
       {
         "naverId": "1547611543",
@@ -1249,7 +1385,9 @@ window.NAVER_RESTAURANTS = {
           "에이미세트",
           "270g패티 싼타버거"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1356-3329",
+        "hours": "기본: 월–수 11:00–21:00 · 라스트오더 20:30 / 목 10:00–21:00 · 라스트오더 20:30 / 금–토 11:00–21:00 · 라스트오더 20:30 / 일 10:00–21:00 · 라스트오더 20:30"
       },
       {
         "naverId": "36830638",
@@ -1264,7 +1402,8 @@ window.NAVER_RESTAURANTS = {
           "후라이드치킨",
           "양념치킨"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1401-0420"
       },
       {
         "naverId": "1488696381",
@@ -1279,7 +1418,9 @@ window.NAVER_RESTAURANTS = {
           "돌솥밥",
           "능이오리백숙"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 0,
+        "phone": "033-334-5277",
+        "hours": "월–수 12:00–22:00 · 라스트오더 21:00 / 목 정기휴무 (매주 목요일) / 금–일 12:00–22:00 · 라스트오더 21:00"
       },
       {
         "naverId": "15782890",
@@ -1303,7 +1444,9 @@ window.NAVER_RESTAURANTS = {
           "비빔막국수",
           "묵무침"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-333-4096",
+        "hours": "연중개방(여름 브레이크타임은 15~17시까지 입니다.)"
       },
       {
         "naverId": "15550980",
@@ -1318,7 +1461,8 @@ window.NAVER_RESTAURANTS = {
           "한우 파 불고기",
           "한우 육회 (150g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-333-9777"
       },
       {
         "naverId": "12955683",
@@ -1333,7 +1477,9 @@ window.NAVER_RESTAURANTS = {
           "👍타타리메밀 명태비빔면",
           "👍타타리 수제묵비빔밥"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1409-9909",
+        "hours": "매일 09:30–19:30 · 라스트오더 19:00"
       },
       {
         "naverId": "21668396",
@@ -1348,7 +1494,9 @@ window.NAVER_RESTAURANTS = {
           "더덕 제육 정식",
           "더덕 구이 정식"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1432-6888",
+        "hours": "월–수 09:00–19:00 · 라스트오더 18:30 / 목 정기휴무 (매주 목요일) / 금–일 09:00–19:00 · 라스트오더 18:30"
       },
       {
         "naverId": "11479224",
@@ -1363,7 +1511,9 @@ window.NAVER_RESTAURANTS = {
           "메밀비빔국수",
           "수제메밀묵"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1322-4594",
+        "hours": "매일 09:20–19:50 · 라스트오더 19:10"
       },
       {
         "naverId": "1645573820",
@@ -1374,7 +1524,9 @@ window.NAVER_RESTAURANTS = {
         "menus": [
           "국수와커피"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1455-5603",
+        "hours": "기본: 월–토 10:00–22:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "11604737",
@@ -1389,7 +1541,8 @@ window.NAVER_RESTAURANTS = {
           "능이백숙",
           "국내산 곤드레밥"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1414-0609"
       },
       {
         "naverId": "15782116",
@@ -1404,7 +1557,8 @@ window.NAVER_RESTAURANTS = {
           "메밀전병",
           "메밀부침"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-1210"
       },
       {
         "naverId": "1745026336",
@@ -1419,7 +1573,8 @@ window.NAVER_RESTAURANTS = {
           "메밀전병",
           "메밀부침"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-0080"
       },
       {
         "naverId": "1589889158",
@@ -1433,7 +1588,9 @@ window.NAVER_RESTAURANTS = {
           "갈치조림",
           "제육볶음"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1382-0645",
+        "hours": "매일 10:30–20:00 · 브레이크 14:50–16:30 · 라스트오더 19:00"
       },
       {
         "naverId": "15550550",
@@ -1448,7 +1605,9 @@ window.NAVER_RESTAURANTS = {
           "막국수 (물/비빔)",
           "메밀싹 꼬막비빔밥"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-1211",
+        "hours": "매일 10:00–19:00 · 매달 2, 4번째 수요일 정기 휴무"
       },
       {
         "naverId": "13321079",
@@ -1463,7 +1622,9 @@ window.NAVER_RESTAURANTS = {
           "메밀왕만두(4개)",
           "감자만두(8개)"
         ],
-        "memoRecommendCount": 2
+        "memoRecommendCount": 2,
+        "phone": "033-335-4480",
+        "hours": "기본: 월–수 10:30–21:00 · 브레이크 15:00–16:00 · 라스트오더 20:00 / 목 정기휴무 (매주 목요일) / 금–일 10:30–21:00 · 브레이크 15:00–16:00 · 라스트오더 20:00"
       },
       {
         "naverId": "15550431",
@@ -1478,7 +1639,8 @@ window.NAVER_RESTAURANTS = {
           "수제검은콩국수",
           "두부구이"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-1777"
       },
       {
         "naverId": "34268787",
@@ -1493,7 +1655,9 @@ window.NAVER_RESTAURANTS = {
           "메밀황태비빔막국수",
           "들기름막국수"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 0,
+        "phone": "033-335-0227",
+        "hours": "기본: 매일 10:00–19:30"
       },
       {
         "naverId": "1228855459",
@@ -1508,7 +1672,9 @@ window.NAVER_RESTAURANTS = {
           "칼만두 (계절)",
           "메밀묵무침"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-2525",
+        "hours": "기본: 월 11:00–20:00 / 화 정기휴무 (매주 화요일) / 수–일 11:00–20:00"
       },
       {
         "naverId": "1996760021",
@@ -1523,7 +1689,9 @@ window.NAVER_RESTAURANTS = {
           "고추장찌개",
           "청국장"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1464-0342",
+        "hours": "월·수·목·금 09:00–21:00 · 브레이크 15:00–17:00 · 라스트오더 20:00 / 토–일 08:00–21:00 · 라스트오더 20:00"
       },
       {
         "naverId": "1843458653",
@@ -1538,7 +1706,9 @@ window.NAVER_RESTAURANTS = {
           "고추장삼겹살 200g",
           "강원도 시골 된장찌개"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1489-1681",
+        "hours": "화–일 11:00–20:30 · 브레이크 15:00–17:00 · 라스트오더 19:30"
       },
       {
         "naverId": "11590101",
@@ -1553,7 +1723,9 @@ window.NAVER_RESTAURANTS = {
           "이대팔 100% 메밀국수 미가면",
           "이대팔 100% 불고기 메밀국수"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1405-8805",
+        "hours": "월–화 10:00–17:00 / 수 정기휴무 (매주 수요일) / 목–일 10:00–17:00"
       },
       {
         "naverId": "20969904",
@@ -1568,7 +1740,9 @@ window.NAVER_RESTAURANTS = {
           "메밀짬뽕",
           "메밀짜장"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-9888",
+        "hours": "기본: 월 10:30–19:30 · 브레이크 15:30–17:00 · 라스트오더 19:20 / 화 10:30–19:00 · 브레이크 15:25–17:00 · 라스트오더 18:50 / 수 정기휴무 (매주 수요일) / 목–일 10:30–19:30 · 브레이크 15:30–17:00 · 라스트오더 19:20"
       },
       {
         "naverId": "11693416",
@@ -1583,7 +1757,8 @@ window.NAVER_RESTAURANTS = {
           "돼지수육 대",
           "메밀비빔막국수"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-0314"
       },
       {
         "naverId": "1807166093",
@@ -1611,7 +1786,8 @@ window.NAVER_RESTAURANTS = {
           "모둠강정",
           "도라지더덕조청 500g"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "hours": "장날이 휴무일과 겹치면 그 전날 휴무할 수 있습니다."
       },
       {
         "naverId": "15550469",
@@ -1626,7 +1802,9 @@ window.NAVER_RESTAURANTS = {
           "순대모듬",
           "따로국밥"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-1367",
+        "hours": "매일 08:00–20:00 · 라스트오더 19:30"
       },
       {
         "naverId": "36690239",
@@ -1641,7 +1819,9 @@ window.NAVER_RESTAURANTS = {
           "후라이드 순살",
           "후라이드 뼈"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1378-1289",
+        "hours": "기본: 월–화 10:30–20:00 · 라스트오더 19:00 / 수 정기휴무 (매주 수요일) / 목–일 10:30–20:00 · 라스트오더 19:00"
       },
       {
         "naverId": "32203385",
@@ -1656,7 +1836,8 @@ window.NAVER_RESTAURANTS = {
           "차돌짬뽕",
           "잡채밥"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-5115"
       },
       {
         "naverId": "15550886",
@@ -1671,7 +1852,9 @@ window.NAVER_RESTAURANTS = {
           "송어회1,5kg 4인",
           "뼈매운탕 소.대"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-4437",
+        "hours": "기본: 추석.설 연휴는 휴무일 없어요"
       },
       {
         "naverId": "15550936",
@@ -1686,7 +1869,9 @@ window.NAVER_RESTAURANTS = {
           "날개감자탕",
           "명란 들기름국수"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-333-5262",
+        "hours": "기본: 월 11:00–21:00 · 브레이크 15:00–16:30 · 라스트오더 14:00, 20:00 / 화 정기휴무 (매주 화요일) / 수–일 11:00–21:00 · 브레이크 15:00–16:30 · 라스트오더 14:00, 20:00"
       },
       {
         "naverId": "33165578",
@@ -1701,7 +1886,8 @@ window.NAVER_RESTAURANTS = {
           "다슬기해장국",
           "육개장"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-332-4315"
       },
       {
         "naverId": "15553003",
@@ -1716,7 +1902,8 @@ window.NAVER_RESTAURANTS = {
           "쏘가리매운탕(중)",
           "토종닭백숙"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 0,
+        "phone": "033-333-4493"
       },
       {
         "naverId": "1119843359",
@@ -1731,7 +1918,9 @@ window.NAVER_RESTAURANTS = {
           "송어회 반접시",
           "송어구이 한마리"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-332-1943",
+        "hours": "기본: 매일 11:00–16:00 · 라스트오더 15:00"
       }
     ],
     "yongpyong": [
@@ -1748,7 +1937,8 @@ window.NAVER_RESTAURANTS = {
           "제철 생선구이와 된장찌개",
           "발왕산 氣품은 김치찌개"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1389-7133"
       },
       {
         "naverId": "19773576",
@@ -1763,7 +1953,8 @@ window.NAVER_RESTAURANTS = {
           "한우된장찌개",
           "뚝배기 불고기"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "hours": "기본: 월 정기휴무 (매주 월요일) / 화 10:00–21:30 · 라스트오더 21:00 / 수 정기휴무 (매주 수요일) / 목 정기휴무 (매주 목요일) / 금 정기휴무 (매주 금요일) / 토 정기휴무 (매주 토요일) / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "1443639774",
@@ -1778,7 +1969,9 @@ window.NAVER_RESTAURANTS = {
           "술국",
           "황태해장국"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-330-7675",
+        "hours": "기본: 상세 운영시간 및 휴무일은 매장으로 확인"
       },
       {
         "naverId": "1454895584",
@@ -1793,7 +1986,8 @@ window.NAVER_RESTAURANTS = {
           "꽃등심",
           "갈비탕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1421-1400"
       },
       {
         "naverId": "1630476938",
@@ -1808,7 +2002,9 @@ window.NAVER_RESTAURANTS = {
           "통밀빵",
           "샌드위치"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1302-0814",
+        "hours": "기본: 월–수 08:00–21:00 / 목 정기휴무 (매주 목요일) / 금–일 08:00–21:00"
       },
       {
         "naverId": "1561345043",
@@ -1823,7 +2019,9 @@ window.NAVER_RESTAURANTS = {
           "한우차돌박이",
           "한돈생오겹살"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-334-6800",
+        "hours": "기본: 매일 15:00–22:00"
       },
       {
         "naverId": "1521415908",
@@ -1838,7 +2036,9 @@ window.NAVER_RESTAURANTS = {
           "한우꽃등심",
           "한우 등심 채끝살"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-333-3392",
+        "hours": "기본: 월 16:00–22:00 · 라스트오더 21:00 / 화 정기휴무 (매주 화요일) / 수–일 16:00–22:00 · 라스트오더 21:00"
       },
       {
         "naverId": "1105275222",
@@ -1853,7 +2053,8 @@ window.NAVER_RESTAURANTS = {
           "CHILLI HOT BURGER",
           "RT DOUBLE BURGER"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "hours": "월·화·목·금·토·일 11:20–20:00 · 브레이크 15:00–17:00"
       },
       {
         "naverId": "1962806729",
@@ -1868,7 +2069,9 @@ window.NAVER_RESTAURANTS = {
           "대추차",
           "카라멜마끼아또"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1316-1978",
+        "hours": "월 10:00–18:00 · 라스트오더 17:30 / 화 정기휴무 (매주 화요일) / 수–일 10:00–18:00 · 라스트오더 17:30"
       },
       {
         "naverId": "1102363087",
@@ -1883,7 +2086,9 @@ window.NAVER_RESTAURANTS = {
           "생삼겹살",
           "이베리코"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1327-5299",
+        "hours": "매일 16:00–22:00"
       },
       {
         "naverId": "13588185",
@@ -1898,7 +2103,8 @@ window.NAVER_RESTAURANTS = {
           "차돌박이",
           "주물럭"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-5430"
       },
       {
         "naverId": "1655116736",
@@ -1913,7 +2119,9 @@ window.NAVER_RESTAURANTS = {
           "메밀비빔막국수",
           "메밀전병"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-1990",
+        "hours": "기본: 오픈/마감/라스트오더/브레이크타임 꼭 전화문의주세요ㅠㅠ"
       },
       {
         "naverId": "11710936",
@@ -1928,7 +2136,9 @@ window.NAVER_RESTAURANTS = {
           "오징어불고기",
           "매운물갈비"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-5103",
+        "hours": "기본: 매일 10:00–21:00 · 라스트오더 19:30"
       },
       {
         "naverId": "11681872",
@@ -1943,7 +2153,9 @@ window.NAVER_RESTAURANTS = {
           "고추장삼겹살",
           "회막국수"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-5477",
+        "hours": "기본: 월 11:30–20:40 · 브레이크 14:40–17:00 · 라스트오더 14:10, 20:10 / 화 정기휴무 (매주 화요일) / 수–일 11:30–20:40 · 브레이크 14:40–17:00 · 라스트오더 14:10, 20:10"
       },
       {
         "naverId": "11711415",
@@ -1958,7 +2170,9 @@ window.NAVER_RESTAURANTS = {
           "꼬막비빔밥",
           "더덕오삼불고기"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-4448",
+        "hours": "기본: 입장마감시간 : 20:00"
       },
       {
         "naverId": "1332863375",
@@ -1973,7 +2187,8 @@ window.NAVER_RESTAURANTS = {
           "수육",
           "오삼불고기"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-0888"
       },
       {
         "naverId": "1621130570",
@@ -1988,7 +2203,9 @@ window.NAVER_RESTAURANTS = {
           "고구마빵",
           "단호박빵"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-1827",
+        "hours": "월 10:00–21:00 · 라스트오더 20:30 / 화 정기휴무 (매주 화요일) / 수–일 10:00–21:00 · 라스트오더 20:30"
       },
       {
         "naverId": "1038040162",
@@ -2002,7 +2219,9 @@ window.NAVER_RESTAURANTS = {
           "오리주물럭,오리로스",
           "가정식백반"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-3392",
+        "hours": "월–금 12:00–20:00 · 브레이크 14:00–16:00 · 라스트오더 19:00 / 토 11:30–20:00 · 브레이크 14:00–16:00 · 라스트오더 19:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "1202636051",
@@ -2017,7 +2236,8 @@ window.NAVER_RESTAURANTS = {
           "토종닭 볶음탕 대",
           "토종닭 능이백숙"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-332-7702"
       },
       {
         "naverId": "15561620",
@@ -2032,7 +2252,8 @@ window.NAVER_RESTAURANTS = {
           "자연산모듬회 대(3~4인)",
           "자연산모듬회 특대(4~5인)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-6082"
       },
       {
         "naverId": "1551055411",
@@ -2047,7 +2268,9 @@ window.NAVER_RESTAURANTS = {
           "수육 (중)",
           "수육 (대)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-1150",
+        "hours": "하절기 10:00~19:00"
       },
       {
         "naverId": "1590924274",
@@ -2071,7 +2294,8 @@ window.NAVER_RESTAURANTS = {
           "오삼불고기",
           "황태전골"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-2386"
       },
       {
         "naverId": "15560909",
@@ -2085,7 +2309,9 @@ window.NAVER_RESTAURANTS = {
           "보리공기밥",
           "막걸리"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-5625",
+        "hours": "매일 11:00–16:00 · 브레이크 14:00–15:50 · 격주 수요일 정기 휴무"
       },
       {
         "naverId": "13047339",
@@ -2100,7 +2326,9 @@ window.NAVER_RESTAURANTS = {
           "대관령한우 육사시미(150g)",
           "대관령한우 육회(100g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1492-0137",
+        "hours": "7월~8월 성수기 마감시간 연장(21시 30분까지)"
       },
       {
         "naverId": "1551077525",
@@ -2115,7 +2343,9 @@ window.NAVER_RESTAURANTS = {
           "수만두설렁탕",
           "특양지설렁탕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-333-7800",
+        "hours": "기본: 매일 07:00–21:00 · 브레이크 15:30–17:00 · 라스트오더 20:30"
       },
       {
         "naverId": "11681873",
@@ -2130,7 +2360,8 @@ window.NAVER_RESTAURANTS = {
           "오삼불고기(1인200g)",
           "오징어 불고기(1인200g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1368-5942"
       },
       {
         "naverId": "11691698",
@@ -2145,7 +2376,8 @@ window.NAVER_RESTAURANTS = {
           "뚝배기불고기",
           "더덕구이"
         ],
-        "memoRecommendCount": 2
+        "memoRecommendCount": 2,
+        "phone": "033-335-5795"
       },
       {
         "naverId": "34363040",
@@ -2160,7 +2392,9 @@ window.NAVER_RESTAURANTS = {
           "순두부짬뽕",
           "순두부짬뽕밥"
         ],
-        "memoRecommendCount": 2
+        "memoRecommendCount": 2,
+        "phone": "033-336-2111",
+        "hours": "기본: 월 정기휴무 (매주 월요일) / 화–토 11:00–19:00 · 브레이크 15:00–16:30 / 일 11:00–15:00"
       },
       {
         "naverId": "1078747527",
@@ -2173,7 +2407,8 @@ window.NAVER_RESTAURANTS = {
           "고추장삼겹살",
           "냉동삼겹살"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1421-1103"
       },
       {
         "naverId": "38404118",
@@ -2188,7 +2423,9 @@ window.NAVER_RESTAURANTS = {
           "추어탕",
           "제육볶음 중"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-5903",
+        "hours": "기본: 월–토 11:00–20:30 · 브레이크 14:30–17:00 · 라스트오더 13:30, 19:30 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "1297461672",
@@ -2202,7 +2439,9 @@ window.NAVER_RESTAURANTS = {
           "반반치킨",
           "순살 후라이드/양념"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-332-1117",
+        "hours": "월–화 16:00–23:30 / 수 정기휴무 (매주 수요일) / 목–일 16:00–23:30"
       },
       {
         "naverId": "13010931",
@@ -2217,7 +2456,9 @@ window.NAVER_RESTAURANTS = {
           "바우골 흑돼지모둠 한마리(1.2kg)",
           "바우골 흑돼지 모둠한접시 (800g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1420-2782",
+        "hours": "기본: 매일 16:00–22:00 · 라스트오더 21:00"
       },
       {
         "naverId": "15561131",
@@ -2232,7 +2473,9 @@ window.NAVER_RESTAURANTS = {
           "메밀손칼국수",
           "감자전"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-0053",
+        "hours": "기본: 월–화 10:30–19:30 · 브레이크 15:00–17:00 · 라스트오더 19:20 / 수 정기휴무 (매주 수요일) / 목–일 10:30–19:30 · 브레이크 15:00–17:00 · 라스트오더 19:20"
       },
       {
         "naverId": "480090059",
@@ -2247,7 +2490,9 @@ window.NAVER_RESTAURANTS = {
           "함박스테이크",
           "정식"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1302-7187",
+        "hours": "개인사정으로 인한 휴무일은 별도 안내함"
       },
       {
         "naverId": "1822726100",
@@ -2262,7 +2507,9 @@ window.NAVER_RESTAURANTS = {
           "소알곱창",
           "소막창"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1316-1608",
+        "hours": "월–토 16:30–22:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "1972566352",
@@ -2277,7 +2524,8 @@ window.NAVER_RESTAURANTS = {
           "옛날할머니추어탕",
           "선지해장국"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-3577"
       },
       {
         "naverId": "32756802",
@@ -2292,7 +2540,9 @@ window.NAVER_RESTAURANTS = {
           "짬뽕",
           "탕수육"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-9998",
+        "hours": "기본: 월–화 11:00–20:00 / 수 정기휴무 (매주 수요일) / 목–일 11:00–20:00"
       },
       {
         "naverId": "32820768",
@@ -2307,7 +2557,8 @@ window.NAVER_RESTAURANTS = {
           "도가니 수육 (중)",
           "도가니탕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-5282"
       },
       {
         "naverId": "11681869",
@@ -2321,7 +2572,8 @@ window.NAVER_RESTAURANTS = {
           "주물럭(130g)",
           "생태찌개(소)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-0020"
       },
       {
         "naverId": "15561501",
@@ -2336,7 +2588,8 @@ window.NAVER_RESTAURANTS = {
           "뼈해장국",
           "닭볶음탕 1마리"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-2223"
       },
       {
         "naverId": "15560912",
@@ -2351,7 +2604,8 @@ window.NAVER_RESTAURANTS = {
           "한우 육회",
           "한우육사시미"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1309-5401"
       },
       {
         "naverId": "11785602",
@@ -2366,7 +2620,9 @@ window.NAVER_RESTAURANTS = {
           "황태국",
           "주물럭전골"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-5814",
+        "hours": "기본: 휴무일:비정기적"
       },
       {
         "naverId": "1019677083",
@@ -2381,7 +2637,9 @@ window.NAVER_RESTAURANTS = {
           "도야족발(앞발_중)",
           "도야족발(앞발_대)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1420-0840",
+        "hours": "재료소진시, 조기마감 될 수 있습니다."
       },
       {
         "naverId": "1540430844",
@@ -2396,7 +2654,9 @@ window.NAVER_RESTAURANTS = {
           "소갈비살",
           "차돌박이"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-332-6877",
+        "hours": "월 정기휴무 (매주 월요일) / 화–일 16:00–24:00"
       },
       {
         "naverId": "38275237",
@@ -2405,7 +2665,8 @@ window.NAVER_RESTAURANTS = {
         "memo": "23.02.03 맛집.",
         "driveMinutes": 7,
         "menus": [],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-3397"
       },
       {
         "naverId": "1837897655",
@@ -2420,7 +2681,8 @@ window.NAVER_RESTAURANTS = {
           "허브티",
           "카페라떼"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-0045"
       },
       {
         "naverId": "15561698",
@@ -2435,7 +2697,8 @@ window.NAVER_RESTAURANTS = {
           "메밀전병",
           "메밀전"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-332-5599"
       },
       {
         "naverId": "11842225",
@@ -2450,7 +2713,8 @@ window.NAVER_RESTAURANTS = {
           "업진살(150g)",
           "꽃갈비살(150g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-5415"
       },
       {
         "naverId": "33582738",
@@ -2465,7 +2729,9 @@ window.NAVER_RESTAURANTS = {
           "황태갈비탕",
           "우동갈비탕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-0770",
+        "hours": "기본: 월–수 07:30–20:30 · 라스트오더 19:50 / 목 정기휴무 (매주 목요일) / 금–일 07:30–20:30 · 라스트오더 19:50"
       },
       {
         "naverId": "1471478555",
@@ -2480,7 +2746,8 @@ window.NAVER_RESTAURANTS = {
           "선물세트",
           "단호박빵 한박스"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "hours": "매일 10:00–21:00"
       },
       {
         "naverId": "1600435806",
@@ -2495,7 +2762,9 @@ window.NAVER_RESTAURANTS = {
           "하몽메론",
           "오늘의메뉴"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1326-6176",
+        "hours": "월–토 18:00–익일 01:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "15560790",
@@ -2510,7 +2779,9 @@ window.NAVER_RESTAURANTS = {
           "소머리수육 (大)",
           "돼지수육 (大)"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 0,
+        "phone": "033-336-1131",
+        "hours": "기본: 월–토 10:00–22:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "11785626",
@@ -2525,7 +2796,9 @@ window.NAVER_RESTAURANTS = {
           "생태찌개(소)",
           "생태찌개(중)"
         ],
-        "memoRecommendCount": 2
+        "memoRecommendCount": 2,
+        "phone": "033-335-5217",
+        "hours": "기본: 월 12:00–21:00 · 브레이크 15:00–17:00 · 라스트오더 20:30 / 화 정기휴무 (매주 화요일) / 수–일 12:00–21:00 · 브레이크 15:00–17:00 · 라스트오더 20:30"
       },
       {
         "naverId": "1746916338",
@@ -2540,7 +2813,9 @@ window.NAVER_RESTAURANTS = {
           "보쌈-(중)2~3인분",
           "모둠(족발,보쌈)3~4인분"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1399-0084",
+        "hours": "월–토 17:00–23:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "11845634",
@@ -2555,7 +2830,9 @@ window.NAVER_RESTAURANTS = {
           "짜장 곱배기",
           "짬뽕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-5567",
+        "hours": "월·화·목·금·토 11:00–16:00 · 라스트오더 15:30 / 일 12:00–16:00 · 라스트오더 15:30"
       },
       {
         "naverId": "11845629",
@@ -2564,7 +2841,8 @@ window.NAVER_RESTAURANTS = {
         "memo": "23.01.05 빠따킹 추천 분식집.",
         "driveMinutes": 7,
         "menus": [],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 0,
+        "phone": "033-335-8811"
       },
       {
         "naverId": "12989507",
@@ -2579,7 +2857,8 @@ window.NAVER_RESTAURANTS = {
           "돼지갈비 (국내산,250g)",
           "오삼불고기 (국내산,300g)"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 0,
+        "phone": "033-336-8253"
       },
       {
         "naverId": "1864063379",
@@ -2594,7 +2873,9 @@ window.NAVER_RESTAURANTS = {
           "갈매기살 (200g)",
           "냉동 삼겹살 (200g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1316-3281",
+        "hours": "매일 18:00–익일 01:00"
       },
       {
         "naverId": "33948989",
@@ -2609,7 +2890,8 @@ window.NAVER_RESTAURANTS = {
           "한우 육회(150g)",
           "한우 버섯불고기(120g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-8989"
       },
       {
         "naverId": "31191194",
@@ -2624,7 +2906,9 @@ window.NAVER_RESTAURANTS = {
           "순살후라이드",
           "순살양념"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-5525",
+        "hours": "월·화·목·금·토 16:00–23:00 / 일 16:00–22:00"
       },
       {
         "naverId": "20327122",
@@ -2639,7 +2923,9 @@ window.NAVER_RESTAURANTS = {
           "주물럭",
           "오삼불고기"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-1992",
+        "hours": "기본: 월–화 11:00–21:00 · 라스트오더 20:00 / 수 정기휴무 (매주 수요일) / 목–일 11:00–21:00 · 라스트오더 20:00"
       },
       {
         "naverId": "1198994999",
@@ -2650,7 +2936,9 @@ window.NAVER_RESTAURANTS = {
         "menus": [
           "김치찌개"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-334-1182",
+        "hours": "기본: 월–토 00:00–24:00 / 일 00:00–24:00 · 브레이크 08:00–11:00"
       },
       {
         "naverId": "11785672",
@@ -2665,7 +2953,9 @@ window.NAVER_RESTAURANTS = {
           "닭볶음탕",
           "추어탕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-9333",
+        "hours": "매일 11:00–21:00 · 라스트오더 19:00"
       },
       {
         "naverId": "15559948",
@@ -2674,7 +2964,8 @@ window.NAVER_RESTAURANTS = {
         "memo": "24.12.01 백숙 맛집. 감자 꼭 추가!",
         "driveMinutes": 8,
         "menus": [],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-3748"
       },
       {
         "naverId": "15559841",
@@ -2683,7 +2974,8 @@ window.NAVER_RESTAURANTS = {
         "memo": "24.12.18 맛집. 백반정식 추천.",
         "driveMinutes": 8,
         "menus": [],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-5356"
       },
       {
         "naverId": "32204333",
@@ -2698,7 +2990,8 @@ window.NAVER_RESTAURANTS = {
           "돼지수육",
           "찐만두(고기)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "hours": "기본: 월–수 11:00–20:00 · 브레이크 15:00–17:00 · 라스트오더 19:30 / 목 정기휴무 (매주 목요일) / 금–일 11:00–20:00 · 브레이크 15:00–17:00 · 라스트오더 19:30"
       },
       {
         "naverId": "20306247",
@@ -2713,7 +3006,9 @@ window.NAVER_RESTAURANTS = {
           "찐만두",
           "떡국"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-5891",
+        "hours": "기본: 월·수·목·금·토·일 10:30–19:20 · 라스트오더 18:50"
       },
       {
         "naverId": "1507233491",
@@ -2728,7 +3023,9 @@ window.NAVER_RESTAURANTS = {
           "돌판 된장찌개(소5천원/대8천원)",
           "뚝배기 된장찌개(소5천원/대8천원)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1328-9272",
+        "hours": "기본: 월 11:00–20:00 · 라스트오더 19:00 / 화 정기휴무 (매주 화요일) / 수–일 11:00–20:00 · 라스트오더 19:00"
       },
       {
         "naverId": "15560992",
@@ -2743,7 +3040,9 @@ window.NAVER_RESTAURANTS = {
           "도토리묵무침",
           "감자전 1장"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-336-4640",
+        "hours": "기본: 월 정기휴무 (매주 월요일) / 화–일 11:00–20:00"
       },
       {
         "naverId": "21074624",
@@ -2758,7 +3057,8 @@ window.NAVER_RESTAURANTS = {
           "오리주물럭",
           "더덕구이정식"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-6086"
       },
       {
         "naverId": "1047214092",
@@ -2773,7 +3073,9 @@ window.NAVER_RESTAURANTS = {
           "메밀막국수(물/비빔)",
           "꿩만둣국"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-332-6441",
+        "hours": "동계: 매일 10:30–19:30"
       },
       {
         "naverId": "11644083",
@@ -2788,7 +3090,9 @@ window.NAVER_RESTAURANTS = {
           "능이토종닭백숙",
           "도토리묵"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1331-8414",
+        "hours": "기본: 2월 23.24일(넷째주 월.화)명절대체 임시휴무"
       },
       {
         "naverId": "1433610014",
@@ -2803,7 +3107,9 @@ window.NAVER_RESTAURANTS = {
           "동태찌개",
           "닭볶음탕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-335-1881",
+        "hours": "월–토 11:00–21:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "31378606",
@@ -2818,7 +3124,9 @@ window.NAVER_RESTAURANTS = {
           "감자전",
           "닭볶음탕반마리+곤드레밥1 [2인추천]"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1411-1948",
+        "hours": "기본: 월·수·목·금·토·일 11:00–20:30 · 브레이크 15:30–17:00 · 라스트오더 14:00, 19:00"
       },
       {
         "naverId": "15293378",
@@ -2831,7 +3139,9 @@ window.NAVER_RESTAURANTS = {
           "콩나물밥",
           "공깃밥"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-646-0175",
+        "hours": "기본: 월–토 10:00–18:30 · 라스트오더 18:00 / 일 정기휴무 (매주 일요일)"
       }
     ],
     "high1": [
@@ -2863,7 +3173,9 @@ window.NAVER_RESTAURANTS = {
           "탕수육(미니)",
           "맥주"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-592-4868",
+        "hours": "기본: 월–화 11:00–19:00 / 수 정기휴무 (매주 수요일) / 목–일 11:00–19:00"
       },
       {
         "naverId": "21052152",
@@ -2878,7 +3190,9 @@ window.NAVER_RESTAURANTS = {
           "가브리살",
           "육회비빔국수"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1326-9092",
+        "hours": "매일 12:00–23:00 · 라스트오더 22:00"
       },
       {
         "naverId": "1711583756",
@@ -2893,7 +3207,9 @@ window.NAVER_RESTAURANTS = {
           "돼지막창(200g)",
           "삼겹살(200g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-592-1009",
+        "hours": "매일 15:00–23:00"
       },
       {
         "naverId": "19497051",
@@ -2908,7 +3224,8 @@ window.NAVER_RESTAURANTS = {
           "곰탕,육개장",
           "된장찌개, 만두국"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-591-2510"
       },
       {
         "naverId": "15570146",
@@ -2923,7 +3240,8 @@ window.NAVER_RESTAURANTS = {
           "청국장",
           "김치찌개"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-592-2217"
       },
       {
         "naverId": "1158228012",
@@ -2947,7 +3265,9 @@ window.NAVER_RESTAURANTS = {
           "실장스페셜1인분",
           "대왕 진"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-592-3787",
+        "hours": "월–토 16:00–24:00 · 브레이크 17:00–18:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "547754866",
@@ -2962,7 +3282,8 @@ window.NAVER_RESTAURANTS = {
           "가브리살",
           "한우갈비살"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1411-8570"
       },
       {
         "naverId": "1226502288",
@@ -2988,7 +3309,9 @@ window.NAVER_RESTAURANTS = {
         "menus": [
           "광어 우럭"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-591-0771",
+        "hours": "월–토 17:00–23:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "478101336",
@@ -2997,7 +3320,8 @@ window.NAVER_RESTAURANTS = {
         "memo": "23.01.05 맛집.",
         "driveMinutes": 3,
         "menus": [],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-591-9497"
       },
       {
         "naverId": "36144022",
@@ -3012,7 +3336,8 @@ window.NAVER_RESTAURANTS = {
           "맛쇼킹윙봉치킨",
           "델리치킨"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1326-4608"
       },
       {
         "naverId": "1993201139",
@@ -3027,7 +3352,9 @@ window.NAVER_RESTAURANTS = {
           "명절선물세트",
           "리얼초코라떼(카카오58%)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1375-2511",
+        "hours": "기본: 재료소진시 단축영업/휴무는 스마트플레이스에 공지"
       },
       {
         "naverId": "1443384375",
@@ -3042,7 +3369,9 @@ window.NAVER_RESTAURANTS = {
           "엄니정식(2인이상)",
           "오.삼불고기"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1492-7999",
+        "hours": "월·수·목·금·토·일 05:00–21:00 · 매달 1, 2, 3, 4번째 화요일 정기 휴무"
       },
       {
         "naverId": "1512240432",
@@ -3057,7 +3386,9 @@ window.NAVER_RESTAURANTS = {
           "부대찌개",
           "두부찌개"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-592-8808",
+        "hours": "월–화 00:00–24:00 / 수 정기휴무 (매주 수요일) / 목–일 00:00–24:00"
       },
       {
         "naverId": "15569706",
@@ -3072,7 +3403,8 @@ window.NAVER_RESTAURANTS = {
           "황가보쌈(소)",
           "황가보쌈(중)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "hours": "2시~ 4시 브레이크 타임입니다."
       },
       {
         "naverId": "32862799",
@@ -3087,7 +3419,8 @@ window.NAVER_RESTAURANTS = {
           "50주년 보족세트(2인)",
           "50주년 불족세트(2인)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-592-5355"
       },
       {
         "naverId": "1483980816",
@@ -3100,7 +3433,9 @@ window.NAVER_RESTAURANTS = {
           "양푼이김치찌개",
           "점심특선/김치찌개"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-592-2118",
+        "hours": "월 정기휴무 (매주 월요일) / 화–일 10:00–22:00 · 브레이크 15:00–17:00"
       },
       {
         "naverId": "15569788",
@@ -3115,7 +3450,8 @@ window.NAVER_RESTAURANTS = {
           "삼겹살",
           "김치전골"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-591-0035"
       },
       {
         "naverId": "20259750",
@@ -3130,7 +3466,9 @@ window.NAVER_RESTAURANTS = {
           "오삼정식 1인_2인이상",
           "감자부침개"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-591-3939",
+        "hours": "매일 08:00–20:30 · 라스트오더 20:00 · 매달 2, 4번째 수요일 정기 휴무"
       },
       {
         "naverId": "15794005",
@@ -3145,7 +3483,8 @@ window.NAVER_RESTAURANTS = {
           "닭도리탕",
           "삼겹살"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-592-7822"
       },
       {
         "naverId": "15571221",
@@ -3160,7 +3499,9 @@ window.NAVER_RESTAURANTS = {
           "삼겹살 200g 국내산",
           "생갈비 200g 국내산"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-591-7818",
+        "hours": "월 16:30–23:00 / 화 정기휴무 (매주 화요일) / 수–일 16:30–23:00"
       },
       {
         "naverId": "1107242729",
@@ -3175,7 +3516,8 @@ window.NAVER_RESTAURANTS = {
           "통큰오짱떡볶이",
           "떡튀순떡볶이"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "hours": "매일 00:00–24:00"
       },
       {
         "naverId": "2097318243",
@@ -3190,7 +3532,9 @@ window.NAVER_RESTAURANTS = {
           "안심 카츠정식",
           "특등심 카츠정식 (한정 수량)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1396-4608",
+        "hours": "월 정기휴무 (매주 월요일) / 화–일 11:00–19:30 · 브레이크 15:00–17:00 · 라스트오더 19:00"
       },
       {
         "naverId": "1376632115",
@@ -3205,7 +3549,8 @@ window.NAVER_RESTAURANTS = {
           "생삼겹살",
           "갈매기살"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-591-0330"
       },
       {
         "naverId": "31413897",
@@ -3220,7 +3565,9 @@ window.NAVER_RESTAURANTS = {
           "오리가슴살 레터스랩(양상추쌈)",
           "오리엔 자장면"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-590-7561",
+        "hours": "기본: *영업장 사정에 따라 조기 마감될 수 있습니다."
       },
       {
         "naverId": "1748137360",
@@ -3235,7 +3582,9 @@ window.NAVER_RESTAURANTS = {
           "원추리 커피빵",
           "수리취치즈와플"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-590-7631",
+        "hours": "기본: 디저트주문가능시간 10:00 ~ 17:00"
       },
       {
         "naverId": "31058075",
@@ -3250,7 +3599,8 @@ window.NAVER_RESTAURANTS = {
           "갈매기살",
           "양념갈매기살"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-591-5353"
       },
       {
         "naverId": "1877484471",
@@ -3265,7 +3615,9 @@ window.NAVER_RESTAURANTS = {
           "가브리살",
           "항정살"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-591-7773",
+        "hours": "기본: 매일 12:00–23:00 · 라스트오더 22:00"
       },
       {
         "naverId": "1839261107",
@@ -3280,7 +3632,9 @@ window.NAVER_RESTAURANTS = {
           "한우 육회",
           "삼겹살"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1496-0070",
+        "hours": "재료소진시 조기마감이 잦습니다~"
       },
       {
         "naverId": "15570298",
@@ -3295,7 +3649,9 @@ window.NAVER_RESTAURANTS = {
           "함흥물냉면(고구마전분)",
           "평양물냉면"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1439-3848",
+        "hours": "기본: 월 10:00–19:30 · 브레이크 14:00–15:00 · 라스트오더 19:00 / 화 정기휴무 (매주 화요일) / 수–일 10:00–19:30 · 브레이크 14:00–15:00 · 라스트오더 19:00"
       },
       {
         "naverId": "762435277",
@@ -3321,7 +3677,9 @@ window.NAVER_RESTAURANTS = {
           "삼선간짜장",
           "삼선짬뽕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-591-8228",
+        "hours": "월–화 09:30–19:20 · 라스트오더 18:30 / 수 정기휴무 (매주 수요일) / 목–일 09:30–19:20 · 라스트오더 18:30"
       },
       {
         "naverId": "1423169287",
@@ -3336,7 +3694,8 @@ window.NAVER_RESTAURANTS = {
           "통감자된장찌개",
           "4~6세(23년생부터)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1305-2575"
       },
       {
         "naverId": "1470628198",
@@ -3350,7 +3709,9 @@ window.NAVER_RESTAURANTS = {
           "뚝배기불고기",
           "메뉴판"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1489-5566",
+        "hours": "기본: 연중무휴 / 휴게시간없이 운영합니다."
       },
       {
         "naverId": "35418230",
@@ -3365,7 +3726,9 @@ window.NAVER_RESTAURANTS = {
           "한우안심 1++",
           "한우곤드레불고기 1++"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1400-8003",
+        "hours": "기본: 매일 10:00–22:00"
       },
       {
         "naverId": "1192999691",
@@ -3380,7 +3743,9 @@ window.NAVER_RESTAURANTS = {
           "살치살",
           "삼겹살"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1389-0650",
+        "hours": "매일 10:00–22:00"
       },
       {
         "naverId": "15572817",
@@ -3395,7 +3760,9 @@ window.NAVER_RESTAURANTS = {
           "탕수육 소",
           "잡채밥"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-592-1962",
+        "hours": "기본: 월 00:00–24:00 / 화 정기휴무 (매주 화요일) / 수–일 00:00–24:00"
       },
       {
         "naverId": "15573896",
@@ -3410,7 +3777,8 @@ window.NAVER_RESTAURANTS = {
           "목살/삼겹살",
           "한돈돼지"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-592-3174"
       },
       {
         "naverId": "1186542482",
@@ -3425,7 +3793,8 @@ window.NAVER_RESTAURANTS = {
           "우삼겹짬뽕",
           "소고기자장면"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1482-5051"
       },
       {
         "naverId": "19852503",
@@ -3440,7 +3809,8 @@ window.NAVER_RESTAURANTS = {
           "양푼이 매운 갈비찜 중",
           "양푼이 매운 낙갈새찜 중"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1389-8882"
       },
       {
         "naverId": "15570052",
@@ -3455,7 +3825,9 @@ window.NAVER_RESTAURANTS = {
           "명작복분자",
           "오디랑"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-591-5564",
+        "hours": "기본: 월–화 11:00–16:00 / 수 정기휴무 (매주 수요일) / 목–일 11:00–16:00"
       },
       {
         "naverId": "1449784272",
@@ -3468,7 +3840,9 @@ window.NAVER_RESTAURANTS = {
           "유산슬",
           "깐쇼새우"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-592-1755",
+        "hours": "월–화 10:30–21:00 · 브레이크 15:00–17:00 · 라스트오더 20:50 / 수 정기휴무 (매주 수요일) / 목–일 10:30–21:00 · 브레이크 15:00–17:00 · 라스트오더 20:50"
       },
       {
         "naverId": "31387667",
@@ -3483,7 +3857,9 @@ window.NAVER_RESTAURANTS = {
           "(포장&배달) 송어회세트(2인)",
           "통 매운탕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1395-2625",
+        "hours": "기본: 월 11:00–21:00 · 라스트오더 20:20 / 화 정기휴무 (매주 화요일) / 수–금 11:00–21:00 · 라스트오더 20:20 / 토–일 11:00–21:30 · 라스트오더 20:50"
       },
       {
         "naverId": "15577494",
@@ -3498,7 +3874,8 @@ window.NAVER_RESTAURANTS = {
           "아구찜-대",
           "홍어삼합 중"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-591-8333"
       },
       {
         "naverId": "37000063",
@@ -3513,7 +3890,9 @@ window.NAVER_RESTAURANTS = {
           "제육볶음",
           "(2)생선구이+곤드레 2인세트(된찌포"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-591-4555",
+        "hours": "월 정기휴무 (매주 월요일) / 화–일 06:00–20:00"
       },
       {
         "naverId": "1431333892",
@@ -3538,7 +3917,9 @@ window.NAVER_RESTAURANTS = {
           "묵은지 등갈비찜(중)",
           "한돈 석쇠불고기(300g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1392-9555",
+        "hours": "기본: 월 정기휴무 (매주 월요일) / 화–일 10:30–21:00"
       },
       {
         "naverId": "31159517",
@@ -3553,7 +3934,9 @@ window.NAVER_RESTAURANTS = {
           "흑돼지 항정살",
           "++투뿔채끝(암소)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-761-3190",
+        "hours": "월–화 17:00–22:00 · 라스트오더 21:00 / 수 정기휴무 (매주 수요일) / 목–금 17:00–22:00 · 라스트오더 21:00 / 토–일 11:30–22:00 · 브레이크 15:00–17:00 · 라스트오더 21:00"
       },
       {
         "naverId": "2067262245",
@@ -3568,7 +3951,9 @@ window.NAVER_RESTAURANTS = {
           "어린이 오사카식 수제돈까스(10세)",
           "전복내장해물누룽지탕<깊고 녹진한풍미>"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1468-2373",
+        "hours": "월–화 10:30–20:30 · 라스트오더 20:00 / 수 정기휴무 (매주 수요일) / 목–일 10:30–20:30 · 라스트오더 20:00"
       },
       {
         "naverId": "18050673",
@@ -3580,7 +3965,9 @@ window.NAVER_RESTAURANTS = {
           "해물아구찜(소)",
           "대구뽈찜(소)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-769-6684",
+        "hours": "월 11:00–22:00 · 라스트오더 21:00 / 화 정기휴무 (매주 화요일) / 수–일 11:00–22:00 · 라스트오더 21:00"
       },
       {
         "naverId": "1101390326",
@@ -3595,7 +3982,9 @@ window.NAVER_RESTAURANTS = {
           "차돌",
           "생삼겹살(600g)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-763-9478",
+        "hours": "월 정기휴무 (매주 월요일) / 화–일 11:00–22:00"
       },
       {
         "naverId": "1561283581",
@@ -3610,7 +3999,9 @@ window.NAVER_RESTAURANTS = {
           "명태막국수",
           "육곱탕면(소곱창육개장 + 칼국수+밥)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-798-4224",
+        "hours": "매일 09:00–21:00 · 라스트오더 20:00"
       },
       {
         "naverId": "35166575",
@@ -3625,7 +4016,8 @@ window.NAVER_RESTAURANTS = {
           "소생갈비",
           "한돈 오겹살(새송이 꽈리 서비스)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1392-6688"
       },
       {
         "naverId": "37067234",
@@ -3639,7 +4031,9 @@ window.NAVER_RESTAURANTS = {
           "국내산 오리 주물럭 한마리",
           "국내산 오리 주물럭 반마리"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-769-5292",
+        "hours": "기본: 월–토 11:00–22:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "11727438",
@@ -3654,7 +4048,9 @@ window.NAVER_RESTAURANTS = {
           "수육 (소)",
           "공기밥"
         ],
-        "memoRecommendCount": 2
+        "memoRecommendCount": 2,
+        "phone": "031-764-0257",
+        "hours": "기본: 월 정기휴무 (매주 월요일) / 화–일 06:00–16:00 · 라스트오더 15:45"
       },
       {
         "naverId": "20128398",
@@ -3663,7 +4059,9 @@ window.NAVER_RESTAURANTS = {
         "memo": "25.07.02 칼칼한 고추장찌개 맛집. 반주하기 좋음.",
         "driveMinutes": 9,
         "menus": [],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-797-5925",
+        "hours": "기본: 월–토 12:00–22:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "36379236",
@@ -3678,7 +4076,9 @@ window.NAVER_RESTAURANTS = {
           "삼겹살,목살 사리",
           "우동,당면,라면"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-8028-0051",
+        "hours": "기본: 월–금 11:00–22:00 · 브레이크 15:00–17:00 · 라스트오더 21:00 / 토 11:00–22:00 · 라스트오더 21:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "18049795",
@@ -3693,7 +4093,9 @@ window.NAVER_RESTAURANTS = {
           "떡국",
           "떡만두국"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-769-5296",
+        "hours": "기본: 월–토 11:00–20:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "18050259",
@@ -3708,7 +4110,9 @@ window.NAVER_RESTAURANTS = {
           "수육(대)",
           "소주"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1374-6366",
+        "hours": "기본: 월–화 06:00–21:00 / 수 정기휴무 (매주 수요일) / 목–일 06:00–21:00"
       },
       {
         "naverId": "1528447043",
@@ -3723,7 +4127,9 @@ window.NAVER_RESTAURANTS = {
           "안창살(100g)",
           "한우곰탕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1447-5802",
+        "hours": "월 정기휴무 (매주 월요일) / 화–일 10:00–21:30"
       },
       {
         "naverId": "1417314194",
@@ -3738,7 +4144,9 @@ window.NAVER_RESTAURANTS = {
           "쌈 싸먹는 고등어 정식+찰솥밥1개",
           "쌈 싸먹는 임연수 정식+찰솥밥 1개"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1301-0136",
+        "hours": "월 정기휴무 (매주 월요일) / 화–일 11:00–20:00 · 브레이크 14:30–17:00 · 라스트오더 19:10"
       },
       {
         "naverId": "13301852",
@@ -3753,7 +4161,8 @@ window.NAVER_RESTAURANTS = {
           "보쌈 추가",
           "코다리구이"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-632-2300"
       }
     ],
     "jisan": [
@@ -3770,7 +4179,8 @@ window.NAVER_RESTAURANTS = {
           "한우차돌박이",
           "항정살"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "hours": "매일 16:30–24:00 · 라스트오더 23:00"
       },
       {
         "naverId": "1060262104",
@@ -3779,7 +4189,9 @@ window.NAVER_RESTAURANTS = {
         "memo": "25.09.29+ 맛집. 김치랑 돌솥밥에 누릉지가 맛있다고 함.",
         "driveMinutes": 5,
         "menus": [],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-638-6989",
+        "hours": "월–토 10:00–21:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "116218805",
@@ -3794,7 +4206,9 @@ window.NAVER_RESTAURANTS = {
           "간짜장",
           "짬뽕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-634-3989",
+        "hours": "기본: 수–금 11:00–20:30 · 브레이크 14:50–16:00 · 라스트오더 19:50 / 토–일 11:00–20:30 · 브레이크 14:50–15:30 · 라스트오더 19:50"
       },
       {
         "naverId": "13573708",
@@ -3809,7 +4223,9 @@ window.NAVER_RESTAURANTS = {
           "돼지숯불고기",
           "고등어 한마리"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1315-6040",
+        "hours": "기본: 매일 10:30–20:30 · 브레이크 16:00–17:00 · 라스트오더 19:40"
       },
       {
         "naverId": "1729534738",
@@ -3833,7 +4249,9 @@ window.NAVER_RESTAURANTS = {
           "광어정식",
           "새우정식"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-637-8042",
+        "hours": "기본: 월–토 11:00–14:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "38695562",
@@ -3848,7 +4266,9 @@ window.NAVER_RESTAURANTS = {
           "꽃게탕",
           "(추가메뉴)황태채더덕구이 한판"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1318-6924",
+        "hours": "기본: 월–화 10:00–20:30 / 수 정기휴무 (매주 수요일) / 목–일 10:00–20:30"
       },
       {
         "naverId": "18514716",
@@ -3863,7 +4283,8 @@ window.NAVER_RESTAURANTS = {
           "차돌박이",
           "주물럭"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-637-9297"
       },
       {
         "naverId": "13288345",
@@ -3878,7 +4299,9 @@ window.NAVER_RESTAURANTS = {
           "닭볶음탕",
           "통오징어불고기"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1429-2066",
+        "hours": "매일 10:00–21:00 · 라스트오더 20:30"
       },
       {
         "naverId": "1606157558",
@@ -3893,7 +4316,9 @@ window.NAVER_RESTAURANTS = {
           "낚지볶음정식",
           "제육볶음정식"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-635-4555",
+        "hours": "기본: 월 정기휴무 (매주 월요일) / 화–일 11:00–20:00"
       },
       {
         "naverId": "1858306697",
@@ -3908,7 +4333,9 @@ window.NAVER_RESTAURANTS = {
           "추어튀김",
           "추어튀김만두"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-633-2250",
+        "hours": "매일 10:30–20:00 · 라스트오더 19:30"
       },
       {
         "naverId": "229948299",
@@ -3923,7 +4350,8 @@ window.NAVER_RESTAURANTS = {
           "쟁반막국수",
           "골뱅이무침"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1389-8968"
       },
       {
         "naverId": "34818419",
@@ -3938,7 +4366,9 @@ window.NAVER_RESTAURANTS = {
           "새우볶음밥",
           "군만두"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-633-2334",
+        "hours": "기본: 월–목 11:30–21:00 · 브레이크 14:00–17:00 · 라스트오더 20:30 / 금 11:30–14:00 · 라스트오더 13:30 / 토 정기휴무 (매주 토요일) / 일 11:30–21:00 · 브레이크 15:00–17:00 · 라스트오더 20:30"
       },
       {
         "naverId": "13577036",
@@ -3953,7 +4383,9 @@ window.NAVER_RESTAURANTS = {
           "간장게장정식",
           "양념게장정식"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-333-0377",
+        "hours": "월 정기휴무 (매주 월요일) / 화–금 10:00–20:00 · 브레이크 15:00–17:00 / 토–일 10:00–20:00"
       },
       {
         "naverId": "1982805189",
@@ -3977,7 +4409,9 @@ window.NAVER_RESTAURANTS = {
           "로스카츠(등심)",
           "히레카츠(안심)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1439-8280",
+        "hours": "기본: 월–금 11:00–21:00 / 토 11:00–20:00 / 일 정기휴무 (매주 일요일)"
       }
     ],
     "o2": [
@@ -3994,7 +4428,9 @@ window.NAVER_RESTAURANTS = {
           "소주",
           "인삼주(小)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-552-2625",
+        "hours": "기본: 월–토 11:00–19:30 · 라스트오더 18:30 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "11851760",
@@ -4009,7 +4445,9 @@ window.NAVER_RESTAURANTS = {
           "비빔만두",
           "돈까스"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-552-2806",
+        "hours": "기본: 월–화 10:00–20:00 · 브레이크 14:00–14:30 / 수 정기휴무 (매주 수요일) / 목–일 10:00–20:00 · 브레이크 14:00–14:30"
       },
       {
         "naverId": "1008457815",
@@ -4024,7 +4462,9 @@ window.NAVER_RESTAURANTS = {
           "소고기쌀국수",
           "돼지쌀국수"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-552-5704",
+        "hours": "월–토 11:00–20:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "15438614",
@@ -4038,7 +4478,8 @@ window.NAVER_RESTAURANTS = {
           "볶음밥",
           "면사리( 라면, 우동, 쫄면 )"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-552-4040"
       },
       {
         "naverId": "15439624",
@@ -4053,7 +4494,9 @@ window.NAVER_RESTAURANTS = {
           "우동/쫄면/라면/떡사리 추가(각)",
           "김주먹밥"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-553-8119",
+        "hours": "기본: 월–화 10:00–21:00 · 라스트오더 19:30 / 수 정기휴무 (매주 수요일) / 목–일 10:00–21:00 · 라스트오더 19:30"
       },
       {
         "naverId": "35228059",
@@ -4068,7 +4511,9 @@ window.NAVER_RESTAURANTS = {
           "한우살치살",
           "한우안창살"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1324-9267",
+        "hours": "기본: 매일 11:00–21:00 · 라스트오더 20:30"
       },
       {
         "naverId": "37060588",
@@ -4083,7 +4528,9 @@ window.NAVER_RESTAURANTS = {
           "군만두",
           "콩국수"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-552-1139",
+        "hours": "기본: 월–금 11:10–18:00 · 브레이크 14:00–16:00 / 토 11:10–14:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "11691779",
@@ -4098,7 +4545,9 @@ window.NAVER_RESTAURANTS = {
           "한우살치살 -150g",
           "한우치마살-150g"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-552-5287",
+        "hours": "기본: 매일 11:00–21:30 · 브레이크 15:00–16:30 · 매달 2, 4번째 화요일 정기 휴무"
       },
       {
         "naverId": "35161492",
@@ -4113,7 +4562,9 @@ window.NAVER_RESTAURANTS = {
           "특양",
           "염통"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1353-2792",
+        "hours": "매일 10:30–23:00 · 브레이크 14:00–16:30 · 매달 1, 5번째 토요일 정기 휴무"
       },
       {
         "naverId": "11722939",
@@ -4128,7 +4579,9 @@ window.NAVER_RESTAURANTS = {
           "우렁이두부찜",
           "음료수"
         ],
-        "memoRecommendCount": 0
+        "memoRecommendCount": 0,
+        "phone": "033-553-7388",
+        "hours": "기본: 월–토 10:00–15:00 / 일 정기휴무 (매주 일요일)"
       },
       {
         "naverId": "11851820",
@@ -4141,7 +4594,9 @@ window.NAVER_RESTAURANTS = {
           "멸치칼국수",
           "냉콩국수"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-554-3300",
+        "hours": "기본: 화–일 09:30–16:00 · 라스트오더 15:40"
       },
       {
         "naverId": "15461625",
@@ -4156,7 +4611,9 @@ window.NAVER_RESTAURANTS = {
           "감자부침",
           "수육"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-552-6680",
+        "hours": "기본: 월 11:00–20:00 · 브레이크 15:00–17:00 · 라스트오더 14:20, 19:20 / 화 정기휴무 (매주 화요일) / 수–일 11:00–20:00 · 브레이크 15:00–17:00 · 라스트오더 14:20, 19:20"
       }
     ],
     "vivaldi": [
@@ -4173,7 +4630,9 @@ window.NAVER_RESTAURANTS = {
           "뚝배기차돌짬뽕밥",
           "뚝배기볶음짬뽕"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1477-3802",
+        "hours": "기본: 월 정기휴무 (매주 월요일) / 화–금 10:00–19:30 · 라스트오더 19:00 / 토 09:00–19:30 · 라스트오더 19:00 / 일 09:00–16:00 · 라스트오더 15:30"
       },
       {
         "naverId": "38248441",
@@ -4188,7 +4647,8 @@ window.NAVER_RESTAURANTS = {
           "숯불닭발(국내산무뼈)200g",
           "화로구이(국내산고추장삼겹살)200g"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-435-3304"
       },
       {
         "naverId": "20601514",
@@ -4203,7 +4663,9 @@ window.NAVER_RESTAURANTS = {
           "설렁탕 특",
           "소주/맥주"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1340-6340",
+        "hours": "기본: 비정기 휴무"
       },
       {
         "naverId": "31047425",
@@ -4218,7 +4680,8 @@ window.NAVER_RESTAURANTS = {
           "숯불 고추장오리 구이!",
           "숯불 뼈없는 닭발 구이!"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-263-5291"
       },
       {
         "naverId": "1414540354",
@@ -4233,7 +4696,9 @@ window.NAVER_RESTAURANTS = {
           "황태해장국",
           "소고기 우거지해장국"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1485-8110",
+        "hours": "기본: 매일 05:00–18:00"
       },
       {
         "naverId": "11590873",
@@ -4248,7 +4713,9 @@ window.NAVER_RESTAURANTS = {
           "막국수",
           "양푼 비빔밥"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-435-7533",
+        "hours": "매장: 월–금 11:00–21:00 · 라스트오더 20:30 / 토–일 10:00–21:00 · 라스트오더 20:30"
       }
     ],
     "yangji": [
@@ -4265,7 +4732,9 @@ window.NAVER_RESTAURANTS = {
           "(점심특선) 연탄불고기 + 우럭미역국",
           "연탄 불고기 + 냉면 (물 / 비빔)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-336-6333",
+        "hours": "기본: 월 10:00–22:00 / 화 정기휴무 (매주 화요일) / 수–일 10:00–22:00"
       },
       {
         "naverId": "20103498",
@@ -4280,7 +4749,9 @@ window.NAVER_RESTAURANTS = {
           "오리백숙",
           "토종닭백숙"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-336-6470",
+        "hours": "매일 11:00–21:30 · 라스트오더 20:30"
       },
       {
         "naverId": "34744320",
@@ -4295,7 +4766,9 @@ window.NAVER_RESTAURANTS = {
           "들깨국수 (냉/온)",
           "비빔국수"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-322-4559",
+        "hours": "기본: 월–토 04:00–15:00 · 매달 2, 4번째 일요일 정기 휴무"
       },
       {
         "naverId": "1960786782",
@@ -4310,7 +4783,9 @@ window.NAVER_RESTAURANTS = {
           "석쇠소불고기",
           "라면사리"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "031-339-0285",
+        "hours": "기본: 월 정기휴무 (매주 월요일) / 화–금 11:00–20:30 · 브레이크 15:00–17:00 / 토 11:00–20:30 / 일 11:00–19:30"
       }
     ],
     "elysian": [
@@ -4336,7 +4811,8 @@ window.NAVER_RESTAURANTS = {
           "오뎅",
           "유부우동"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-262-7600"
       },
       {
         "naverId": "37278349",
@@ -4351,7 +4827,9 @@ window.NAVER_RESTAURANTS = {
           "간장닭갈비",
           "막국수"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "033-263-9235",
+        "hours": "매일 11:00–21:00"
       },
       {
         "naverId": "1931911236",
@@ -4366,7 +4844,9 @@ window.NAVER_RESTAURANTS = {
           "해물순두부",
           "소고기순두부"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "0507-1449-2405",
+        "hours": "기본: 월 09:00–16:00 · 라스트오더 15:00 / 화 정기휴무 (매주 화요일) / 수–일 09:00–16:00 · 라스트오더 15:00"
       }
     ],
     "muju": [
@@ -4377,7 +4857,8 @@ window.NAVER_RESTAURANTS = {
         "memo": "24.09.26 돈까스 맛집.",
         "driveMinutes": 4,
         "menus": [],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "063-320-7570"
       },
       {
         "naverId": "20955845",
@@ -4392,7 +4873,8 @@ window.NAVER_RESTAURANTS = {
           "능이버섯전골(대)",
           "가마솥설렁탕(특)"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "063-322-3097"
       },
       {
         "naverId": "20256405",
@@ -4407,7 +4889,9 @@ window.NAVER_RESTAURANTS = {
           "능이버섯해물 순두부전골 2인",
           "능이버섯해물 순두부전골 3인"
         ],
-        "memoRecommendCount": 1
+        "memoRecommendCount": 1,
+        "phone": "063-322-7771",
+        "hours": "생두부촌 본점: 매일 09:00–20:00 · 라스트오더 19:00"
       }
     ]
   }
