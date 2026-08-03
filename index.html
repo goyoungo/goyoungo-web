@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#F5F1EA">
-    <script src="/assets/theme.js?v=20260802-theme2"></script>
+    <script src="/assets/theme.js?v=20260803-header2"></script>
     <meta name="google-adsense-account" content="ca-pub-2744661683121980">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2744661683121980"
         crossorigin="anonymous"></script>
@@ -18,23 +18,19 @@
     <meta name="twitter:card" content="summary_large_image">
     <link rel="canonical" href="https://goyoungo.com/">
     <title>GO.YOUNGO · Life Directory</title>
-    <link rel="stylesheet" href="/assets/portal.css?v=20260803-instagram1">
-    <link rel="stylesheet" href="/assets/theme.css?v=20260802-theme3">
+    <link rel="stylesheet" href="/assets/portal.css?v=20260803-header2">
+    <link rel="stylesheet" href="/assets/theme.css?v=20260803-header2">
 </head>
 <body class="portal-body">
     <a class="skip-link" href="#main">콘텐츠로 건너뛰기</a>
 
-    <section class="site-shell portal-shell">
+    <section id="mainContent" class="site-shell portal-shell">
         <header class="site-header portal-header">
             <a class="brand-link" href="/" aria-label="GO.YOUNGO 메인">
                 <span class="brand-dot" aria-hidden="true"></span>
                 <span>GO.YOUNGO</span>
             </a>
-            <a class="instagram-header-link" href="https://www.instagram.com/go.youngo/"
-                target="_blank" rel="noopener noreferrer" aria-label="GO.YOUNGO 인스타그램 열기">
-                <span class="instagram-glyph instagram-mini-mark" aria-hidden="true"></span>
-                <span>@go.youngo</span>
-            </a>
+            <button id="logoutBtn" type="button">로그인</button>
         </header>
 
         <main id="main" class="portal-main" tabindex="-1">
@@ -85,5 +81,7 @@
             </section>
         </main>
     </section>
+    <script defer src="https://t1.kakaocdn.net/kakao_js_sdk/v1/kakao.min.js"></script>
+    <script defer src="/assets/auth.js?v=20260728-auth3"></script>
 </body>
 </html>
