@@ -110,9 +110,40 @@ a {
     color: #fff;
 }
 
+.instagram-glyph {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    flex: none;
+    border-radius: 6px;
+    background:
+        radial-gradient(circle at 31% 107%, #fdf497 0 13%, #fd5949 38%, #d6249f 63%, #285aeb 92%);
+}
+
+.instagram-glyph::before {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+}
+
+.instagram-glyph::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #fff;
+}
+
 .instagram-mini-mark {
-    font-size: 17px;
-    line-height: 1;
+    width: 19px;
+    height: 19px;
+    border-radius: 5px;
 }
 
 .portal-main {
@@ -172,10 +203,13 @@ a {
     place-items: center;
     border: 3px solid var(--surface);
     border-radius: 50%;
-    background: var(--text);
-    color: var(--surface);
-    font-size: 17px;
-    font-weight: 900;
+    background: var(--surface);
+}
+
+.profile-instagram .instagram-glyph {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
 }
 
 .portal-kicker {
@@ -346,8 +380,7 @@ html[data-theme="dark"] .portal-service {
 
 html[data-theme="dark"] .profile-instagram {
     border-color: var(--surface);
-    background: var(--text);
-    color: var(--surface);
+    background: var(--surface);
 }
 
 html[data-theme="dark"] .portal-service.is-coming {

@@ -249,8 +249,8 @@
         toggle.setAttribute("aria-expanded", "false");
         toggle.innerHTML = '<span aria-hidden="true">☰</span><span>메뉴</span>';
 
-        var headerActions = header.querySelector(".site-header-actions");
-        header.insertBefore(toggle, headerActions || header.lastChild);
+        var brand = header.querySelector(".brand-link");
+        header.insertBefore(toggle, brand || header.firstChild);
 
         var backdrop = document.createElement("button");
         backdrop.type = "button";

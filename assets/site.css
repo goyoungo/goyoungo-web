@@ -1516,6 +1516,10 @@ img {
         margin-left: 0;
     }
 
+    .has-site-sidebar .brand-link {
+        margin-right: auto;
+    }
+
     .site-nav-toggle {
         min-height: 36px;
         padding: 6px 10px;
