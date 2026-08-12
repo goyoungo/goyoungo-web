@@ -1361,9 +1361,31 @@
         });
     }
 
-    function restaurantRow(item) {
+    function restaurantCategory(item) {
+        var text = restaurantSearchText(item);
+        if (/(카페|커피|베이커리|디저트|도넛|라떼|빵|케이크|빙수|젤라또)/.test(text)) return "cafe";
+        if (/(중식|중국|짜장|짬뽕|마라|탕수|깐풍|양꼬치)/.test(text)) return "chinese";
+        if (/(치킨|닭강정|피자|햄버거|버거)/.test(text)) return "chicken";
+        if (/(고기|갈비|삼겹|한우|소고기|불고기|곱창|막창|닭갈비|오리|보쌈|족발|구이)/.test(text)) return "meat";
+        if (/(분식|떡볶이|라면|라볶이|국수|냉면|막국수|칼국수|만두|수제비|메밀|돈까스|돈가스)/.test(text)) return "noodles";
+        if (/(일식|초밥|스시|횟집|회 |우동|돈카츠|파스타|양식|베트남|태국)/.test(text)) return "world";
+        if (/(술집|포차|호프|막걸리|이자카야|펍|야식)/.test(text)) return "pub";
+        if (/(한식|국밥|해장국|찌개|전골|백반|쌈밥|생선|두부|곰탕|설렁탕|순두부|산채|감자탕)/.test(text)) return "korean";
+        return "other";
+    }
+
+    function restaurantDataAttributes(item, sectionId) {
+        return ' data-venue="' + esc(item.id) + '"' +
+            ' data-search="' + esc(restaurantSearchText(item)) + '"' +
+            ' data-category="' + restaurantCategory(item) + '"' +
+            ' data-status="' + (sectionId === "closed" ? "closed" : "open") + '"' +
+            ' data-drive-minutes="' + esc(item.driveMinutes == null ? "" : item.driveMinutes) + '"' +
+            ' data-has-hours="' + (item.hours ? "true" : "false") + '"';
+    }
+
+    function restaurantRow(item, sectionId) {
         return [
-            '<tr data-venue="' + esc(item.id) + '" data-search="' + esc(restaurantSearchText(item)) + '">',
+            '<tr' + restaurantDataAttributes(item, sectionId) + '>',
             '<td class="venue-name"><span>' + esc(item.name) + "</span>" + adminActionsHtml(item) + "</td>",
             '<td class="menu-cell">' + tagsHtml(item.menus) + "</td>",
             '<td class="address-cell">' + restaurantAddressHtml(item) + "</td>",
@@ -1375,7 +1397,7 @@
         ].join("");
     }
 
-    function restaurantCard(item) {
+    function restaurantCard(item, sectionId) {
         var meta = "";
         if (item.address || item.driveMinutes) {
             meta += '<p class="venue-address-line"><span aria-hidden="true">📍</span><span>' +
@@ -1385,7 +1407,7 @@
         if (item.hours) meta += "<p>🕒 " + esc(item.hours) + "</p>";
         if (item.note) meta += "<p>💬 " + esc(item.note) + "</p>";
         return [
-            '<article class="venue-card" data-venue="' + esc(item.id) + '" data-search="' + esc(restaurantSearchText(item)) + '">',
+            '<article class="venue-card"' + restaurantDataAttributes(item, sectionId) + '>',
             '<div class="venue-card-heading"><h3>' + esc(item.name) + "</h3>" + adminActionsHtml(item) + "</div>",
             tagsHtml(item.menus),
             '<div class="venue-meta">' + meta + "</div>",
@@ -1406,40 +1428,178 @@
             '<th scope="col">이름</th><th scope="col">메뉴 및 기타</th><th scope="col">주소</th>',
             '<th scope="col">연락처</th><th scope="col">평가</th><th scope="col">메모</th><th scope="col">영업 시간</th>',
             "</tr></thead><tbody>",
-            section.items.map(restaurantRow).join(""),
+            section.items.map(function (item) { return restaurantRow(item, section.id); }).join(""),
             "</tbody></table></div>",
-            '<div class="mobile-cards">' + section.items.map(restaurantCard).join("") + "</div>",
+            '<div class="mobile-cards">' + section.items.map(function (item) { return restaurantCard(item, section.id); }).join("") + "</div>",
             "</section>"
         ].join("");
     }
 
-    function bindRestaurantSearch(total) {
+    function restaurantFilterState() {
+        var input = document.getElementById("venueSearch");
+        var category = document.getElementById("venueCategory");
+        var status = document.getElementById("venueStatus");
+        var distance = document.getElementById("venueDistance");
+        var hours = document.getElementById("venueHours");
+        return {
+            query: input ? input.value.trim().toLocaleLowerCase("ko-KR") : "",
+            category: category ? category.value : "all",
+            status: status ? status.value : "all",
+            distance: distance ? distance.value : "all",
+            hoursOnly: Boolean(hours && hours.checked)
+        };
+    }
+
+    function restaurantMatchesFilters(item, page, state) {
+        var status = restaurantSectionId(page, item.id) === "closed" ? "closed" : "open";
+        if (state.query && !restaurantSearchText(item).includes(state.query)) return false;
+        if (state.category !== "all" && restaurantCategory(item) !== state.category) return false;
+        if (state.status !== "all" && status !== state.status) return false;
+        if (state.hoursOnly && !item.hours) return false;
+        if (state.distance !== "all") {
+            var driveMinutes = Number(item.driveMinutes);
+            if (!Number.isFinite(driveMinutes) || driveMinutes <= 0 || driveMinutes > Number(state.distance)) return false;
+        }
+        return true;
+    }
+
+    function filteredRestaurantItems() {
+        if (!currentRestaurantPage) return [];
+        var state = restaurantFilterState();
+        return restaurantItems(currentRestaurantPage).filter(function (item) {
+            return restaurantMatchesFilters(item, currentRestaurantPage, state);
+        });
+    }
+
+    function updateRandomRecommendation(items) {
+        var candidates = items.filter(function (item) {
+            return restaurantSectionId(currentRestaurantPage, item.id) !== "closed";
+        });
+        var summary = root.querySelector("[data-random-summary]");
+        var button = root.querySelector("[data-random-pick]");
+        var result = root.querySelector("[data-random-result]");
+        if (summary) summary.textContent = candidates.length
+            ? "현재 조건의 운영 중 맛집 " + candidates.length + "곳 중에서 골라드려요."
+            : "현재 조건에 맞는 운영 중 맛집이 없습니다.";
+        if (button) button.disabled = candidates.length === 0;
+        if (result && result.dataset.randomVenue && !candidates.some(function (item) {
+            return item.id === result.dataset.randomVenue;
+        })) {
+            result.hidden = true;
+            result.removeAttribute("data-random-venue");
+        }
+        return candidates;
+    }
+
+    function applyRestaurantFilters(total) {
         var input = document.getElementById("venueSearch");
         var result = document.getElementById("resultCount");
         var noResults = document.getElementById("searchEmpty");
         if (!input || !result) return;
 
-        input.addEventListener("input", function () {
-            var query = input.value.trim().toLocaleLowerCase("ko-KR");
-            var matchedIds = new Set();
+        var items = filteredRestaurantItems();
+        var matchedIds = new Set(items.map(function (item) { return item.id; }));
 
-            document.querySelectorAll("[data-venue]").forEach(function (element) {
-                var matches = !query || (element.dataset.search || "").includes(query);
-                element.hidden = !matches;
-                if (matches) matchedIds.add(element.dataset.venue);
-            });
-
-            document.querySelectorAll("[data-section]").forEach(function (section) {
-                var rows = Array.from(section.querySelectorAll("tbody [data-venue]"));
-                var count = rows.filter(function (row) { return !row.hidden; }).length;
-                section.hidden = count === 0;
-                var badge = section.querySelector("[data-section-count]");
-                if (badge) badge.textContent = String(count);
-            });
-
-            result.innerHTML = "<strong>" + matchedIds.size + "</strong> / " + total + "곳";
-            noResults.hidden = matchedIds.size !== 0;
+        root.querySelectorAll("[data-venue]").forEach(function (element) {
+            element.hidden = !matchedIds.has(element.dataset.venue);
         });
+
+        root.querySelectorAll("[data-section]").forEach(function (section) {
+            var rows = Array.from(section.querySelectorAll("tbody [data-venue]"));
+            var count = rows.filter(function (row) { return !row.hidden; }).length;
+            section.hidden = count === 0;
+            var badge = section.querySelector("[data-section-count]");
+            if (badge) badge.textContent = String(count);
+        });
+
+        result.innerHTML = "<strong>" + matchedIds.size + "</strong> / " + total + "곳";
+        noResults.hidden = matchedIds.size !== 0;
+        updateRandomRecommendation(items);
+    }
+
+    function resetRestaurantFilters(total) {
+        var input = document.getElementById("venueSearch");
+        var category = document.getElementById("venueCategory");
+        var status = document.getElementById("venueStatus");
+        var distance = document.getElementById("venueDistance");
+        var hours = document.getElementById("venueHours");
+        if (input) input.value = "";
+        if (category) category.value = "all";
+        if (status) status.value = "all";
+        if (distance) distance.value = "all";
+        if (hours) hours.checked = false;
+        applyRestaurantFilters(total);
+    }
+
+    function focusRestaurant(venueId, targetClass) {
+        window.setTimeout(function () {
+            var targets = Array.from(root.querySelectorAll("[data-venue]")).filter(function (element) {
+                return element.dataset.venue === venueId;
+            });
+            var target = targets.find(function (element) {
+                return !element.hidden && element.offsetParent !== null;
+            }) || targets[0];
+            if (!target) return;
+            target.scrollIntoView({ behavior: "smooth", block: "center" });
+            target.classList.add(targetClass);
+            window.setTimeout(function () {
+                target.classList.remove(targetClass);
+            }, 1_600);
+        }, 0);
+    }
+
+    function pickRandomRestaurant() {
+        var candidates = updateRandomRecommendation(filteredRestaurantItems());
+        var result = root.querySelector("[data-random-result]");
+        if (!candidates.length || !result) return;
+        var previousId = result.dataset.randomVenue;
+        var pool = candidates.length > 1
+            ? candidates.filter(function (item) { return item.id !== previousId; })
+            : candidates;
+        var randomValue = Math.random();
+        if (window.crypto && typeof window.crypto.getRandomValues === "function") {
+            var values = new Uint32Array(1);
+            window.crypto.getRandomValues(values);
+            randomValue = values[0] / 4_294_967_296;
+        }
+        var item = pool[Math.floor(randomValue * pool.length)];
+        var menu = item.menus && item.menus.length ? item.menus.slice(0, 3).join(" · ") : "대표 메뉴 확인 중";
+        var drive = item.driveMinutes ? " · 차량 약 " + esc(item.driveMinutes) + "분" : "";
+        result.dataset.randomVenue = item.id;
+        result.innerHTML = [
+            '<div class="random-result-copy"><span>오늘의 한 곳</span><h3>' + esc(item.name) + "</h3>",
+            "<p>" + esc(menu) + drive + "</p></div>",
+            '<div class="random-result-actions">',
+            externalLink(restaurantMapUrl(item), "네이버지도", "action-link"),
+            '<button class="action-link" type="button" data-random-focus="' + esc(item.id) + '">목록에서 보기</button>',
+            "</div>"
+        ].join("");
+        result.hidden = false;
+        result.focus({ preventScroll: true });
+    }
+
+    function bindRestaurantTools(total) {
+        var input = document.getElementById("venueSearch");
+        var result = document.getElementById("resultCount");
+        if (!input || !result) return;
+
+        ["venueSearch", "venueCategory", "venueStatus", "venueDistance", "venueHours"].forEach(function (id) {
+            var control = document.getElementById(id);
+            if (!control) return;
+            control.addEventListener(control === input ? "input" : "change", function () {
+                applyRestaurantFilters(total);
+            });
+        });
+        var reset = root.querySelector("[data-filter-reset]");
+        if (reset) reset.addEventListener("click", function () { resetRestaurantFilters(total); });
+        var random = root.querySelector("[data-random-pick]");
+        if (random) random.addEventListener("click", pickRandomRestaurant);
+        var randomResult = root.querySelector("[data-random-result]");
+        if (randomResult) randomResult.addEventListener("click", function (event) {
+            var focus = event.target.closest("[data-random-focus]");
+            if (focus) focusRestaurant(focus.dataset.randomFocus, "random-target");
+        });
+        applyRestaurantFilters(total);
     }
 
     function bindRankingNavigation() {
@@ -1449,25 +1609,8 @@
             var button = event.target.closest("[data-ranking-venue]");
             if (!button || !root.contains(button)) return;
             var venueId = button.dataset.rankingVenue;
-            var input = document.getElementById("venueSearch");
-            if (input && input.value) {
-                input.value = "";
-                input.dispatchEvent(new Event("input", { bubbles: true }));
-            }
-            window.setTimeout(function () {
-                var targets = Array.from(root.querySelectorAll("[data-venue]")).filter(function (element) {
-                    return element.dataset.venue === venueId;
-                });
-                var target = targets.find(function (element) {
-                    return !element.hidden && element.offsetParent !== null;
-                }) || targets[0];
-                if (!target) return;
-                target.scrollIntoView({ behavior: "smooth", block: "center" });
-                target.classList.add("ranking-target");
-                window.setTimeout(function () {
-                    target.classList.remove("ranking-target");
-                }, 1_600);
-            }, 0);
+            resetRestaurantFilters(restaurantItems(currentRestaurantPage).length);
+            focusRestaurant(venueId, "ranking-target");
         });
     }
 
@@ -1498,17 +1641,29 @@
         ].join("") : "";
 
         var content = total ? [
-            '<div class="toolbar">',
-            '<div class="search-field"><label for="venueSearch">맛집 검색</label>',
+            '<section class="restaurant-finder" aria-label="맛집 검색과 필터">',
+            '<div class="toolbar"><div class="search-field"><label for="venueSearch">맛집 검색</label>',
             '<input id="venueSearch" type="search" placeholder="이름, 메뉴, 주소로 검색" autocomplete="off"></div>',
             '<div class="result-count" id="resultCount" role="status" aria-live="polite"><strong>' +
-                total + "</strong> / " + total + "곳</div>",
-            "</div>",
+                total + "</strong> / " + total + "곳</div></div>",
+            '<div class="restaurant-filters">',
+            '<label>음식 종류<select id="venueCategory"><option value="all">전체 음식</option><option value="korean">한식</option><option value="meat">고기·구이</option><option value="noodles">면·분식</option><option value="chinese">중식</option><option value="chicken">치킨·피자</option><option value="cafe">카페·디저트</option><option value="world">일식·양식·세계음식</option><option value="pub">술·야식</option><option value="other">기타</option></select></label>',
+            '<label>운영 상태<select id="venueStatus"><option value="all">전체 상태</option><option value="open">운영 중</option><option value="closed">폐업</option></select></label>',
+            '<label>리조트에서 거리<select id="venueDistance"><option value="all">전체 거리</option><option value="10">차량 10분 이내</option><option value="20">차량 20분 이내</option><option value="30">차량 30분 이내</option></select></label>',
+            '<label class="filter-check"><input id="venueHours" type="checkbox"><span>영업시간 정보 있음</span></label>',
+            '<button class="filter-reset" type="button" data-filter-reset>필터 초기화</button>',
+            "</div></section>",
+            '<section class="restaurant-random" aria-labelledby="randomRestaurantTitle">',
+            '<div class="random-intro"><span class="eyebrow">RANDOM PICK</span><h2 id="randomRestaurantTitle">오늘 어디서 먹지?</h2>',
+            '<p data-random-summary>현재 조건의 운영 중 맛집에서 한 곳을 골라드려요.</p></div>',
+            '<button class="random-pick-button" type="button" data-random-pick><span aria-hidden="true">↻</span> 랜덤 추천</button>',
+            '<div class="random-result" data-random-result tabindex="-1" aria-live="polite" hidden></div>',
+            "</section>",
             sourceDisclosure,
             restaurantRankingsHtml(page),
             page.sections.map(restaurantSection).join(""),
             '<div class="empty-state" id="searchEmpty" hidden>',
-            '<span aria-hidden="true">🔎</span><h2>검색 결과가 없습니다</h2><p>다른 이름이나 메뉴로 검색해 보세요.</p>',
+            '<span aria-hidden="true">🔎</span><h2>조건에 맞는 맛집이 없습니다</h2><p>검색어나 필터를 바꿔 보세요.</p>',
             "</div>",
             adminModalHtml()
         ].join("") : [
@@ -1521,7 +1676,7 @@
         ].join("");
 
         root.innerHTML = '<div class="page-wrap">' + hero(page) + content + footer() + "</div>";
-        bindRestaurantSearch(total);
+        bindRestaurantTools(total);
         bindRankingNavigation();
         bindAdminControls();
         setAdminUi(adminState.isAdmin);
