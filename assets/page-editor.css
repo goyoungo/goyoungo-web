@@ -1,0 +1,122 @@
+.page-editable-text {
+    display: contents;
+}
+
+.page-editor-toolbar {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 180;
+    width: min(320px, calc(100vw - 28px));
+    padding: 14px;
+    border: 1px solid #3f3832;
+    background: #fffcf7;
+    color: #26231f;
+    box-shadow: 0 18px 48px rgba(31, 27, 23, 0.24);
+    font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
+}
+
+.page-editor-toolbar[hidden] {
+    display: none !important;
+}
+
+.page-editor-toolbar-head {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 11px;
+}
+
+.page-editor-toolbar-head strong {
+    color: #e05a3f;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+}
+
+.page-editor-toolbar-head span {
+    color: #756e65;
+    font-weight: 800;
+}
+
+.page-editor-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.page-editor-actions button {
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #48403a;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.page-editor-actions button:first-child,
+.page-editor-actions button[data-page-editor-save] {
+    grid-column: 1 / -1;
+    background: #e05a3f;
+    color: #fff;
+}
+
+.page-editor-actions button:hover:not(:disabled),
+.page-editor-actions button:focus-visible {
+    border-color: #e05a3f;
+    outline: 2px solid rgba(224, 90, 63, 0.24);
+    outline-offset: 2px;
+}
+
+.page-editor-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.52;
+}
+
+.page-editor-status {
+    min-height: 17px;
+    margin: 10px 0 0;
+    color: #756e65;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.page-editor-status.is-error {
+    color: #b64330;
+}
+
+body[data-page-editing] .page-editable-text[contenteditable] {
+    display: inline;
+    border-radius: 2px;
+    outline: 1px dashed rgba(224, 90, 63, 0.7);
+    outline-offset: 3px;
+    cursor: text;
+}
+
+body[data-page-editing] .page-editable-text[contenteditable]:hover,
+body[data-page-editing] .page-editable-text[contenteditable]:focus {
+    background: rgba(224, 90, 63, 0.12);
+    outline: 2px solid #e05a3f;
+}
+
+html[data-theme="dark"] .page-editor-toolbar {
+    border-color: #93887c;
+    background: #211e19;
+    color: #f6eee4;
+}
+
+html[data-theme="dark"] .page-editor-toolbar-head span,
+html[data-theme="dark"] .page-editor-status {
+    color: #b8aea3;
+}
+
+@media (max-width: 620px) {
+    .page-editor-toolbar {
+        right: 14px;
+        bottom: 14px;
+    }
+}

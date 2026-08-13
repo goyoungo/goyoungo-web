@@ -15,7 +15,7 @@ Parameters:
   AdminKakaoUserIds:
     Type: CommaDelimitedList
     NoEcho: true
-    Description: Numeric Kakao user IDs allowed to edit restaurant information
+    Description: Numeric Kakao user IDs allowed to edit restaurant and page information
 
 Resources:
   VoteTable:
@@ -143,6 +143,18 @@ Resources:
           for (const venueId of ["naver-1911135363","naver-31159517","naver-11727438","naver-1561283581","naver-2067262245","naver-37067234","naver-18050673","naver-20128398","naver-1101390326","naver-35166575","naver-18049795","naver-36379236","naver-18050259","naver-1528447043","naver-1417314194","naver-13301852","naver-13573708","naver-13573706","naver-13288345","naver-1729534738","naver-116218805","naver-18514716","naver-1858306697","naver-37620545","naver-1060262104","naver-1606157558","naver-229948299","naver-38695562","naver-34818419","naver-1982805189","naver-1228200860","naver-13577036","naver-1076083759","naver-1008457815","naver-11851760","naver-15438614","naver-15439624","naver-35228059","naver-37060588","naver-11691779","naver-35161492","naver-11722939","naver-11851820","naver-15461625","naver-38248441","naver-1836677781","naver-20601514","naver-31047425","naver-1414540354","naver-11590873","naver-1773457234","naver-1960786782","naver-34744320","naver-20103498","naver-1606711630","naver-15648096","naver-37278349","naver-1931911236","naver-37769045","naver-20955845","naver-20256405","naver-1431333892","naver-15293378"]) {
             allowedVenueIds.add(venueId);
           }
+          const allowedPagePaths = new Set([
+            "/", "/about.html", "/blog/", "/blog/goyoungo-building-story.html",
+            "/runbro/", "/runbro/chatgpt-connect.html",
+            "/snowbro/", "/snowbro/board-cafe.html", "/snowbro/marketplace.html",
+            "/snowbro/season-room.html", "/snowbro/shuttle.html",
+            "/snowbro/elysian-restaurants.html", "/snowbro/high1-restaurants.html",
+            "/snowbro/jisan-restaurants.html", "/snowbro/konjiam-restaurants.html",
+            "/snowbro/muju-restaurants.html", "/snowbro/o2-restaurants.html",
+            "/snowbro/phoenix-restaurants.html", "/snowbro/vivaldi-restaurants.html",
+            "/snowbro/welpark-restaurants.html", "/snowbro/yangji-restaurants.html",
+            "/snowbro/yongpyong-restaurants.html"
+          ]);
 
           const documentClient = DynamoDBDocumentClient.from(
             new DynamoDBClient({}),
@@ -259,6 +271,10 @@ Resources:
 
           function venuePk(venueId) {
             return "VENUE#" + venueId;
+          }
+
+          function pagePk(pagePath) {
+            return "PAGE#" + pagePath;
           }
 
           function userSk(userId) {
@@ -517,6 +533,132 @@ Resources:
             });
           }
 
+          function validatePagePath(value) {
+            const pagePath = cleanText(value, "페이지 경로", 180);
+            if (!allowedPagePaths.has(pagePath)) {
+              throw new HttpError(400, "수정할 페이지 경로가 올바르지 않습니다.");
+            }
+            return pagePath;
+          }
+
+          function validatePageFields(source) {
+            if (!source || Array.isArray(source) || typeof source !== "object") {
+              throw new HttpError(400, "수정할 페이지 내용이 필요합니다.");
+            }
+            const entries = Object.entries(source);
+            if (!entries.length || entries.length > 200) {
+              throw new HttpError(400, "한 번에 수정할 항목은 1~200개여야 합니다.");
+            }
+            const fields = {};
+            let totalBytes = 0;
+            for (const [key, value] of entries) {
+              if (!/^t_[a-f0-9]{16}$/.test(key)) {
+                throw new HttpError(400, "수정 항목 식별자가 올바르지 않습니다.");
+              }
+              if (value === null) {
+                fields[key] = null;
+                continue;
+              }
+              if (typeof value !== "string") {
+                throw new HttpError(400, "페이지 글자 형식이 올바르지 않습니다.");
+              }
+              const text = value.replace(/\r\n?/g, "\n").replace(/\0/g, "");
+              if (text.length > 3000) {
+                throw new HttpError(400, "페이지 글자 항목이 너무 깁니다.");
+              }
+              totalBytes += Buffer.byteLength(key + text, "utf8");
+              if (totalBytes > 60 * 1024) {
+                throw new HttpError(413, "페이지 수정 내용이 너무 큽니다.");
+              }
+              fields[key] = text;
+            }
+            return fields;
+          }
+
+          async function readPageOverrides(event) {
+            const pagePath = validatePagePath(
+              event.queryStringParameters && event.queryStringParameters.pagePath
+            );
+            const result = await documentClient.send(new GetCommand({
+              TableName: tableName,
+              Key: { pk: pagePk(pagePath), sk: "CONTENT_OVERRIDE" },
+              ConsistentRead: true
+            }));
+            const item = result.Item || {};
+            return response(200, {
+              pagePath,
+              fields: item.fields || {},
+              updatedAt: item.updatedAt || null
+            });
+          }
+
+          async function writePageOverrides(event) {
+            const admin = await verifiedAdmin(event);
+            const body = parseJsonBody(event, 72 * 1024);
+            const pagePath = validatePagePath(body.pagePath);
+            const changes = validatePageFields(body.fields);
+            const existingResult = await documentClient.send(new GetCommand({
+              TableName: tableName,
+              Key: { pk: pagePk(pagePath), sk: "CONTENT_OVERRIDE" },
+              ConsistentRead: true
+            }));
+            const before = existingResult.Item && existingResult.Item.fields
+              ? existingResult.Item.fields
+              : {};
+            const after = { ...before };
+            for (const [key, value] of Object.entries(changes)) {
+              if (value === null) delete after[key];
+              else after[key] = value;
+            }
+            if (Object.keys(after).length > 500) {
+              throw new HttpError(400, "한 페이지에 저장할 수 있는 수정 항목을 초과했습니다.");
+            }
+
+            const now = new Date().toISOString();
+            const auditSk = "AUDIT#" + now + "#" + crypto.randomBytes(6).toString("hex");
+            await documentClient.send(new TransactWriteCommand({
+              TransactItems: [
+                { Put: {
+                  TableName: tableName,
+                  Item: {
+                    pk: pagePk(pagePath), sk: "CONTENT_OVERRIDE", fields: after,
+                    updatedAt: now, updatedBy: admin.auditUserId
+                  }
+                } },
+                { Put: {
+                  TableName: tableName,
+                  Item: {
+                    pk: pagePk(pagePath), sk: auditSk, action: "edit",
+                    changes, updatedAt: now, updatedBy: admin.auditUserId
+                  }
+                } }
+              ]
+            }));
+            return response(200, { pagePath, fields: after, updatedAt: now });
+          }
+
+          async function readPageHistory(event) {
+            await verifiedAdmin(event);
+            const pagePath = validatePagePath(
+              event.queryStringParameters && event.queryStringParameters.pagePath
+            );
+            const result = await documentClient.send(new QueryCommand({
+              TableName: tableName,
+              KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
+              ExpressionAttributeValues: { ":pk": pagePk(pagePath), ":prefix": "AUDIT#" },
+              ScanIndexForward: false,
+              Limit: 20
+            }));
+            return response(200, {
+              pagePath,
+              history: (result.Items || []).map((item) => ({
+                revision: item.sk,
+                changes: item.changes || {},
+                updatedAt: item.updatedAt
+              }))
+            });
+          }
+
           async function readVotes(event) {
             const venueIds = validateVenueIds(
               event.queryStringParameters && event.queryStringParameters.venueIds
@@ -678,6 +820,9 @@ Resources:
               if (method === "GET" && event.rawPath === "/restaurant-overrides") {
                 return await readRestaurantOverrides(event);
               }
+              if (method === "GET" && event.rawPath === "/page-overrides") {
+                return await readPageOverrides(event);
+              }
               if (method === "GET" && event.rawPath === "/admin/me") {
                 return await readAdminMe(event);
               }
@@ -686,6 +831,12 @@ Resources:
               }
               if (method === "PUT" && /^\/admin\/restaurants\/[^/]+$/.test(event.rawPath || "")) {
                 return await writeRestaurantOverride(event);
+              }
+              if (method === "PUT" && event.rawPath === "/admin/pages") {
+                return await writePageOverrides(event);
+              }
+              if (method === "GET" && event.rawPath === "/admin/pages/history") {
+                return await readPageHistory(event);
               }
               if (method === "PUT" && /^\/votes\/[^/]+$/.test(event.rawPath || "")) {
                 return await writeVote(event);
@@ -770,6 +921,36 @@ Resources:
     Properties:
       ApiId: !Ref VoteApi
       RouteKey: "GET /admin/me"
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref VoteIntegration
+
+  ReadPageOverridesRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref VoteApi
+      RouteKey: "GET /page-overrides"
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref VoteIntegration
+
+  WritePageOverridesRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref VoteApi
+      RouteKey: "PUT /admin/pages"
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref VoteIntegration
+
+  ReadPageHistoryRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref VoteApi
+      RouteKey: "GET /admin/pages/history"
       Target: !Join
         - /
         - - integrations

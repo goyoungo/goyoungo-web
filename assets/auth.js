@@ -11,6 +11,24 @@
     var sdkReady = false;
     var sessionInvalidated = false;
 
+    function loadPageEditor() {
+        if (localPreview || document.getElementById("goyoungoPageEditorScript")) return;
+
+        if (!document.getElementById("goyoungoPageEditorStyle")) {
+            var style = document.createElement("link");
+            style.id = "goyoungoPageEditorStyle";
+            style.rel = "stylesheet";
+            style.href = "/assets/page-editor.css?v=20260813-editor1";
+            document.head.appendChild(style);
+        }
+
+        var script = document.createElement("script");
+        script.id = "goyoungoPageEditorScript";
+        script.src = "/assets/page-editor.js?v=20260813-editor1";
+        script.async = true;
+        document.head.appendChild(script);
+    }
+
     function getAccessToken() {
         if (sessionInvalidated) return null;
         try {
@@ -237,6 +255,7 @@
     };
 
     function initialize() {
+        loadPageEditor();
         var ui = elements();
         if (
             !ui.loginScreen ||
