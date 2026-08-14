@@ -9,6 +9,7 @@
     var editRoot = document.getElementById("mainContent") || document.querySelector("main") || document.body;
     var overrides = {};
     var baselineByKey = new Map();
+    var baselineLinkByKey = new Map();
     var touchedKeys = new Set();
     var isAdmin = false;
     var editing = false;
@@ -18,6 +19,10 @@
     var processQueued = false;
     var toolbar = null;
     var statusNode = null;
+    var linkPanel = null;
+    var linkInput = null;
+    var linkName = null;
+    var selectedLink = null;
 
     function normalizePagePath(value) {
         var path = String(value || "/").replace(/\/{2,}/g, "/");
@@ -56,6 +61,10 @@
 
     function editKey(value) {
         return "t_" + hashPart(value, 2166136261) + hashPart(value, 3339675911);
+    }
+
+    function linkKey(value) {
+        return "l_" + hashPart(value, 2166136261) + hashPart(value, 3339675911);
     }
 
     function editableSiblingIndex(element) {
@@ -153,6 +162,43 @@
         });
     }
 
+    function applyLinkOverride(link) {
+        var key = link.dataset.pageLinkKey;
+        var value = Object.prototype.hasOwnProperty.call(overrides, key)
+            ? overrides[key]
+            : baselineLinkByKey.get(key);
+        if (typeof value === "string" && link.getAttribute("href") !== value) {
+            link.setAttribute("href", value);
+        }
+    }
+
+    function prepareLinks(scope) {
+        if (!scope || scope.nodeType !== 1) return;
+        var links = [];
+        if (scope.matches("a[href]")) links.push(scope);
+        scope.querySelectorAll("a[href]").forEach(function (link) { links.push(link); });
+        links.forEach(function (link) {
+            if (
+                link.dataset.pageLinkKey ||
+                !editRoot.contains(link) ||
+                link.closest(".page-editor-toolbar, .login-screen, [data-no-page-edit]")
+            ) return;
+            var descriptor = pagePath + "|" + elementPath(link) + "|href";
+            var key = linkKey(descriptor);
+            link.dataset.pageLinkKey = key;
+            link.classList.add("page-editable-link");
+            if (!baselineLinkByKey.has(key)) {
+                baselineLinkByKey.set(key, link.getAttribute("href"));
+            }
+            applyLinkOverride(link);
+        });
+    }
+
+    function processEditableContent(scope) {
+        wrapTextNodes(scope);
+        prepareLinks(scope);
+    }
+
     function updateEditableState(span) {
         if (editing && isAdmin) {
             span.setAttribute("contenteditable", "plaintext-only");
@@ -177,7 +223,7 @@
         processQueued = true;
         window.requestAnimationFrame(function () {
             processQueued = false;
-            wrapTextNodes(scope && scope.isConnected ? scope : editRoot);
+            processEditableContent(scope && scope.isConnected ? scope : editRoot);
         });
     }
 
@@ -205,9 +251,47 @@
         statusNode.classList.toggle("is-error", Boolean(error));
     }
 
+    function validLinkValue(value) {
+        var text = String(value || "").trim();
+        if (!text || text.length > 2048) return false;
+        if (/^(?:#|\?|\/(?!\/)|\.\.?\/)/.test(text)) return true;
+        if (/^mailto:[^\s]+$/i.test(text)) return true;
+        if (/^tel:[0-9+().\s-]+$/i.test(text)) return true;
+        try {
+            var parsed = new URL(text);
+            return parsed.protocol === "https:" || parsed.protocol === "http:";
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function clearLinkSelection() {
+        if (selectedLink) selectedLink.classList.remove("is-page-link-selected");
+        selectedLink = null;
+        if (linkPanel) linkPanel.hidden = true;
+        if (linkInput) linkInput.value = "";
+        if (linkName) linkName.textContent = "";
+    }
+
+    function selectLink(link) {
+        if (!editing || !isAdmin || !link || !link.dataset.pageLinkKey) return;
+        if (selectedLink && selectedLink !== link) {
+            selectedLink.classList.remove("is-page-link-selected");
+        }
+        selectedLink = link;
+        selectedLink.classList.add("is-page-link-selected");
+        linkPanel.hidden = false;
+        linkInput.value = link.getAttribute("href") || "";
+        linkName.textContent = (link.innerText || link.textContent || "링크").trim().slice(0, 80);
+        setStatus("선택한 링크의 주소를 수정할 수 있습니다.", false);
+    }
+
     function setAdmin(value) {
         isAdmin = Boolean(value);
-        if (!isAdmin) editing = false;
+        if (!isAdmin) {
+            editing = false;
+            clearLinkSelection();
+        }
         document.body.toggleAttribute("data-page-admin", isAdmin);
         if (toolbar) toolbar.hidden = !isAdmin;
         updateToolbar();
@@ -223,6 +307,12 @@
             '<button type="button" data-page-editor-save hidden>저장</button>',
             '<button type="button" data-page-editor-cancel hidden>취소</button>',
             '</div>',
+            '<div class="page-editor-link-panel" data-page-editor-link-panel hidden>',
+            '<label for="pageEditorLinkInput">선택한 링크 주소</label>',
+            '<span data-page-editor-link-name></span>',
+            '<input id="pageEditorLinkInput" type="text" inputmode="url" autocomplete="off" spellcheck="false">',
+            '<small>외부 링크는 http:// 또는 https://로 입력하세요.</small>',
+            '</div>',
             '<p class="page-editor-status" data-page-editor-status role="status" aria-live="polite"></p>',
             '</aside>'
         ].join("");
@@ -234,10 +324,20 @@
         toolbar = holder.firstElementChild;
         document.body.appendChild(toolbar);
         statusNode = toolbar.querySelector("[data-page-editor-status]");
+        linkPanel = toolbar.querySelector("[data-page-editor-link-panel]");
+        linkInput = toolbar.querySelector("#pageEditorLinkInput");
+        linkName = toolbar.querySelector("[data-page-editor-link-name]");
 
         toolbar.querySelector("[data-page-editor-start]").addEventListener("click", startEditing);
         toolbar.querySelector("[data-page-editor-save]").addEventListener("click", saveEditing);
         toolbar.querySelector("[data-page-editor-cancel]").addEventListener("click", cancelEditing);
+        linkInput.addEventListener("input", function () {
+            if (!editing || !selectedLink) return;
+            selectedLink.setAttribute("href", linkInput.value.trim());
+            touchedKeys.add(selectedLink.dataset.pageLinkKey);
+            setStatus(touchedKeys.size + "개 항목이 변경되었습니다.", false);
+            updateToolbar();
+        });
     }
 
     function updateToolbar() {
@@ -256,19 +356,31 @@
         if (!isAdmin) return;
         editing = true;
         touchedKeys.clear();
-        setStatus("수정할 글자를 눌러 바로 입력하세요.", false);
+        clearLinkSelection();
+        setStatus("글자를 수정하거나 링크를 눌러 주소를 바꾸세요.", false);
         updateToolbar();
         updateAllEditableStates();
     }
 
     function currentValueForKey(key) {
+        if (key.indexOf("l_") === 0) {
+            var link = editRoot.querySelector('[data-page-link-key="' + key + '"]');
+            return link ? link.getAttribute("href") : null;
+        }
         var span = editRoot.querySelector('[data-page-edit-key="' + key + '"]');
         return span ? span.textContent : null;
+    }
+
+    function baselineValueForKey(key) {
+        return key.indexOf("l_") === 0 ? baselineLinkByKey.get(key) : baselineByKey.get(key);
     }
 
     function restoreDisplayedValues() {
         editRoot.querySelectorAll(".page-editable-text").forEach(function (span) {
             applyOverride(span);
+        });
+        editRoot.querySelectorAll("[data-page-link-key]").forEach(function (link) {
+            applyLinkOverride(link);
         });
     }
 
@@ -277,6 +389,7 @@
         editing = false;
         touchedKeys.clear();
         restoreDisplayedValues();
+        clearLinkSelection();
         setStatus("수정을 취소했습니다.", false);
         updateToolbar();
         updateAllEditableStates();
@@ -290,11 +403,22 @@
             return;
         }
         var fields = {};
+        var invalidLink = null;
         touchedKeys.forEach(function (key) {
             var value = currentValueForKey(key);
             if (typeof value !== "string") return;
-            fields[key] = value === baselineByKey.get(key) ? null : value;
+            if (key.indexOf("l_") === 0 && !validLinkValue(value)) {
+                invalidLink = editRoot.querySelector('[data-page-link-key="' + key + '"]');
+                return;
+            }
+            fields[key] = value === baselineValueForKey(key) ? null : value;
         });
+        if (invalidLink) {
+            selectLink(invalidLink);
+            setStatus("링크 주소를 확인해 주세요. 외부 주소는 http:// 또는 https://가 필요합니다.", true);
+            linkInput.focus();
+            return;
+        }
         if (!Object.keys(fields).length) return;
 
         saving = true;
@@ -313,6 +437,7 @@
             editing = false;
             touchedKeys.clear();
             restoreDisplayedValues();
+            clearLinkSelection();
             setStatus("페이지에 저장했습니다.", false);
         } catch (error) {
             if (error.status === 401 || error.status === 403) {
@@ -368,9 +493,11 @@
     });
 
     document.addEventListener("click", function (event) {
-        if (!editing || !event.target.closest("[data-page-edit-key]")) return;
-        var link = event.target.closest("a");
-        if (link) event.preventDefault();
+        if (!editing) return;
+        var link = event.target.closest("a[data-page-link-key]");
+        if (!link || !editRoot.contains(link)) return;
+        event.preventDefault();
+        selectLink(link);
     }, true);
 
     document.addEventListener("keydown", function (event) {
@@ -388,7 +515,7 @@
     });
 
     createToolbar();
-    wrapTextNodes(editRoot);
+    processEditableContent(editRoot);
     observeContent();
     loadOverrides();
     refreshAdminStatus();

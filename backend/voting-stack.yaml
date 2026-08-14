@@ -541,6 +541,18 @@ Resources:
             return pagePath;
           }
 
+          function validPageLink(value) {
+            if (/^(?:#|\?|\/(?!\/)|\.\.?\/)/.test(value)) return true;
+            if (/^mailto:[^\s]+$/i.test(value)) return true;
+            if (/^tel:[0-9+().\s-]+$/i.test(value)) return true;
+            try {
+              const parsed = new URL(value);
+              return parsed.protocol === "https:" || parsed.protocol === "http:";
+            } catch (error) {
+              return false;
+            }
+          }
+
           function validatePageFields(source) {
             if (!source || Array.isArray(source) || typeof source !== "object") {
               throw new HttpError(400, "수정할 페이지 내용이 필요합니다.");
@@ -552,7 +564,7 @@ Resources:
             const fields = {};
             let totalBytes = 0;
             for (const [key, value] of entries) {
-              if (!/^t_[a-f0-9]{16}$/.test(key)) {
+              if (!/^[tl]_[a-f0-9]{16}$/.test(key)) {
                 throw new HttpError(400, "수정 항목 식별자가 올바르지 않습니다.");
               }
               if (value === null) {
@@ -563,7 +575,10 @@ Resources:
                 throw new HttpError(400, "페이지 글자 형식이 올바르지 않습니다.");
               }
               const text = value.replace(/\r\n?/g, "\n").replace(/\0/g, "");
-              if (text.length > 3000) {
+              if (key.startsWith("l_") && (text.length > 2048 || !validPageLink(text))) {
+                throw new HttpError(400, "링크 주소 형식이 올바르지 않습니다.");
+              }
+              if (key.startsWith("t_") && text.length > 3000) {
                 throw new HttpError(400, "페이지 글자 항목이 너무 깁니다.");
               }
               totalBytes += Buffer.byteLength(key + text, "utf8");
