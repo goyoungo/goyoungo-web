@@ -190,7 +190,7 @@
     letter-spacing: -0.08em;
 }
 
-.article-card-side span {
+.article-card-side > span {
     align-self: flex-end;
     width: 44px;
     height: 44px;
