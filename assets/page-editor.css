@@ -2,6 +2,10 @@
     display: contents;
 }
 
+.page-editable-text.page-editable-multiline {
+    white-space: pre-line;
+}
+
 .page-editor-toolbar {
     position: fixed;
     right: 18px;
@@ -91,6 +95,7 @@
 
 body[data-page-editing] .page-editable-text[contenteditable] {
     display: inline;
+    white-space: pre-wrap;
     border-radius: 2px;
     outline: 1px dashed rgba(224, 90, 63, 0.7);
     outline-offset: 3px;

@@ -122,10 +122,15 @@
 
     function applyOverride(span) {
         var key = span.dataset.pageEditKey;
-        var value = Object.prototype.hasOwnProperty.call(overrides, key)
+        var hasOverride = Object.prototype.hasOwnProperty.call(overrides, key);
+        var value = hasOverride
             ? overrides[key]
             : baselineByKey.get(key);
         if (typeof value === "string" && span.textContent !== value) span.textContent = value;
+        span.classList.toggle(
+            "page-editable-multiline",
+            hasOverride && typeof value === "string" && value.includes("\n")
+        );
         updateEditableState(span);
     }
 
@@ -357,6 +362,7 @@
         var target = event.target.closest("[data-page-edit-key]");
         if (!editing || !isAdmin || !target || !editRoot.contains(target)) return;
         touchedKeys.add(target.dataset.pageEditKey);
+        target.classList.toggle("page-editable-multiline", target.textContent.includes("\n"));
         setStatus(touchedKeys.size + "개 항목이 변경되었습니다.", false);
         updateToolbar();
     });
