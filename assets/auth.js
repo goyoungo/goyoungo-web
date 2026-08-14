@@ -79,7 +79,9 @@
         ensureLoginDialog();
         return {
             loginScreen: document.getElementById("loginScreen"),
-            mainContent: document.getElementById("mainContent"),
+            mainContent: document.getElementById("mainContent") ||
+                document.getElementById("main") ||
+                document.querySelector("main"),
             loginButton: document.getElementById("kakaoLoginBtn"),
             closeButton: document.getElementById("loginCloseBtn"),
             accountButton: document.getElementById("logoutBtn"),
