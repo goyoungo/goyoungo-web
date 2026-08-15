@@ -18,13 +18,13 @@
             var style = document.createElement("link");
             style.id = "goyoungoPageEditorStyle";
             style.rel = "stylesheet";
-            style.href = "/assets/page-editor.css?v=20260815-editor3";
+            style.href = "/assets/page-editor.css?v=20260815-editor4";
             document.head.appendChild(style);
         }
 
         var script = document.createElement("script");
         script.id = "goyoungoPageEditorScript";
-        script.src = "/assets/page-editor.js?v=20260815-editor3";
+        script.src = "/assets/page-editor.js?v=20260815-editor4";
         script.async = true;
         document.head.appendChild(script);
     }

@@ -10,6 +10,7 @@
     var overrides = {};
     var baselineByKey = new Map();
     var baselineLinkByKey = new Map();
+    var syncPathByKey = new Map();
     var touchedKeys = new Set();
     var isAdmin = false;
     var editing = false;
@@ -146,13 +147,18 @@
     function wrapTextNodes(scope) {
         var nodes = collectTextNodes(scope);
         var prepared = nodes.map(function (node) {
-            var descriptor = pagePath + "|" + elementPath(node.parentElement) + "|text:" + textSiblingIndex(node);
-            return { node: node, key: editKey(descriptor), text: node.nodeValue };
+            var syncRoot = node.parentElement.closest("[data-page-sync-id][data-page-sync-path]");
+            var syncPath = syncRoot ? normalizePagePath(syncRoot.dataset.pageSyncPath) : null;
+            var descriptor = syncRoot
+                ? "sync|" + syncRoot.dataset.pageSyncId + "|text:" + textSiblingIndex(node)
+                : pagePath + "|" + elementPath(node.parentElement) + "|text:" + textSiblingIndex(node);
+            return { node: node, key: editKey(descriptor), text: node.nodeValue, syncPath: syncPath };
         });
 
         prepared.forEach(function (item) {
             if (!item.node.parentNode || item.node.parentElement.closest(".page-editable-text")) return;
             if (!baselineByKey.has(item.key)) baselineByKey.set(item.key, item.text);
+            if (item.syncPath) syncPathByKey.set(item.key, item.syncPath);
             var span = document.createElement("span");
             span.className = "page-editable-text";
             span.dataset.pageEditKey = item.key;
@@ -183,13 +189,18 @@
                 !editRoot.contains(link) ||
                 link.closest(".page-editor-toolbar, .login-screen, [data-no-page-edit]")
             ) return;
-            var descriptor = pagePath + "|" + elementPath(link) + "|href";
+            var syncRoot = link.closest("[data-page-sync-id][data-page-sync-path]");
+            var syncPath = syncRoot ? normalizePagePath(syncRoot.dataset.pageSyncPath) : null;
+            var descriptor = syncRoot
+                ? "sync|" + syncRoot.dataset.pageSyncId + "|href"
+                : pagePath + "|" + elementPath(link) + "|href";
             var key = linkKey(descriptor);
             link.dataset.pageLinkKey = key;
             link.classList.add("page-editable-link");
             if (!baselineLinkByKey.has(key)) {
                 baselineLinkByKey.set(key, link.getAttribute("href"));
             }
+            if (syncPath) syncPathByKey.set(key, syncPath);
             applyLinkOverride(link);
         });
     }
@@ -402,8 +413,9 @@
             setAdmin(false);
             return;
         }
-        var fields = {};
+        var fieldsByPath = {};
         var invalidLink = null;
+        var hasSharedField = false;
         touchedKeys.forEach(function (key) {
             var value = currentValueForKey(key);
             if (typeof value !== "string") return;
@@ -411,7 +423,10 @@
                 invalidLink = editRoot.querySelector('[data-page-link-key="' + key + '"]');
                 return;
             }
-            fields[key] = value === baselineValueForKey(key) ? null : value;
+            var targetPath = syncPathByKey.get(key) || pagePath;
+            if (targetPath !== pagePath) hasSharedField = true;
+            if (!fieldsByPath[targetPath]) fieldsByPath[targetPath] = {};
+            fieldsByPath[targetPath][key] = value === baselineValueForKey(key) ? null : value;
         });
         if (invalidLink) {
             selectLink(invalidLink);
@@ -419,26 +434,28 @@
             linkInput.focus();
             return;
         }
-        if (!Object.keys(fields).length) return;
+        if (!Object.keys(fieldsByPath).length) return;
 
         saving = true;
         setStatus("저장 중…", false);
         updateToolbar();
         try {
-            var payload = await requestJson("/admin/pages", {
-                method: "PUT",
-                headers: {
-                    Authorization: "Bearer " + token,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ pagePath: pagePath, fields: fields })
-            });
-            overrides = payload.fields || {};
+            await Promise.all(Object.keys(fieldsByPath).map(function (targetPath) {
+                return requestJson("/admin/pages", {
+                    method: "PUT",
+                    headers: {
+                        Authorization: "Bearer " + token,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ pagePath: targetPath, fields: fieldsByPath[targetPath] })
+                });
+            }));
+            await loadOverrides();
             editing = false;
             touchedKeys.clear();
             restoreDisplayedValues();
             clearLinkSelection();
-            setStatus("페이지에 저장했습니다.", false);
+            setStatus(hasSharedField ? "연결된 카드와 본문에 함께 저장했습니다." : "페이지에 저장했습니다.", false);
         } catch (error) {
             if (error.status === 401 || error.status === 403) {
                 setAdmin(false);
@@ -456,8 +473,14 @@
 
     async function loadOverrides() {
         try {
-            var payload = await requestJson("/page-overrides?pagePath=" + encodeURIComponent(pagePath));
-            overrides = payload.fields || {};
+            var targetPaths = Array.from(new Set([pagePath].concat(Array.from(syncPathByKey.values()))));
+            var payloads = await Promise.all(targetPaths.map(function (targetPath) {
+                return requestJson("/page-overrides?pagePath=" + encodeURIComponent(targetPath));
+            }));
+            overrides = {};
+            payloads.forEach(function (payload) {
+                Object.assign(overrides, payload.fields || {});
+            });
             restoreDisplayedValues();
         } catch (error) {
             console.warn("Page content overrides unavailable", error && error.message);
