@@ -20,8 +20,6 @@
     var adminControlsBound = false;
     var marketAdminBound = false;
     var marketNotice = "";
-    var marketPagePath = "/snowbro/marketplace.html";
-    var marketFieldKey = "t_6d61726b6574706c";
     var voteControlsBound = false;
     var voteAuthBound = false;
     var rankingControlsBound = false;
@@ -1688,23 +1686,11 @@
         if (total) bindVenueVoting(page);
     }
 
-    function usableMarketItems(items) {
-        return Array.isArray(items) && items.length <= 80 && items.every(function (item) {
-            return item && typeof item.id === "string" && typeof item.name === "string" &&
-                ["팝니다", "삽니다"].indexOf(item.status) >= 0 &&
-                Array.isArray(item.categories) && Array.isArray(item.chatRooms);
-        });
-    }
-
     async function loadMarketCollection(page) {
         if (!voteApiUrl || localPreview) return;
         try {
-            var payload = await fetchJson("/page-overrides?pagePath=" + encodeURIComponent(marketPagePath));
-            var stored = payload.fields && payload.fields[marketFieldKey];
-            if (typeof stored === "string") {
-                var items = JSON.parse(stored);
-                if (usableMarketItems(items)) page.items = items;
-            }
+            var payload = await fetchJson("/collections/marketplace");
+            if (Array.isArray(payload.items)) page.items = payload.items;
         } catch (error) {
             console.warn("Marketplace cards unavailable", error && error.message);
         }
@@ -1831,10 +1817,6 @@
     }
 
     async function persistMarketItems(items, message) {
-        if (!usableMarketItems(items)) {
-            setMarketStatus("거래 카드 형식이 올바르지 않습니다.", true);
-            return false;
-        }
         var token = getVoteToken();
         if (!token) {
             setAdminUi(false);
@@ -1845,15 +1827,8 @@
         }
         setMarketStatus("저장 중…", false);
         try {
-            var fields = {};
-            fields[marketFieldKey] = JSON.stringify(items);
-            var payload = await fetchJson("/admin/pages", adminRequestOptions({
-                pagePath: marketPagePath,
-                fields: fields
-            }));
-            var saved = JSON.parse(payload.fields[marketFieldKey]);
-            if (!usableMarketItems(saved)) throw new Error("저장된 카드 목록을 확인하지 못했습니다.");
-            currentMarketPage.items = saved;
+            var payload = await fetchJson("/admin/collections/marketplace", adminRequestOptions({ items: items }));
+            currentMarketPage.items = payload.items || [];
             marketNotice = message || "거래 카드 목록을 저장했습니다.";
             closeMarketModal();
             renderMarket(currentMarketPage);
