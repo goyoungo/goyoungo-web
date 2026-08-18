@@ -2219,6 +2219,10 @@ body[data-login-open="true"] {
     grid-column: 1 / -1;
 }
 
+.shuttle-list > .market-empty {
+    width: 100%;
+}
+
 .market-card-admin {
     margin-top: 16px;
     padding-top: 12px;
@@ -2257,9 +2261,15 @@ body[data-login-open="true"] {
     color: #fff;
 }
 
+.shuttle-item > .market-card-admin {
+    margin-top: 0;
+    padding: 14px 24px;
+}
+
 .admin-modal[hidden],
 .admin-edit-button[hidden],
-[data-market-admin][hidden] {
+[data-market-admin][hidden],
+[data-collection-admin][hidden] {
     display: none !important;
 }
 

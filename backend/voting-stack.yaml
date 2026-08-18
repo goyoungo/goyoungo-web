@@ -155,7 +155,7 @@ Resources:
             "/snowbro/welpark-restaurants.html", "/snowbro/yangji-restaurants.html",
             "/snowbro/yongpyong-restaurants.html"
           ]);
-          const allowedCollectionIds = new Set(["marketplace"]);
+          const allowedCollectionIds = new Set(["marketplace", "season-room", "shuttle"]);
 
           const documentClient = DynamoDBDocumentClient.from(
             new DynamoDBClient({}),
@@ -608,6 +608,97 @@ Resources:
             });
           }
 
+          function collectionItemId(value, seen) {
+            const id = cleanText(value, "카드 식별자", 80);
+            if (!/^[A-Za-z0-9][A-Za-z0-9_-]{1,79}$/.test(id) || seen.has(id)) {
+              throw new HttpError(400, "카드 식별자가 올바르지 않습니다.");
+            }
+            seen.add(id);
+            return id;
+          }
+
+          function cleanHttpsUrl(value, field, required) {
+            const url = cleanText(value || "", field, 500);
+            if (!url && !required) return "";
+            let parsed;
+            try { parsed = new URL(url); } catch (error) { parsed = null; }
+            if (!parsed || parsed.protocol !== "https:") {
+              throw new HttpError(400, field + "는 https:// 주소만 입력할 수 있습니다.");
+            }
+            return url;
+          }
+
+          function validateSeasonItems(source) {
+            if (!Array.isArray(source) || source.length > 80) {
+              throw new HttpError(400, "모집 카드는 80개 이하로 저장해 주세요.");
+            }
+            const allowed = new Set([
+              "id", "type", "status", "name", "contact", "sns", "gender",
+              "details", "price", "updatedAt", "links"
+            ]);
+            const seen = new Set();
+            return source.map((item) => {
+              if (!item || Array.isArray(item) || typeof item !== "object") {
+                throw new HttpError(400, "모집 카드 형식이 올바르지 않습니다.");
+              }
+              for (const key of Object.keys(item)) {
+                if (!allowed.has(key)) throw new HttpError(400, "저장할 수 없는 모집 항목입니다: " + key);
+              }
+              const type = cleanText(item.type, "게시판 유형", 40);
+              if (!["주주 구해요", "시즌방 구해요"].includes(type)) {
+                throw new HttpError(400, "게시판 유형이 올바르지 않습니다.");
+              }
+              const status = cleanText(item.status, "모집 상태", 20);
+              if (!["진행중", "완료"].includes(status)) {
+                throw new HttpError(400, "모집 상태가 올바르지 않습니다.");
+              }
+              const name = cleanText(item.name, "작성자·방 이름", 160);
+              if (!name) throw new HttpError(400, "작성자 또는 방 이름을 입력해 주세요.");
+              return {
+                id: collectionItemId(item.id, seen), type, status, name,
+                contact: cleanText(item.contact || "", "연락처", 120),
+                sns: cleanText(item.sns || "", "SNS", 200),
+                gender: cleanStringList(item.gender || [], "모집 성별·인원", 12, 40),
+                details: cleanText(item.details || "", "상세 내용", 3000),
+                price: cleanText(item.price || "", "금액", 500),
+                updatedAt: cleanText(item.updatedAt || "", "수정 시각", 80),
+                links: cleanStringList(item.links || [], "외부 링크", 12, 500)
+                  .map((url) => cleanHttpsUrl(url, "외부 링크", true))
+              };
+            });
+          }
+
+          function validateShuttleItems(source) {
+            if (!Array.isArray(source) || source.length > 40) {
+              throw new HttpError(400, "셔틀 카드는 40개 이하로 저장해 주세요.");
+            }
+            const allowed = new Set(["id", "eyebrow", "title", "description", "url", "image"]);
+            const seen = new Set();
+            return source.map((item) => {
+              if (!item || Array.isArray(item) || typeof item !== "object") {
+                throw new HttpError(400, "셔틀 카드 형식이 올바르지 않습니다.");
+              }
+              for (const key of Object.keys(item)) {
+                if (!allowed.has(key)) throw new HttpError(400, "저장할 수 없는 셔틀 항목입니다: " + key);
+              }
+              const title = cleanText(item.title, "셔틀 제목", 160);
+              if (!title) throw new HttpError(400, "셔틀 제목을 입력해 주세요.");
+              const image = cleanText(item.image || "", "이미지 주소", 500);
+              if (image) {
+                const localImage = /^\/assets\/images\/[A-Za-z0-9._/-]+$/.test(image) && !image.includes("..");
+                if (!localImage) cleanHttpsUrl(image, "이미지 주소", true);
+              }
+              return {
+                id: collectionItemId(item.id, seen),
+                eyebrow: cleanText(item.eyebrow || "", "지역·구분", 80),
+                title,
+                description: cleanText(item.description || "", "설명", 500),
+                url: cleanHttpsUrl(item.url, "예약 페이지 링크", true),
+                image
+              };
+            });
+          }
+
           async function readCollection(event) {
             const collectionId = requireCollectionId(event);
             const result = await documentClient.send(new GetCommand({
@@ -627,9 +718,12 @@ Resources:
             const collectionId = requireCollectionId(event);
             const admin = await verifiedAdmin(event);
             const body = parseJsonBody(event, 160 * 1024);
-            const items = collectionId === "marketplace"
-              ? validateMarketplaceItems(body.items)
-              : [];
+            const validators = {
+              marketplace: validateMarketplaceItems,
+              "season-room": validateSeasonItems,
+              shuttle: validateShuttleItems
+            };
+            const items = validators[collectionId](body.items);
             const existing = await documentClient.send(new GetCommand({
               TableName: tableName,
               Key: { pk: collectionPk(collectionId), sk: "ITEMS" },

@@ -20,6 +20,9 @@
     var adminControlsBound = false;
     var marketAdminBound = false;
     var marketNotice = "";
+    var currentManagedPage = null;
+    var managedAdminBound = false;
+    var managedNotice = "";
     var voteControlsBound = false;
     var voteAuthBound = false;
     var rankingControlsBound = false;
@@ -269,7 +272,7 @@
     function setAdminUi(isAdmin) {
         adminState.isAdmin = Boolean(isAdmin);
         document.body.toggleAttribute("data-site-admin", adminState.isAdmin);
-        root.querySelectorAll("[data-admin-edit], [data-market-admin]").forEach(function (button) {
+        root.querySelectorAll("[data-admin-edit], [data-market-admin], [data-collection-admin]").forEach(function (button) {
             button.hidden = !adminState.isAdmin;
         });
     }
@@ -1958,6 +1961,263 @@
         setAdminUi(adminState.isAdmin);
     }
 
+    function managedCollectionSettings(page) {
+        if (page.type === "season") {
+            return { id: "season-room", title: "시즌방/주주 카드 관리", noun: "모집 카드", icon: "🏠" };
+        }
+        return { id: "shuttle", title: "셔틀 카드 관리", noun: "셔틀 카드", icon: "🚌" };
+    }
+
+    async function loadManagedCollection(page) {
+        if (!voteApiUrl || localPreview) return;
+        var settings = managedCollectionSettings(page);
+        try {
+            var payload = await fetchJson("/collections/" + encodeURIComponent(settings.id));
+            if (Array.isArray(payload.items)) page.items = payload.items;
+        } catch (error) {
+            console.warn(settings.id + " cards unavailable", error && error.message);
+        }
+    }
+
+    function managedAdminHtml(page) {
+        var settings = managedCollectionSettings(page);
+        return [
+            '<section class="market-admin-toolbar" data-collection-admin data-no-page-edit hidden>',
+            '<div><span class="eyebrow">ADMIN</span><strong>' + esc(settings.title) + "</strong></div>",
+            '<button class="action-link primary" type="button" data-collection-add>새 카드 추가</button>',
+            '<span class="market-admin-status" data-collection-page-status role="status" aria-live="polite">' + esc(managedNotice) + "</span>",
+            "</section>"
+        ].join("");
+    }
+
+    function managedSeasonFieldsHtml() {
+        return [
+            '<label>게시판 유형<select name="type"><option value="주주 구해요">주주 구해요</option><option value="시즌방 구해요">시즌방 구해요</option></select></label>',
+            '<label>모집 상태<select name="status"><option value="진행중">진행중</option><option value="완료">완료</option></select></label>',
+            '<label class="admin-form-wide">작성자·방 이름<input name="name" required maxlength="160"></label>',
+            '<label>연락처<input name="contact" maxlength="120" inputmode="tel"></label>',
+            '<label>SNS·카카오톡<input name="sns" maxlength="200"></label>',
+            '<label class="admin-form-wide">모집 성별·인원 (쉼표로 구분)<input name="gender" maxlength="480" placeholder="남자 1, 여자 1"></label>',
+            '<label class="admin-form-wide">금액<textarea name="price" maxlength="500"></textarea></label>',
+            '<label class="admin-form-wide">상세 내용<textarea name="details" maxlength="3000"></textarea></label>',
+            '<label class="admin-form-wide">외부 링크 (쉼표 또는 줄바꿈)<textarea name="links" maxlength="3000" placeholder="https://..."></textarea></label>'
+        ].join("");
+    }
+
+    function managedShuttleFieldsHtml() {
+        return [
+            '<label>지역·구분<input name="eyebrow" maxlength="80" placeholder="수도권"></label>',
+            '<label class="admin-form-wide">셔틀 제목<input name="title" required maxlength="160"></label>',
+            '<label class="admin-form-wide">설명<textarea name="description" maxlength="500"></textarea></label>',
+            '<label class="admin-form-wide">예약 페이지 링크<input name="url" type="url" pattern="https://.*" required maxlength="500" placeholder="https://..."></label>',
+            '<label class="admin-form-wide">이미지 주소<input name="image" maxlength="500" placeholder="/assets/images/... 또는 https://..."></label>'
+        ].join("");
+    }
+
+    function managedModalHtml(page) {
+        var settings = managedCollectionSettings(page);
+        var fields = page.type === "season" ? managedSeasonFieldsHtml() : managedShuttleFieldsHtml();
+        return [
+            '<div class="admin-modal" data-collection-modal data-no-page-edit hidden>',
+            '<section class="admin-dialog" role="dialog" aria-modal="true" aria-labelledby="collectionDialogTitle">',
+            '<div class="admin-dialog-head"><div><span class="eyebrow">ADMIN</span>',
+            '<h2 id="collectionDialogTitle" data-collection-dialog-title>' + esc(settings.noun) + " 추가</h2></div>",
+            '<button class="admin-dialog-close" type="button" data-collection-close aria-label="카드 편집 창 닫기">×</button></div>',
+            '<form data-collection-form><input type="hidden" name="itemId">',
+            '<div class="admin-form-grid">' + fields + "</div>",
+            '<div class="admin-form-actions">',
+            '<button class="action-link primary" type="submit">저장</button>',
+            '<button class="action-link" type="button" data-collection-close>취소</button>',
+            '<span class="admin-form-status" data-collection-status role="status" aria-live="polite"></span>',
+            "</div></form></section></div>"
+        ].join("");
+    }
+
+    function managedCardAdminHtml(item) {
+        return [
+            '<div class="market-card-admin" data-collection-admin data-no-page-edit hidden>',
+            '<button type="button" data-collection-edit data-item-id="' + esc(item.id) + '">수정</button>',
+            '<button class="is-danger" type="button" data-collection-delete data-item-id="' + esc(item.id) + '">삭제</button>',
+            "</div>"
+        ].join("");
+    }
+
+    function managedModal() {
+        return root.querySelector("[data-collection-modal]");
+    }
+
+    function setManagedStatus(message, error) {
+        root.querySelectorAll("[data-collection-status], [data-collection-page-status]").forEach(function (status) {
+            status.textContent = message || "";
+            status.classList.toggle("is-error", Boolean(error));
+        });
+    }
+
+    function closeManagedModal() {
+        var modal = managedModal();
+        if (!modal) return;
+        modal.hidden = true;
+        document.body.removeAttribute("data-admin-modal-open");
+    }
+
+    function managedItem(itemId) {
+        return currentManagedPage && currentManagedPage.items.find(function (item) {
+            return item.id === itemId;
+        });
+    }
+
+    function openManagedModal(itemId) {
+        if (!adminState.isAdmin || !currentManagedPage) return;
+        var modal = managedModal();
+        if (!modal) return;
+        var item = itemId ? managedItem(itemId) : null;
+        var form = modal.querySelector("[data-collection-form]");
+        form.reset();
+        form.elements.itemId.value = item ? item.id : "";
+        if (currentManagedPage.type === "season") {
+            form.elements.type.value = item ? item.type : "주주 구해요";
+            form.elements.status.value = item ? item.status : "진행중";
+            form.elements.name.value = item ? item.name : "";
+            form.elements.contact.value = item ? item.contact : "";
+            form.elements.sns.value = item ? item.sns : "";
+            form.elements.gender.value = item ? (item.gender || []).join(", ") : "";
+            form.elements.price.value = item ? item.price : "";
+            form.elements.details.value = item ? item.details : "";
+            form.elements.links.value = item ? (item.links || []).join("\n") : "";
+            form.elements.name.focus();
+        } else {
+            form.elements.eyebrow.value = item ? (item.eyebrow || "") : "";
+            form.elements.title.value = item ? item.title : "";
+            form.elements.description.value = item ? item.description : "";
+            form.elements.url.value = item ? item.url : "";
+            form.elements.image.value = item ? item.image : "";
+            form.elements.title.focus();
+        }
+        var settings = managedCollectionSettings(currentManagedPage);
+        modal.querySelector("[data-collection-dialog-title]").textContent = settings.noun + (item ? " 수정" : " 추가");
+        modal.hidden = false;
+        document.body.dataset.adminModalOpen = "true";
+        setManagedStatus("", false);
+    }
+
+    function renderManagedPage(page) {
+        if (page.type === "season") renderSeason(page);
+        else renderShuttle(page);
+    }
+
+    async function persistManagedItems(items, message) {
+        var settings = managedCollectionSettings(currentManagedPage);
+        var token = getVoteToken();
+        if (!token) {
+            setAdminUi(false);
+            if (window.GoyoungoAuth && typeof window.GoyoungoAuth.reauthenticate === "function") {
+                window.GoyoungoAuth.reauthenticate(settings.noun + "를 관리하려면 카카오 로그인을 다시 해주세요.");
+            }
+            return false;
+        }
+        setManagedStatus("저장 중…", false);
+        try {
+            var payload = await fetchJson("/admin/collections/" + encodeURIComponent(settings.id), adminRequestOptions({ items: items }));
+            currentManagedPage.items = payload.items || [];
+            managedNotice = message || settings.noun + " 목록을 저장했습니다.";
+            closeManagedModal();
+            renderManagedPage(currentManagedPage);
+            setAdminUi(true);
+            return true;
+        } catch (error) {
+            if (error.status === 401 || error.status === 403) {
+                setAdminUi(false);
+                if (error.status === 401 && window.GoyoungoAuth && typeof window.GoyoungoAuth.reauthenticate === "function") {
+                    window.GoyoungoAuth.reauthenticate(settings.noun + "를 관리하려면 카카오 로그인을 다시 해주세요.");
+                }
+            }
+            setManagedStatus(error.message || settings.noun + " 목록을 저장하지 못했습니다.", true);
+            return false;
+        }
+    }
+
+    async function saveManagedForm(form) {
+        var itemId = form.elements.itemId.value || newMarketItemId();
+        var item;
+        if (currentManagedPage.type === "season") {
+            var links = splitMarketList(form.elements.links.value, 12);
+            if (links.some(function (link) { return !/^https:\/\//i.test(link); })) {
+                setManagedStatus("외부 링크는 https:// 주소만 입력해 주세요.", true);
+                return;
+            }
+            item = {
+                id: itemId,
+                type: form.elements.type.value,
+                status: form.elements.status.value,
+                name: form.elements.name.value.trim(),
+                contact: form.elements.contact.value.trim(),
+                sns: form.elements.sns.value.trim(),
+                gender: splitMarketList(form.elements.gender.value, 12),
+                details: form.elements.details.value.trim(),
+                price: form.elements.price.value.trim(),
+                updatedAt: marketTimestamp(),
+                links: links
+            };
+        } else {
+            item = {
+                id: itemId,
+                eyebrow: form.elements.eyebrow.value.trim(),
+                title: form.elements.title.value.trim(),
+                description: form.elements.description.value.trim(),
+                url: form.elements.url.value.trim(),
+                image: form.elements.image.value.trim()
+            };
+        }
+        var existingIndex = currentManagedPage.items.findIndex(function (candidate) {
+            return candidate.id === itemId;
+        });
+        var nextItems = currentManagedPage.items.slice();
+        if (existingIndex >= 0) nextItems[existingIndex] = item;
+        else nextItems.unshift(item);
+        var settings = managedCollectionSettings(currentManagedPage);
+        var submit = form.querySelector('[type="submit"]');
+        submit.disabled = true;
+        await persistManagedItems(nextItems, existingIndex >= 0 ? settings.noun + "를 수정했습니다." : "새 " + settings.noun + "를 추가했습니다.");
+        submit.disabled = false;
+    }
+
+    async function deleteManagedItem(itemId) {
+        var item = managedItem(itemId);
+        if (!item || !window.confirm('"' + (item.name || item.title) + '" 카드를 삭제할까요?')) return;
+        var nextItems = currentManagedPage.items.filter(function (candidate) {
+            return candidate.id !== itemId;
+        });
+        await persistManagedItems(nextItems, managedCollectionSettings(currentManagedPage).noun + "를 삭제했습니다.");
+    }
+
+    function bindManagedAdminControls() {
+        if (managedAdminBound) return;
+        managedAdminBound = true;
+        root.addEventListener("click", function (event) {
+            var add = event.target.closest("[data-collection-add]");
+            if (add) return openManagedModal("");
+            var edit = event.target.closest("[data-collection-edit]");
+            if (edit) return openManagedModal(edit.dataset.itemId);
+            var remove = event.target.closest("[data-collection-delete]");
+            if (remove) {
+                deleteManagedItem(remove.dataset.itemId);
+                return;
+            }
+            if (event.target.closest("[data-collection-close]") || event.target.matches("[data-collection-modal]")) {
+                closeManagedModal();
+            }
+        });
+        root.addEventListener("submit", function (event) {
+            var form = event.target.closest("[data-collection-form]");
+            if (!form) return;
+            event.preventDefault();
+            saveManagedForm(form);
+        });
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && managedModal() && !managedModal().hidden) closeManagedModal();
+        });
+    }
+
     function seasonContact(contact) {
         if (!contact) return '<span class="faint">—</span>';
         var match = contact.match(/0\d{1,2}[- ]?\d{3,4}[- ]?\d{4}/);
@@ -1965,6 +2225,7 @@
     }
 
     function renderSeason(page) {
+        currentManagedPage = page;
         document.title = page.title + " - " + data.brand.title;
         var cards = page.items.map(function (item) {
             var instagram = item.links.find(function (link) { return /instagram\.com/i.test(link); });
@@ -1973,7 +2234,7 @@
                 ? (instagram ? externalLink(instagram, item.sns) : esc(item.sns))
                 : '<span class="faint">—</span>';
             return [
-                '<article class="content-card">',
+                '<article class="content-card" data-collection-item-id="' + esc(item.id) + '">',
                 '<div class="card-topline"><h2>' + esc(item.name) + '</h2><span class="status-pill ' +
                     (item.status === "완료" ? "done" : "") + '">' + esc(item.status) + "</span></div>",
                 '<p class="price">' + esc(item.type) + "</p>",
@@ -1988,10 +2249,18 @@
                     return externalLink(link, "상세 게시글", "action-link");
                 }).join("") + "</div>" : "",
                 '<p class="updated-at">마지막 업데이트 · ' + esc(item.updatedAt) + "</p>",
+                managedCardAdminHtml(item),
                 "</article>"
             ].join("");
         }).join("");
-        root.innerHTML = '<div class="page-wrap">' + hero(page) + '<div class="card-grid">' + cards + "</div>" + footer() + "</div>";
+        if (!cards) {
+            cards = '<div class="empty-state market-empty"><span aria-hidden="true">🏠</span>' +
+                '<h2>등록된 모집 카드가 없습니다</h2><p>새 모집 정보가 등록되면 여기에 표시됩니다.</p></div>';
+        }
+        root.innerHTML = '<div class="page-wrap">' + hero(page) + managedAdminHtml(page) +
+            '<div class="card-grid" data-no-page-edit>' + cards + "</div>" + managedModalHtml(page) + footer() + "</div>";
+        bindManagedAdminControls();
+        setAdminUi(adminState.isAdmin);
     }
 
     function renderPartner(page) {
@@ -2031,10 +2300,11 @@
     }
 
     function renderShuttle(page) {
+        currentManagedPage = page;
         document.title = page.title + " - " + data.brand.title;
         var items = page.items.map(function (item) {
             return [
-                '<article class="shuttle-item">',
+                '<article class="shuttle-item" data-collection-item-id="' + esc(item.id) + '">',
                 '<div class="shuttle-copy"><div>',
                 item.eyebrow ? '<p class="eyebrow">' + esc(item.eyebrow) + "</p>" : "",
                 "<h2>" + esc(item.title) + "</h2>",
@@ -2042,11 +2312,19 @@
                 "</div>",
                 externalLink(item.url, "예약 페이지 열기 ↗", "action-link primary"),
                 "</div>",
-                '<img class="shuttle-image" src="' + esc(item.image) + '" alt="' + esc(item.description) + '" loading="lazy">',
+                item.image ? '<img class="shuttle-image" src="' + esc(item.image) + '" alt="' + esc(item.description) + '" loading="lazy">' : "",
+                managedCardAdminHtml(item),
                 "</article>"
             ].join("");
         }).join("");
-        root.innerHTML = '<div class="page-wrap narrow">' + hero(page) + '<div class="shuttle-list">' + items + "</div>" + footer() + "</div>";
+        if (!items) {
+            items = '<div class="empty-state market-empty"><span aria-hidden="true">🚌</span>' +
+                '<h2>등록된 셔틀 카드가 없습니다</h2><p>새 셔틀 정보가 등록되면 여기에 표시됩니다.</p></div>';
+        }
+        root.innerHTML = '<div class="page-wrap narrow">' + hero(page) + managedAdminHtml(page) +
+            '<div class="shuttle-list" data-no-page-edit>' + items + "</div>" + managedModalHtml(page) + footer() + "</div>";
+        bindManagedAdminControls();
+        setAdminUi(adminState.isAdmin);
     }
 
     function renderUnknown() {
@@ -2080,10 +2358,14 @@
             await loadMarketCollection(page);
             renderMarket(page);
         } else if (page.type === "season") {
+            root.innerHTML = '<div class="page-wrap narrow"><div class="empty-state"><span aria-hidden="true">🏠</span><p>모집 카드를 불러오는 중입니다.</p></div></div>';
+            await loadManagedCollection(page);
             renderSeason(page);
         } else if (page.type === "partner") {
             renderPartner(page);
         } else if (page.type === "shuttle") {
+            root.innerHTML = '<div class="page-wrap narrow"><div class="empty-state"><span aria-hidden="true">🚌</span><p>셔틀 카드를 불러오는 중입니다.</p></div></div>';
+            await loadManagedCollection(page);
             renderShuttle(page);
         } else {
             renderUnknown();
