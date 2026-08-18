@@ -2188,8 +2188,78 @@ body[data-login-open="true"] {
     color: #fffaf0;
 }
 
+.market-admin-toolbar {
+    margin-bottom: 24px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    border: 1px solid var(--text);
+    background: var(--surface);
+}
+
+.market-admin-toolbar > div {
+    display: grid;
+    gap: 2px;
+    margin-right: auto;
+}
+
+.market-admin-status {
+    flex: 1 1 100%;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.market-admin-status.is-error {
+    color: #b53b26;
+}
+
+.card-grid > .market-empty {
+    grid-column: 1 / -1;
+}
+
+.market-card-admin {
+    margin-top: 16px;
+    padding-top: 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px dashed var(--line-strong);
+}
+
+.market-card-admin button {
+    min-height: 34px;
+    padding: 7px 11px;
+    border: 1px solid var(--text);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 850;
+}
+
+.market-card-admin button:hover,
+.market-card-admin button:focus-visible {
+    background: var(--text);
+    color: var(--surface);
+}
+
+.market-card-admin button.is-danger {
+    border-color: #b53b26;
+    color: #b53b26;
+}
+
+.market-card-admin button.is-danger:hover,
+.market-card-admin button.is-danger:focus-visible {
+    background: #b53b26;
+    color: #fff;
+}
+
 .admin-modal[hidden],
-.admin-edit-button[hidden] {
+.admin-edit-button[hidden],
+[data-market-admin][hidden] {
     display: none !important;
 }
 

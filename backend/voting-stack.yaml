@@ -155,6 +155,7 @@ Resources:
             "/snowbro/welpark-restaurants.html", "/snowbro/yangji-restaurants.html",
             "/snowbro/yongpyong-restaurants.html"
           ]);
+          const allowedCollectionIds = new Set(["marketplace"]);
 
           const documentClient = DynamoDBDocumentClient.from(
             new DynamoDBClient({}),
@@ -275,6 +276,10 @@ Resources:
 
           function pagePk(pagePath) {
             return "PAGE#" + pagePath;
+          }
+
+          function collectionPk(collectionId) {
+            return "COLLECTION#" + collectionId;
           }
 
           function userSk(userId) {
@@ -531,6 +536,129 @@ Resources:
                 updatedAt: item.updatedAt
               }))
             });
+          }
+
+          function requireCollectionId(event) {
+            const collectionId = event.pathParameters && event.pathParameters.collectionId;
+            if (!allowedCollectionIds.has(collectionId)) {
+              throw new HttpError(400, "지원하지 않는 카드 목록입니다.");
+            }
+            return collectionId;
+          }
+
+          function cleanStringList(value, field, maxItems, maxLength) {
+            if (!Array.isArray(value) || value.length > maxItems) {
+              throw new HttpError(400, field + " 항목 수가 올바르지 않습니다.");
+            }
+            const values = value
+              .map((item) => cleanText(item, field, maxLength))
+              .filter(Boolean);
+            return [...new Set(values)];
+          }
+
+          function validateMarketplaceItems(source) {
+            if (!Array.isArray(source) || source.length > 80) {
+              throw new HttpError(400, "거래 카드는 80개 이하로 저장해 주세요.");
+            }
+            const allowed = new Set([
+              "id", "status", "name", "price", "categories", "location",
+              "chatRooms", "member", "phone", "updatedAt", "detailUrl", "detailLabel"
+            ]);
+            const seen = new Set();
+            return source.map((item) => {
+              if (!item || Array.isArray(item) || typeof item !== "object") {
+                throw new HttpError(400, "거래 카드 형식이 올바르지 않습니다.");
+              }
+              for (const key of Object.keys(item)) {
+                if (!allowed.has(key)) throw new HttpError(400, "저장할 수 없는 카드 항목입니다: " + key);
+              }
+              const id = cleanText(item.id, "카드 식별자", 80);
+              if (!/^[A-Za-z0-9][A-Za-z0-9_-]{7,79}$/.test(id) || seen.has(id)) {
+                throw new HttpError(400, "카드 식별자가 올바르지 않습니다.");
+              }
+              seen.add(id);
+              const status = cleanText(item.status, "거래 상태", 10);
+              if (!["팝니다", "삽니다"].includes(status)) {
+                throw new HttpError(400, "거래 상태가 올바르지 않습니다.");
+              }
+              const name = cleanText(item.name, "상품명", 160);
+              if (!name) throw new HttpError(400, "상품명을 입력해 주세요.");
+              const detailUrl = cleanText(item.detailUrl || "", "상품 링크", 500);
+              if (detailUrl) {
+                let parsed;
+                try { parsed = new URL(detailUrl); } catch (error) { parsed = null; }
+                if (!parsed || parsed.protocol !== "https:") {
+                  throw new HttpError(400, "상품 링크는 https:// 주소만 입력할 수 있습니다.");
+                }
+              }
+              return {
+                id,
+                status,
+                name,
+                price: cleanText(item.price || "", "가격", 500),
+                categories: cleanStringList(item.categories || [], "분류", 12, 40),
+                location: cleanText(item.location || "", "거래 장소", 300),
+                chatRooms: cleanStringList(item.chatRooms || [], "톡방", 12, 80),
+                member: cleanText(item.member || "", "판매·구매자", 80),
+                phone: cleanText(item.phone || "", "연락처", 40),
+                updatedAt: cleanText(item.updatedAt || "", "수정 시각", 80),
+                detailUrl,
+                detailLabel: cleanText(item.detailLabel || "", "링크 문구", 80)
+              };
+            });
+          }
+
+          async function readCollection(event) {
+            const collectionId = requireCollectionId(event);
+            const result = await documentClient.send(new GetCommand({
+              TableName: tableName,
+              Key: { pk: collectionPk(collectionId), sk: "ITEMS" },
+              ConsistentRead: true
+            }));
+            const item = result.Item || {};
+            return response(200, {
+              collectionId,
+              items: Array.isArray(item.items) ? item.items : null,
+              updatedAt: item.updatedAt || null
+            });
+          }
+
+          async function writeCollection(event) {
+            const collectionId = requireCollectionId(event);
+            const admin = await verifiedAdmin(event);
+            const body = parseJsonBody(event, 160 * 1024);
+            const items = collectionId === "marketplace"
+              ? validateMarketplaceItems(body.items)
+              : [];
+            const existing = await documentClient.send(new GetCommand({
+              TableName: tableName,
+              Key: { pk: collectionPk(collectionId), sk: "ITEMS" },
+              ConsistentRead: true
+            }));
+            const before = existing.Item && Array.isArray(existing.Item.items)
+              ? existing.Item.items
+              : null;
+            const now = new Date().toISOString();
+            const auditSk = "AUDIT#" + now + "#" + crypto.randomBytes(6).toString("hex");
+            await documentClient.send(new TransactWriteCommand({
+              TransactItems: [
+                { Put: {
+                  TableName: tableName,
+                  Item: {
+                    pk: collectionPk(collectionId), sk: "ITEMS", items,
+                    updatedAt: now, updatedBy: admin.auditUserId
+                  }
+                } },
+                { Put: {
+                  TableName: tableName,
+                  Item: {
+                    pk: collectionPk(collectionId), sk: auditSk, action: "replace",
+                    before, after: items, updatedAt: now, updatedBy: admin.auditUserId
+                  }
+                } }
+              ]
+            }));
+            return response(200, { collectionId, items, updatedAt: now });
           }
 
           function validatePagePath(value) {
@@ -838,6 +966,9 @@ Resources:
               if (method === "GET" && event.rawPath === "/page-overrides") {
                 return await readPageOverrides(event);
               }
+              if (method === "GET" && /^\/collections\/[^/]+$/.test(event.rawPath || "")) {
+                return await readCollection(event);
+              }
               if (method === "GET" && event.rawPath === "/admin/me") {
                 return await readAdminMe(event);
               }
@@ -849,6 +980,9 @@ Resources:
               }
               if (method === "PUT" && event.rawPath === "/admin/pages") {
                 return await writePageOverrides(event);
+              }
+              if (method === "PUT" && /^\/admin\/collections\/[^/]+$/.test(event.rawPath || "")) {
+                return await writeCollection(event);
               }
               if (method === "GET" && event.rawPath === "/admin/pages/history") {
                 return await readPageHistory(event);
@@ -951,11 +1085,31 @@ Resources:
         - - integrations
           - !Ref VoteIntegration
 
+  ReadCollectionRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref VoteApi
+      RouteKey: "GET /collections/{collectionId}"
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref VoteIntegration
+
   WritePageOverridesRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref VoteApi
       RouteKey: "PUT /admin/pages"
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref VoteIntegration
+
+  WriteCollectionRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref VoteApi
+      RouteKey: "PUT /admin/collections/{collectionId}"
       Target: !Join
         - /
         - - integrations

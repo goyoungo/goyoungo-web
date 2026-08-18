@@ -15,8 +15,11 @@
     var rankingPage = null;
     var rankingRenderPending = false;
     var currentRestaurantPage = null;
+    var currentMarketPage = null;
     var adminState = { isAdmin: false, checking: false };
     var adminControlsBound = false;
+    var marketAdminBound = false;
+    var marketNotice = "";
     var voteControlsBound = false;
     var voteAuthBound = false;
     var rankingControlsBound = false;
@@ -266,7 +269,7 @@
     function setAdminUi(isAdmin) {
         adminState.isAdmin = Boolean(isAdmin);
         document.body.toggleAttribute("data-site-admin", adminState.isAdmin);
-        root.querySelectorAll("[data-admin-edit]").forEach(function (button) {
+        root.querySelectorAll("[data-admin-edit], [data-market-admin]").forEach(function (button) {
             button.hidden = !adminState.isAdmin;
         });
     }
@@ -1683,11 +1686,238 @@
         if (total) bindVenueVoting(page);
     }
 
+    async function loadMarketCollection(page) {
+        if (!voteApiUrl || localPreview) return;
+        try {
+            var payload = await fetchJson("/collections/marketplace");
+            if (Array.isArray(payload.items)) page.items = payload.items;
+        } catch (error) {
+            console.warn("Marketplace cards unavailable", error && error.message);
+        }
+    }
+
+    function marketAdminHtml() {
+        return [
+            '<section class="market-admin-toolbar" data-market-admin data-no-page-edit hidden>',
+            '<div><span class="eyebrow">ADMIN</span><strong>거래 카드 관리</strong></div>',
+            '<button class="action-link primary" type="button" data-market-add>새 카드 추가</button>',
+            '<span class="market-admin-status" data-market-page-status role="status" aria-live="polite">' + esc(marketNotice) + "</span>",
+            "</section>"
+        ].join("");
+    }
+
+    function marketModalHtml() {
+        return [
+            '<div class="admin-modal" data-market-modal data-no-page-edit hidden>',
+            '<section class="admin-dialog" role="dialog" aria-modal="true" aria-labelledby="marketDialogTitle">',
+            '<div class="admin-dialog-head"><div><span class="eyebrow">ADMIN</span>',
+            '<h2 id="marketDialogTitle" data-market-dialog-title>거래 카드 추가</h2></div>',
+            '<button class="admin-dialog-close" type="button" data-market-close aria-label="거래 카드 편집 창 닫기">×</button></div>',
+            '<form data-market-form><input type="hidden" name="itemId">',
+            '<div class="admin-form-grid">',
+            '<label>거래 상태<select name="status"><option value="팝니다">팝니다</option><option value="삽니다">삽니다</option></select></label>',
+            '<label>판매·구매자<input name="member" maxlength="80"></label>',
+            '<label class="admin-form-wide">상품명<input name="name" required maxlength="160"></label>',
+            '<label class="admin-form-wide">가격·조건<textarea name="price" maxlength="500"></textarea></label>',
+            '<label class="admin-form-wide">분류 (쉼표로 구분)<input name="categories" maxlength="480" placeholder="데크, 해머, 티타날"></label>',
+            '<label class="admin-form-wide">거래 장소<input name="location" maxlength="300"></label>',
+            '<label>톡방 (쉼표로 구분)<input name="chatRooms" maxlength="960"></label>',
+            '<label>연락처<input name="phone" maxlength="40" inputmode="tel"></label>',
+            '<label class="admin-form-wide">상품 정보 링크<input name="detailUrl" type="url" pattern="https://.*" maxlength="500" placeholder="https://..."></label>',
+            '<label class="admin-form-wide">링크 버튼 문구<input name="detailLabel" maxlength="80" placeholder="상품 정보 보기 ↗"></label>',
+            "</div>",
+            '<div class="admin-form-actions">',
+            '<button class="action-link primary" type="submit">저장</button>',
+            '<button class="action-link" type="button" data-market-close>취소</button>',
+            '<span class="admin-form-status" data-market-status role="status" aria-live="polite"></span>',
+            "</div></form></section></div>"
+        ].join("");
+    }
+
+    function marketCardAdminHtml(item) {
+        return [
+            '<div class="market-card-admin" data-market-admin data-no-page-edit hidden>',
+            '<button type="button" data-market-edit data-item-id="' + esc(item.id) + '">수정</button>',
+            '<button class="is-danger" type="button" data-market-delete data-item-id="' + esc(item.id) + '">삭제</button>',
+            "</div>"
+        ].join("");
+    }
+
+    function marketModal() {
+        return root.querySelector("[data-market-modal]");
+    }
+
+    function setMarketStatus(message, error) {
+        root.querySelectorAll("[data-market-status], [data-market-page-status]").forEach(function (status) {
+            status.textContent = message || "";
+            status.classList.toggle("is-error", Boolean(error));
+        });
+    }
+
+    function closeMarketModal() {
+        var modal = marketModal();
+        if (!modal) return;
+        modal.hidden = true;
+        document.body.removeAttribute("data-admin-modal-open");
+    }
+
+    function marketItem(itemId) {
+        return currentMarketPage && currentMarketPage.items.find(function (item) {
+            return item.id === itemId;
+        });
+    }
+
+    function openMarketModal(itemId) {
+        if (!adminState.isAdmin || !currentMarketPage) return;
+        var modal = marketModal();
+        if (!modal) return;
+        var item = itemId ? marketItem(itemId) : null;
+        var form = modal.querySelector("[data-market-form]");
+        form.reset();
+        form.elements.itemId.value = item ? item.id : "";
+        form.elements.status.value = item ? item.status : "팝니다";
+        form.elements.name.value = item ? item.name : "";
+        form.elements.price.value = item ? item.price : "";
+        form.elements.categories.value = item ? (item.categories || []).join(", ") : "";
+        form.elements.location.value = item ? item.location : "";
+        form.elements.chatRooms.value = item ? (item.chatRooms || []).join(", ") : "";
+        form.elements.member.value = item ? item.member : "";
+        form.elements.phone.value = item ? item.phone : "";
+        form.elements.detailUrl.value = item ? item.detailUrl : "";
+        form.elements.detailLabel.value = item ? item.detailLabel : "";
+        modal.querySelector("[data-market-dialog-title]").textContent = item ? "거래 카드 수정" : "거래 카드 추가";
+        modal.hidden = false;
+        document.body.dataset.adminModalOpen = "true";
+        setMarketStatus("", false);
+        form.elements.name.focus();
+    }
+
+    function splitMarketList(value, limit) {
+        return String(value || "").split(/\n|,/).map(function (item) {
+            return item.trim();
+        }).filter(Boolean).slice(0, limit);
+    }
+
+    function marketTimestamp() {
+        return new Date().toLocaleString("ko-KR", {
+            timeZone: "Asia/Seoul",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+    }
+
+    function newMarketItemId() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+            return window.crypto.randomUUID();
+        }
+        return "market-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+    }
+
+    async function persistMarketItems(items, message) {
+        var token = getVoteToken();
+        if (!token) {
+            setAdminUi(false);
+            if (window.GoyoungoAuth && typeof window.GoyoungoAuth.reauthenticate === "function") {
+                window.GoyoungoAuth.reauthenticate("거래 카드를 관리하려면 카카오 로그인을 다시 해주세요.");
+            }
+            return false;
+        }
+        setMarketStatus("저장 중…", false);
+        try {
+            var payload = await fetchJson("/admin/collections/marketplace", adminRequestOptions({ items: items }));
+            currentMarketPage.items = payload.items || [];
+            marketNotice = message || "거래 카드 목록을 저장했습니다.";
+            closeMarketModal();
+            renderMarket(currentMarketPage);
+            setAdminUi(true);
+            return true;
+        } catch (error) {
+            if (error.status === 401 || error.status === 403) {
+                setAdminUi(false);
+                if (error.status === 401 && window.GoyoungoAuth && typeof window.GoyoungoAuth.reauthenticate === "function") {
+                    window.GoyoungoAuth.reauthenticate("거래 카드를 관리하려면 카카오 로그인을 다시 해주세요.");
+                }
+            }
+            setMarketStatus(error.message || "거래 카드 목록을 저장하지 못했습니다.", true);
+            return false;
+        }
+    }
+
+    async function saveMarketForm(form) {
+        var itemId = form.elements.itemId.value || newMarketItemId();
+        var detailUrl = form.elements.detailUrl.value.trim();
+        var item = {
+            id: itemId,
+            status: form.elements.status.value,
+            name: form.elements.name.value.trim(),
+            price: form.elements.price.value.trim(),
+            categories: splitMarketList(form.elements.categories.value, 12),
+            location: form.elements.location.value.trim(),
+            chatRooms: splitMarketList(form.elements.chatRooms.value, 12),
+            member: form.elements.member.value.trim(),
+            phone: form.elements.phone.value.trim(),
+            updatedAt: marketTimestamp(),
+            detailUrl: detailUrl,
+            detailLabel: detailUrl ? (form.elements.detailLabel.value.trim() || "상품 정보 보기 ↗") : ""
+        };
+        var existingIndex = currentMarketPage.items.findIndex(function (candidate) {
+            return candidate.id === itemId;
+        });
+        var nextItems = currentMarketPage.items.slice();
+        if (existingIndex >= 0) nextItems[existingIndex] = item;
+        else nextItems.unshift(item);
+        var submit = form.querySelector('[type="submit"]');
+        submit.disabled = true;
+        await persistMarketItems(nextItems, existingIndex >= 0 ? "거래 카드를 수정했습니다." : "새 거래 카드를 추가했습니다.");
+        submit.disabled = false;
+    }
+
+    async function deleteMarketItem(itemId) {
+        var item = marketItem(itemId);
+        if (!item || !window.confirm('"' + item.name + '" 카드를 삭제할까요?')) return;
+        var nextItems = currentMarketPage.items.filter(function (candidate) {
+            return candidate.id !== itemId;
+        });
+        await persistMarketItems(nextItems, "거래 카드를 삭제했습니다.");
+    }
+
+    function bindMarketAdminControls() {
+        if (marketAdminBound) return;
+        marketAdminBound = true;
+        root.addEventListener("click", function (event) {
+            var add = event.target.closest("[data-market-add]");
+            if (add) return openMarketModal("");
+            var edit = event.target.closest("[data-market-edit]");
+            if (edit) return openMarketModal(edit.dataset.itemId);
+            var remove = event.target.closest("[data-market-delete]");
+            if (remove) {
+                deleteMarketItem(remove.dataset.itemId);
+                return;
+            }
+            if (event.target.closest("[data-market-close]") || event.target.matches("[data-market-modal]")) {
+                closeMarketModal();
+            }
+        });
+        root.addEventListener("submit", function (event) {
+            var form = event.target.closest("[data-market-form]");
+            if (!form) return;
+            event.preventDefault();
+            saveMarketForm(form);
+        });
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && marketModal() && !marketModal().hidden) closeMarketModal();
+        });
+    }
+
     function renderMarket(page) {
+        currentMarketPage = page;
         document.title = page.title + " - " + data.brand.title;
         var cards = page.items.map(function (item) {
             return [
-                '<article class="content-card">',
+                '<article class="content-card" data-market-item-id="' + esc(item.id) + '">',
                 '<div class="card-topline"><h2>' + esc(item.name) + '</h2><span class="status-pill ' +
                     (item.status === "팝니다" ? "sell" : "buy") + '">' + esc(item.status) + "</span></div>",
                 '<p class="price">' + esc(item.price) + "</p>",
@@ -1701,10 +1931,23 @@
                 item.detailUrl ? '<div class="card-actions">' +
                     externalLink(item.detailUrl, item.detailLabel || "상품 정보 보기", "action-link primary") + "</div>" : "",
                 '<p class="updated-at">마지막 업데이트 · ' + esc(item.updatedAt) + "</p>",
+                marketCardAdminHtml(item),
                 "</article>"
             ].join("");
         }).join("");
-        root.innerHTML = '<div class="page-wrap">' + hero(page) + '<div class="card-grid">' + cards + "</div>" + footer() + "</div>";
+        if (!cards) {
+            cards = [
+                '<div class="empty-state market-empty">',
+                '<span aria-hidden="true">💵</span>',
+                '<h2>등록된 거래 카드가 없습니다</h2>',
+                '<p>새 거래 정보가 등록되면 여기에 표시됩니다.</p>',
+                "</div>"
+            ].join("");
+        }
+        root.innerHTML = '<div class="page-wrap">' + hero(page) + marketAdminHtml() +
+            '<div class="card-grid" data-no-page-edit>' + cards + "</div>" + marketModalHtml() + footer() + "</div>";
+        bindMarketAdminControls();
+        setAdminUi(adminState.isAdmin);
     }
 
     function seasonContact(contact) {
@@ -1825,6 +2068,8 @@
             await loadRestaurantOverrides(page);
             renderRestaurants(page);
         } else if (page.type === "market") {
+            root.innerHTML = '<div class="page-wrap narrow"><div class="empty-state"><span aria-hidden="true">💵</span><p>거래 카드를 불러오는 중입니다.</p></div></div>';
+            await loadMarketCollection(page);
             renderMarket(page);
         } else if (page.type === "season") {
             renderSeason(page);
