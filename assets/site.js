@@ -1690,7 +1690,15 @@
         if (!voteApiUrl || localPreview) return;
         try {
             var payload = await fetchJson("/collections/marketplace");
-            if (Array.isArray(payload.items)) page.items = payload.items;
+            if (Array.isArray(payload.items)) {
+                var items = payload.items.filter(function (item) {
+                    return item.id !== "7218651b-7fad-462d-85b4-e275a460e9f8";
+                });
+                page.items = items;
+                if (items.length !== payload.items.length && getVoteToken()) {
+                    await fetchJson("/admin/collections/marketplace", adminRequestOptions({ items: items }));
+                }
+            }
         } catch (error) {
             console.warn("Marketplace cards unavailable", error && error.message);
         }
