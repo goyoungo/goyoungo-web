@@ -1815,6 +1815,46 @@ html[data-theme="dark"] .board-size-page {
     font-weight: 900;
 }
 
+.board-size-primary.is-dual {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+    align-items: stretch;
+    gap: clamp(14px, 2vw, 24px);
+    margin-top: 22px;
+}
+
+.board-size-dual-value {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: baseline;
+    gap: 9px;
+}
+
+.board-size-primary .board-size-dual-value small {
+    font-family: inherit;
+    font-size: clamp(16px, 2vw, 20px);
+    font-weight: 950;
+    letter-spacing: 0.08em;
+}
+
+.board-size-primary .board-size-dual-value strong {
+    font-size: clamp(50px, 7vw, 78px);
+    line-height: 0.9;
+    letter-spacing: -0.06em;
+}
+
+.board-size-primary .board-size-dual-value em {
+    font-size: 15px;
+    font-style: normal;
+    font-weight: 900;
+}
+
+.board-size-dual-divider {
+    width: 1px;
+    min-height: 76px;
+    background: var(--board-result-line);
+}
+
 .board-size-priority {
     margin: 18px 0 24px;
     font-size: 15px;
@@ -2011,6 +2051,23 @@ html[data-theme="dark"] .board-size-page {
     .board-size-guide li {
         grid-template-columns: 1fr;
         gap: 5px;
+    }
+
+    .board-size-primary.is-dual {
+        gap: 10px;
+    }
+
+    .board-size-dual-value {
+        grid-template-columns: 1fr auto;
+        gap: 4px 7px;
+    }
+
+    .board-size-primary .board-size-dual-value small {
+        grid-column: 1 / -1;
+    }
+
+    .board-size-primary .board-size-dual-value strong {
+        font-size: clamp(40px, 13vw, 58px);
     }
 }
 

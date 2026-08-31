@@ -2351,9 +2351,9 @@
             '<label><input type="radio" name="style" value="지빙"><span><strong>지빙</strong><small>박스·레일 중심</small></span></label>',
             '<label><input type="radio" name="style" value="파크"><span><strong>파크</strong><small>킥커·스핀 중심</small></span></label>',
             '<label><input type="radio" name="style" value="그라운드트릭"><span><strong>그라운드트릭</strong><small>회전·프레스 중심</small></span></label>',
-            '<label><input type="radio" name="style" value="전향트릭"><span><strong>전향트릭</strong><small>카빙과 트릭의 균형</small></span></label>',
-            '<label><input type="radio" name="style" value="전향라이딩" checked><span><strong>전향라이딩</strong><small>카빙·고속 안정성</small></span></label>',
-            '<label><input type="radio" name="style" value="알파인"><span><strong>알파인</strong><small>하드부츠·레이스 지향</small></span></label>',
+            '<label><input type="radio" name="style" value="전향 해머 트릭"><span><strong>전향 해머 트릭</strong><small>해머 카빙과 트릭의 균형</small></span></label>',
+            '<label><input type="radio" name="style" value="해머/세미해머 라이딩" checked><span><strong>해머/세미해머</strong><small>카빙·고속 안정성</small></span></label>',
+            '<label><input type="radio" name="style" value="알파인"><span><strong>알파인 SL·GS</strong><small>하드부츠·레이스 지향</small></span></label>',
             "</div></fieldset>",
             '<button class="board-size-submit" type="submit">내 보드 길이 확인</button>',
             "</form>",
@@ -2361,7 +2361,7 @@
             '<div class="board-size-result-heading"><div><p class="eyebrow">RECOMMENDED</p>',
             '<h2 id="boardSizeResultTitle">추천 중심 길이</h2></div>',
             '<p class="board-size-profile" id="boardSizeProfile"></p></div>',
-            '<div class="board-size-primary"><strong id="boardSizeRecommended">—</strong><span>cm</span></div>',
+            '<div class="board-size-primary" id="boardSizePrimary"><strong id="boardSizeRecommended">—</strong><span>cm</span></div>',
             '<p class="board-size-priority" id="boardSizePriority"></p>',
             '<div class="board-size-ranges" aria-label="길이별 검토 구간">',
             '<article data-range="short"><span class="range-badge">짧은 길이</span><strong class="range-value">—</strong><p>빠른 회전과 낮은 스윙웨이트</p></article>',
@@ -2379,7 +2379,10 @@
             '<li><strong>유효엣지와 쉐이프</strong><span>볼륨 시프트·해머·알파인 데크는 전체 길이만으로 비교하기 어렵습니다.</span></li></ol>',
             '<p class="board-size-sources">계산 기준 참고 · ',
             '<a href="https://www.burton.com/en-us/blogs/the-burton-blog/snowboard-buying-guide" target="_blank" rel="noopener noreferrer">Burton 공식 구매 가이드 ↗</a>',
-            '<a href="https://www.salomon.com/en-ca/sg/a/how-to-choose-the-right-size-of-snowboard" target="_blank" rel="noopener noreferrer">Salomon 사이즈 가이드 ↗</a></p>',
+            '<a href="https://www.salomon.com/en-ca/sg/a/how-to-choose-the-right-size-of-snowboard" target="_blank" rel="noopener noreferrer">Salomon 사이즈 가이드 ↗</a>',
+            '<a href="https://www.ogasaka-snowboard.com/product_25_08_fc_e.html" target="_blank" rel="noopener noreferrer">OGASAKA 세미해머 FC ↗</a>',
+            '<a href="https://www.ogasaka-snowboard.com/product_25_11_xc_e.html" target="_blank" rel="noopener noreferrer">OGASAKA 풀해머 XC ↗</a>',
+            '<a href="https://kessler-swiss.com/en-US/pages/products/snowboard/presentation" target="_blank" rel="noopener noreferrer">Kessler 알파인 SL·GS ↗</a></p>',
             "</section>",
             footer(),
             "</div>"
@@ -2397,13 +2400,40 @@
             "지빙": { offset: -4, zone: "short", reason: "지빙은 프레스와 빠른 조작을 위해 짧은 구간을 우선합니다." },
             "파크": { offset: -2, zone: "short", reason: "파크는 스핀과 공중 조작을 고려해 짧은 구간의 위쪽을 우선합니다." },
             "그라운드트릭": { offset: -4, zone: "short", reason: "그라운드트릭은 회전과 프레스를 위해 짧은 구간을 우선합니다." },
-            "전향트릭": { offset: 0, zone: "normal", reason: "전향트릭은 카빙 안정성과 트릭 조작성을 함께 보는 보통 구간을 우선합니다." },
-            "전향라이딩": { offset: 3, zone: "long", reason: "전향라이딩은 긴 유효엣지와 고속 안정성을 위해 긴 구간을 우선합니다." },
-            "알파인": { offset: 5, zone: "long", reason: "알파인은 고속 엣지 그립을 고려해 긴 구간을 우선합니다." }
+            "전향 해머 트릭": {
+                offset: 3,
+                zone: "long",
+                sizes: [145, 148, 151, 154, 157, 160, 163],
+                reason: "전향 해머 트릭은 해머 계열의 긴 유효엣지를 확보하면서도 회전 조작성을 남기도록 OGASAKA FC 계열의 짧은 쪽을 우선했습니다."
+            },
+            "해머/세미해머 라이딩": {
+                offset: 6,
+                zone: "long",
+                sizes: [145, 148, 151, 154, 157, 158, 160, 162, 163],
+                reason: "해머/세미해머 라이딩은 OGASAKA FC·XC 계열의 실제 출시 길이와 긴 유효엣지, 고속 안정성을 반영했습니다."
+            },
+            "알파인": { mode: "alpine", reason: "알파인은 Kessler ALPINE Worldcup의 공식 체중별 SL·GS 길이를 적용했습니다." }
         };
 
         function clamp(value, min, max) {
             return Math.min(Math.max(value, min), max);
+        }
+
+        function nearestAvailableSize(value, sizes, min, max) {
+            var candidates = sizes.filter(function (size) {
+                return size >= min && size <= max;
+            });
+            if (!candidates.length) return value;
+            return candidates.reduce(function (nearest, size) {
+                return Math.abs(size - value) < Math.abs(nearest - value) ? size : nearest;
+            }, candidates[0]);
+        }
+
+        function alpineSizes(weight) {
+            if (weight <= 75) {
+                return { sl: 156, gs: 177, bracket: "55–75kg" };
+            }
+            return { sl: 162, gs: 186, bracket: "75–90kg" };
         }
 
         function updateBoardSize() {
@@ -2418,17 +2448,64 @@
             var neutral = Math.round((heightBase * 0.35) + (weightBase * 0.65) + levelRules[level].offset);
             neutral = clamp(neutral, height - 30, height - 7);
 
+            var styleRule = styleRules[style];
+            var primary = document.getElementById("boardSizePrimary");
+            var rangesEl = result.querySelector(".board-size-ranges");
+            var titleEl = document.getElementById("boardSizeResultTitle");
+
+            document.getElementById("boardSizeProfile").textContent = height + "cm · " + weight + "kg · " + level + " · " + style;
+
+            if (styleRule.mode === "alpine") {
+                var alpine = alpineSizes(weight);
+                titleEl.textContent = "추천 알파인 레이스 길이";
+                primary.classList.add("is-dual");
+                primary.innerHTML = [
+                    '<span class="board-size-dual-value"><small>SL</small><strong>' + alpine.sl + '</strong><em>cm</em></span>',
+                    '<span class="board-size-dual-divider" aria-hidden="true"></span>',
+                    '<span class="board-size-dual-value"><small>GS</small><strong>' + alpine.gs + '</strong><em>cm</em></span>'
+                ].join("");
+                rangesEl.hidden = true;
+                document.getElementById("boardSizePriority").textContent = "Kessler 공식 체중 구간 · " + alpine.bracket;
+
+                var alpineReasons = [
+                    "SL " + alpine.sl + "cm는 짧은 회전과 빠른 엣지 전환을 위한 슬라럼 규격입니다.",
+                    "GS " + alpine.gs + "cm는 큰 회전반경과 고속 안정성을 위한 자이언트 슬라럼 규격입니다.",
+                    styleRule.reason
+                ];
+                document.getElementById("boardSizeReasons").innerHTML = alpineReasons.map(function (reason) {
+                    return "<li>" + esc(reason) + "</li>";
+                }).join("");
+
+                var alpineCaution = "알파인 데크는 회전반경·유효엣지·플레이트 사용 여부에 따라 차이가 큽니다. 제조사 권장표를 우선하세요.";
+                if (weight < 55) {
+                    alpineCaution = "입력 체중이 Kessler 공식 표의 55kg 미만입니다. 표시값은 가장 가벼운 공식 규격이므로 제조사 또는 전문점 상담이 필요합니다.";
+                } else if (weight > 90) {
+                    alpineCaution = "입력 체중이 Kessler 공식 표의 90kg을 초과합니다. 표시값은 가장 무거운 공식 규격이므로 제조사 또는 전문점 상담이 필요합니다.";
+                } else if (weight === 75) {
+                    alpineCaution = "75kg은 두 공식 체중 구간의 경계입니다. 선호 플렉스와 부츠·플레이트 구성에 따라 상위 규격도 함께 비교하세요.";
+                }
+                document.getElementById("boardSizeCaution").textContent = alpineCaution;
+                return;
+            }
+
+            titleEl.textContent = "추천 중심 길이";
+            primary.classList.remove("is-dual");
+            primary.innerHTML = '<strong id="boardSizeRecommended">—</strong><span>cm</span>';
+            var recommendedEl = document.getElementById("boardSizeRecommended");
+            rangesEl.hidden = false;
+
             var ranges = {
                 short: { min: neutral - 5, max: neutral - 2, label: "짧은 길이" },
                 normal: { min: neutral - 1, max: neutral + 2, label: "보통" },
-                long: { min: neutral + 3, max: neutral + 6, label: "긴 길이" }
+                long: { min: neutral + 3, max: neutral + 8, label: "긴 길이" }
             };
-            var styleRule = styleRules[style];
             var priorityRange = ranges[styleRule.zone];
             var recommended = clamp(neutral + styleRule.offset, priorityRange.min, priorityRange.max);
+            if (styleRule.sizes) {
+                recommended = nearestAvailableSize(recommended, styleRule.sizes, priorityRange.min, priorityRange.max);
+            }
 
-            document.getElementById("boardSizeRecommended").textContent = recommended;
-            document.getElementById("boardSizeProfile").textContent = height + "cm · " + weight + "kg · " + level + " · " + style;
+            recommendedEl.textContent = recommended;
             document.getElementById("boardSizePriority").textContent = "우선 검토 구간 · " + priorityRange.label + " " + priorityRange.min + "–" + priorityRange.max + "cm";
 
             Array.prototype.forEach.call(result.querySelectorAll("[data-range]"), function (card) {
@@ -2450,8 +2527,8 @@
             }).join("");
 
             var caution = "최종 선택은 관심 제품의 권장 체중표와 허리 폭을 먼저 확인하세요.";
-            if (style === "알파인") {
-                caution = "알파인 데크는 회전반경·유효엣지·플레이트 사용 여부에 따라 차이가 큽니다. 이 결과는 시작점으로만 보고 제조사 권장표를 우선하세요.";
+            if (style === "전향 해머 트릭" || style === "해머/세미해머 라이딩") {
+                caution = "해머·세미해머는 같은 전체 길이라도 유효엣지와 플렉스 차이가 큽니다. 표시값과 가까운 실제 모델의 권장 체중·허리 폭을 반드시 함께 확인하세요.";
             }
             document.getElementById("boardSizeCaution").textContent = caution;
         }
