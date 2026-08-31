@@ -457,7 +457,7 @@
             '<p class="eyebrow">GO.YOUNGO</p>',
             "<h1>" + esc(page.title) + "</h1>",
             "<p>" + esc(page.subtitle || "") + "</p>",
-            '<p class="snapshot-note">마지막 정보 스냅샷 · ' + esc(data.brand.snapshotDate) + "</p>",
+            page.hideSnapshot ? "" : '<p class="snapshot-note">마지막 정보 스냅샷 · ' + esc(data.brand.snapshotDate) + "</p>",
             "</header>"
         ].join("");
     }
@@ -487,6 +487,7 @@
             muju: "EAT",
             market: "MARKET",
             season: "STAY",
+            "board-size": "SIZE",
             partner: "BENEFIT",
             shuttle: "RIDE"
         };
@@ -2327,6 +2328,146 @@
         setAdminUi(adminState.isAdmin);
     }
 
+    function renderBoardSize(page) {
+        document.title = page.title + " - " + data.brand.title;
+        root.innerHTML = [
+            '<div class="page-wrap board-size-page">',
+            hero(page),
+            '<section class="board-size-layout" aria-label="보드 길이 계산기">',
+            '<form class="board-size-form" id="boardSizeForm">',
+            '<div class="board-size-form-heading"><p class="eyebrow">RIDER PROFILE</p>',
+            '<h2>내 라이딩 조건</h2><p>입력값은 추천 계산에만 사용하며 저장하지 않습니다.</p></div>',
+            '<div class="board-size-metrics">',
+            '<label><span>키</span><span class="board-size-number"><input type="number" name="height" min="130" max="210" step="1" value="175" inputmode="numeric" required><em>cm</em></span></label>',
+            '<label><span>몸무게</span><span class="board-size-number"><input type="number" name="weight" min="35" max="150" step="1" value="70" inputmode="numeric" required><em>kg</em></span></label>',
+            "</div>",
+            '<fieldset class="board-size-options"><legend>실력</legend><div class="board-size-option-grid level-options">',
+            '<label><input type="radio" name="level" value="입문"><span><strong>입문</strong><small>첫 시즌·낙엽 연습</small></span></label>',
+            '<label><input type="radio" name="level" value="초급"><span><strong>초급</strong><small>턴을 연결하는 단계</small></span></label>',
+            '<label><input type="radio" name="level" value="중급" checked><span><strong>중급</strong><small>슬로프를 안정적으로 주행</small></span></label>',
+            '<label><input type="radio" name="level" value="상급"><span><strong>상급</strong><small>속도·엣지 사용이 능숙</small></span></label>',
+            "</div></fieldset>",
+            '<fieldset class="board-size-options"><legend>선호 스타일</legend><div class="board-size-option-grid style-options">',
+            '<label><input type="radio" name="style" value="지빙"><span><strong>지빙</strong><small>박스·레일 중심</small></span></label>',
+            '<label><input type="radio" name="style" value="파크"><span><strong>파크</strong><small>킥커·스핀 중심</small></span></label>',
+            '<label><input type="radio" name="style" value="그라운드트릭"><span><strong>그라운드트릭</strong><small>회전·프레스 중심</small></span></label>',
+            '<label><input type="radio" name="style" value="전향트릭"><span><strong>전향트릭</strong><small>카빙과 트릭의 균형</small></span></label>',
+            '<label><input type="radio" name="style" value="전향라이딩" checked><span><strong>전향라이딩</strong><small>카빙·고속 안정성</small></span></label>',
+            '<label><input type="radio" name="style" value="알파인"><span><strong>알파인</strong><small>하드부츠·레이스 지향</small></span></label>',
+            "</div></fieldset>",
+            '<button class="board-size-submit" type="submit">내 보드 길이 확인</button>',
+            "</form>",
+            '<section class="board-size-result" id="boardSizeResult" aria-live="polite" aria-labelledby="boardSizeResultTitle">',
+            '<div class="board-size-result-heading"><div><p class="eyebrow">RECOMMENDED</p>',
+            '<h2 id="boardSizeResultTitle">추천 중심 길이</h2></div>',
+            '<p class="board-size-profile" id="boardSizeProfile"></p></div>',
+            '<div class="board-size-primary"><strong id="boardSizeRecommended">—</strong><span>cm</span></div>',
+            '<p class="board-size-priority" id="boardSizePriority"></p>',
+            '<div class="board-size-ranges" aria-label="길이별 검토 구간">',
+            '<article data-range="short"><span class="range-badge">짧은 길이</span><strong class="range-value">—</strong><p>빠른 회전과 낮은 스윙웨이트</p></article>',
+            '<article data-range="normal"><span class="range-badge">보통</span><strong class="range-value">—</strong><p>조작성과 안정성의 균형</p></article>',
+            '<article data-range="long"><span class="range-badge">긴 길이</span><strong class="range-value">—</strong><p>고속 안정성과 긴 유효엣지</p></article>',
+            "</div>",
+            '<div class="board-size-reasons"><h3>이렇게 계산했어요</h3><ul id="boardSizeReasons"></ul></div>',
+            '<p class="board-size-caution" id="boardSizeCaution"></p>',
+            "</section>",
+            "</section>",
+            '<section class="board-size-guide" aria-labelledby="boardSizeGuideTitle">',
+            '<div><p class="eyebrow">BEFORE YOU BUY</p><h2 id="boardSizeGuideTitle">길이 다음에는 이것도 확인하세요</h2></div>',
+            '<ol><li><strong>제품별 권장 체중</strong><span>같은 길이라도 플렉스와 설계에 따라 권장 체중이 다릅니다.</span></li>',
+            '<li><strong>허리 폭과 부츠 크기</strong><span>발이 크거나 전향각이 낮다면 토·힐 드래그가 없는지 확인하세요.</span></li>',
+            '<li><strong>유효엣지와 쉐이프</strong><span>볼륨 시프트·해머·알파인 데크는 전체 길이만으로 비교하기 어렵습니다.</span></li></ol>',
+            '<p class="board-size-sources">계산 기준 참고 · ',
+            '<a href="https://www.burton.com/en-us/blogs/the-burton-blog/snowboard-buying-guide" target="_blank" rel="noopener noreferrer">Burton 공식 구매 가이드 ↗</a>',
+            '<a href="https://www.salomon.com/en-ca/sg/a/how-to-choose-the-right-size-of-snowboard" target="_blank" rel="noopener noreferrer">Salomon 사이즈 가이드 ↗</a></p>',
+            "</section>",
+            footer(),
+            "</div>"
+        ].join("");
+
+        var form = document.getElementById("boardSizeForm");
+        var result = document.getElementById("boardSizeResult");
+        var levelRules = {
+            "입문": { offset: -2, reason: "입문 단계의 조작 편의성을 위해 기준에서 2cm 줄였습니다." },
+            "초급": { offset: -1, reason: "턴 연결이 쉬운 쪽으로 기준에서 1cm 줄였습니다." },
+            "중급": { offset: 0, reason: "조작성과 안정성이 균형을 이루는 기준 길이를 유지했습니다." },
+            "상급": { offset: 1, reason: "속도와 엣지 안정성을 위해 기준에 1cm를 더했습니다." }
+        };
+        var styleRules = {
+            "지빙": { offset: -4, zone: "short", reason: "지빙은 프레스와 빠른 조작을 위해 짧은 구간을 우선합니다." },
+            "파크": { offset: -2, zone: "short", reason: "파크는 스핀과 공중 조작을 고려해 짧은 구간의 위쪽을 우선합니다." },
+            "그라운드트릭": { offset: -4, zone: "short", reason: "그라운드트릭은 회전과 프레스를 위해 짧은 구간을 우선합니다." },
+            "전향트릭": { offset: 0, zone: "normal", reason: "전향트릭은 카빙 안정성과 트릭 조작성을 함께 보는 보통 구간을 우선합니다." },
+            "전향라이딩": { offset: 3, zone: "long", reason: "전향라이딩은 긴 유효엣지와 고속 안정성을 위해 긴 구간을 우선합니다." },
+            "알파인": { offset: 5, zone: "long", reason: "알파인은 고속 엣지 그립을 고려해 긴 구간을 우선합니다." }
+        };
+
+        function clamp(value, min, max) {
+            return Math.min(Math.max(value, min), max);
+        }
+
+        function updateBoardSize() {
+            var height = Number(form.elements.height.value);
+            var weight = Number(form.elements.weight.value);
+            var level = form.elements.level.value;
+            var style = form.elements.style.value;
+            if (!height || !weight || !levelRules[level] || !styleRules[style]) return;
+
+            var heightBase = height - 20;
+            var weightBase = 121 + (weight * 0.47);
+            var neutral = Math.round((heightBase * 0.35) + (weightBase * 0.65) + levelRules[level].offset);
+            neutral = clamp(neutral, height - 30, height - 7);
+
+            var ranges = {
+                short: { min: neutral - 5, max: neutral - 2, label: "짧은 길이" },
+                normal: { min: neutral - 1, max: neutral + 2, label: "보통" },
+                long: { min: neutral + 3, max: neutral + 6, label: "긴 길이" }
+            };
+            var styleRule = styleRules[style];
+            var priorityRange = ranges[styleRule.zone];
+            var recommended = clamp(neutral + styleRule.offset, priorityRange.min, priorityRange.max);
+
+            document.getElementById("boardSizeRecommended").textContent = recommended;
+            document.getElementById("boardSizeProfile").textContent = height + "cm · " + weight + "kg · " + level + " · " + style;
+            document.getElementById("boardSizePriority").textContent = "우선 검토 구간 · " + priorityRange.label + " " + priorityRange.min + "–" + priorityRange.max + "cm";
+
+            Array.prototype.forEach.call(result.querySelectorAll("[data-range]"), function (card) {
+                var rangeId = card.dataset.range;
+                var range = ranges[rangeId];
+                card.classList.toggle("is-priority", rangeId === styleRule.zone);
+                card.querySelector(".range-value").textContent = range.min + "–" + range.max + "cm";
+                var badge = card.querySelector(".range-badge");
+                badge.textContent = range.label + (rangeId === styleRule.zone ? " · 우선 검토" : "");
+            });
+
+            var reasons = [
+                "키 기준 " + Math.round(heightBase) + "cm와 체중 기준 " + Math.round(weightBase) + "cm를 함께 반영했습니다.",
+                levelRules[level].reason,
+                styleRule.reason
+            ];
+            document.getElementById("boardSizeReasons").innerHTML = reasons.map(function (reason) {
+                return "<li>" + esc(reason) + "</li>";
+            }).join("");
+
+            var caution = "최종 선택은 관심 제품의 권장 체중표와 허리 폭을 먼저 확인하세요.";
+            if (style === "알파인") {
+                caution = "알파인 데크는 회전반경·유효엣지·플레이트 사용 여부에 따라 차이가 큽니다. 이 결과는 시작점으로만 보고 제조사 권장표를 우선하세요.";
+            }
+            document.getElementById("boardSizeCaution").textContent = caution;
+        }
+
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+            if (!form.reportValidity()) return;
+            updateBoardSize();
+            result.setAttribute("tabindex", "-1");
+            result.focus({ preventScroll: true });
+        });
+        form.addEventListener("input", updateBoardSize);
+        form.addEventListener("change", updateBoardSize);
+        updateBoardSize();
+    }
+
     function renderUnknown() {
         document.title = "페이지를 찾을 수 없습니다 - " + data.brand.title;
         root.innerHTML = [
@@ -2367,6 +2508,8 @@
             root.innerHTML = '<div class="page-wrap narrow"><div class="empty-state"><span aria-hidden="true">🚌</span><p>셔틀 카드를 불러오는 중입니다.</p></div></div>';
             await loadManagedCollection(page);
             renderShuttle(page);
+        } else if (page.type === "boardSize") {
+            renderBoardSize(page);
         } else {
             renderUnknown();
         }

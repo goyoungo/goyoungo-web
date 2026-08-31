@@ -101,6 +101,13 @@ window.SITE_DATA = {
       "summary": "시즌방과 주주 모집 정보"
     },
     {
+      "id": "board-size",
+      "icon": "📏",
+      "title": "보드 길이 추천",
+      "href": "/snowbro/board-size.html",
+      "summary": "체형·실력·스타일별 데크 길이 가이드"
+    },
+    {
       "id": "partner",
       "icon": "🤝",
       "title": "제휴 업체 · 보드카페",
@@ -1585,6 +1592,13 @@ window.SITE_DATA = {
           "links": []
         }
       ]
+    },
+    "board-size": {
+      "type": "boardSize",
+      "title": "보드 길이 추천",
+      "icon": "📏",
+      "subtitle": "키·몸무게·실력·라이딩 스타일로 우선 검토할 데크 길이를 찾아보세요",
+      "hideSnapshot": true
     },
     "partner": {
       "type": "partner",
