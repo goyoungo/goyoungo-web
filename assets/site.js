@@ -2351,6 +2351,7 @@
             '<label><input type="radio" name="style" value="지빙"><span><strong>지빙</strong><small>박스·레일 중심</small></span></label>',
             '<label><input type="radio" name="style" value="파크"><span><strong>파크</strong><small>킥커·스핀 중심</small></span></label>',
             '<label><input type="radio" name="style" value="그라운드트릭"><span><strong>그라운드트릭</strong><small>회전·프레스 중심</small></span></label>',
+            '<label><input type="radio" name="style" value="덕 라이딩"><span><strong>덕 라이딩</strong><small>덕스탠스·올라운드</small></span></label>',
             '<label><input type="radio" name="style" value="전향 해머 트릭"><span><strong>전향 해머 트릭</strong><small>해머 카빙과 트릭의 균형</small></span></label>',
             '<label><input type="radio" name="style" value="해머/세미해머 라이딩" checked><span><strong>해머/세미해머</strong><small>카빙·고속 안정성</small></span></label>',
             '<label><input type="radio" name="style" value="알파인"><span><strong>알파인 SL·GS</strong><small>하드부츠·레이스 지향</small></span></label>',
@@ -2380,6 +2381,7 @@
             '<p class="board-size-sources">계산 기준 참고 · ',
             '<a href="https://www.burton.com/en-us/blogs/the-burton-blog/snowboard-buying-guide" target="_blank" rel="noopener noreferrer">Burton 공식 구매 가이드 ↗</a>',
             '<a href="https://www.salomon.com/en-ca/sg/a/how-to-choose-the-right-size-of-snowboard" target="_blank" rel="noopener noreferrer">Salomon 사이즈 가이드 ↗</a>',
+            '<a href="https://www.ogasaka-snowboard.com/product_25_03_ct_e.html" target="_blank" rel="noopener noreferrer">OGASAKA 올라운드 CT ↗</a>',
             '<a href="https://www.ogasaka-snowboard.com/product_25_08_fc_e.html" target="_blank" rel="noopener noreferrer">OGASAKA 세미해머 FC ↗</a>',
             '<a href="https://www.ogasaka-snowboard.com/product_25_11_xc_e.html" target="_blank" rel="noopener noreferrer">OGASAKA 풀해머 XC ↗</a>',
             '<a href="https://kessler-swiss.com/en-US/pages/products/snowboard/presentation" target="_blank" rel="noopener noreferrer">Kessler 알파인 SL·GS ↗</a></p>',
@@ -2400,11 +2402,17 @@
             "지빙": { offset: -4, zone: "short", reason: "지빙은 프레스와 빠른 조작을 위해 짧은 구간을 우선합니다." },
             "파크": { offset: -2, zone: "short", reason: "파크는 스핀과 공중 조작을 고려해 짧은 구간의 위쪽을 우선합니다." },
             "그라운드트릭": { offset: -4, zone: "short", reason: "그라운드트릭은 회전과 프레스를 위해 짧은 구간을 우선합니다." },
+            "덕 라이딩": {
+                offset: 0,
+                zone: "normal",
+                sizes: [139, 143, 146, 148, 150, 152, 154, 156, 158, 161],
+                reason: "덕 라이딩은 그라운드트릭과 카빙을 함께 소화하는 OGASAKA CT 계열의 실제 길이를 참고해 균형 구간을 우선했습니다."
+            },
             "전향 해머 트릭": {
-                offset: 3,
-                zone: "long",
+                offset: -1,
+                zone: "normal",
                 sizes: [145, 148, 151, 154, 157, 160, 163],
-                reason: "전향 해머 트릭은 해머 계열의 긴 유효엣지를 확보하면서도 회전 조작성을 남기도록 OGASAKA FC 계열의 짧은 쪽을 우선했습니다."
+                reason: "전향 해머 트릭은 세미해머의 긴 유효엣지를 확보하되 회전과 리버스 조작이 쉽도록 OGASAKA FC 계열의 짧은 쪽을 우선했습니다."
             },
             "해머/세미해머 라이딩": {
                 offset: 6,
@@ -2527,7 +2535,9 @@
             }).join("");
 
             var caution = "최종 선택은 관심 제품의 권장 체중표와 허리 폭을 먼저 확인하세요.";
-            if (style === "전향 해머 트릭" || style === "해머/세미해머 라이딩") {
+            if (style === "전향 해머 트릭") {
+                caution = "전향 해머 트릭은 해머/세미해머 라이딩보다 짧게 계산합니다. 같은 길이라도 유효엣지가 긴 모델은 더 길게 느껴질 수 있으니 제품별 권장 체중을 함께 확인하세요.";
+            } else if (style === "해머/세미해머 라이딩") {
                 caution = "해머·세미해머는 같은 전체 길이라도 유효엣지와 플렉스 차이가 큽니다. 표시값과 가까운 실제 모델의 권장 체중·허리 폭을 반드시 함께 확인하세요.";
             }
             document.getElementById("boardSizeCaution").textContent = caution;
