@@ -31,13 +31,27 @@ test("필터 조합과 미입력 예산 처리", () => {
     assert.equal(board.timestamp("2026년 10월 13일 오후 12:28"), Date.parse("2026-10-13T12:28:00+09:00"));
 });
 
-function lambdaHarness(userId = "1") {
+function sourceLambdaCode() {
     const template = fs.readFileSync(path.join(__dirname, "../voting-stack.yaml"), "utf8");
-    const code = template.split(/ZipFile: \|\r?\n/)[1].split(/\r?\n  VoteApi:/)[0].split(/\r?\n/).map(line => line.startsWith("          ") ? line.slice(10) : line).join("\n");
+    return template.split(/ZipFile: \|\r?\n/)[1].split(/\r?\n  VoteApi:/)[0].split(/\r?\n/).map(line => line.startsWith("          ") ? line.slice(10) : line).join("\n");
+}
+
+test("배포된 Lambda는 로컬 UTF-8 소스와 동일", { skip: !process.env.GOYOUNGO_VOTING_CODE }, () => {
+    const hash = code => require("node:crypto").createHash("sha256").update(code.replace(/\r\n/g, "\n").trim()).digest("hex");
+    assert.equal(hash(fs.readFileSync(process.env.GOYOUNGO_VOTING_CODE, "utf8")), hash(sourceLambdaCode()));
+});
+
+function lambdaHarness(userId = "1") {
+    const code = process.env.GOYOUNGO_VOTING_CODE
+        ? fs.readFileSync(process.env.GOYOUNGO_VOTING_CODE, "utf8")
+        : sourceLambdaCode();
     const objects = new Map();
+    const records = new Map();
     class PutObjectCommand { constructor(input) { this.input = input; } }
     class GetObjectCommand { constructor(input) { this.input = input; } }
     class Command { constructor(input) { this.input = input; } }
+    class GetCommand extends Command {}
+    class TransactWriteCommand extends Command {}
     class S3Client {
         async send(command) {
             if (command instanceof PutObjectCommand) { objects.set(command.input.Key, command.input); return {}; }
@@ -54,7 +68,19 @@ function lambdaHarness(userId = "1") {
             if (name === "node:crypto") return require(name);
             if (name === "@aws-sdk/client-s3") return { S3Client, PutObjectCommand, GetObjectCommand };
             if (name === "@aws-sdk/client-dynamodb") return { DynamoDBClient: Command };
-            if (name === "@aws-sdk/lib-dynamodb") return { DynamoDBDocumentClient: { from: () => ({ send: async () => ({}) }) }, BatchGetCommand: Command, GetCommand: Command, QueryCommand: Command, TransactWriteCommand: Command };
+            if (name === "@aws-sdk/lib-dynamodb") return {
+                DynamoDBDocumentClient: { from: () => ({ send: async command => {
+                    if (command instanceof GetCommand) return { Item: records.get(command.input.Key.pk + "|" + command.input.Key.sk) };
+                    if (command instanceof TransactWriteCommand) {
+                        for (const operation of command.input.TransactItems) {
+                            const item = operation.Put.Item;
+                            records.set(item.pk + "|" + item.sk, item);
+                        }
+                    }
+                    return {};
+                } }) },
+                BatchGetCommand: Command, GetCommand, QueryCommand: Command, TransactWriteCommand
+            };
             throw new Error("Unexpected import " + name);
         }
     };
@@ -97,6 +123,35 @@ test("관리자 업로드와 공개 사진 읽기, 비관리자 거부", async (
     assert.equal(nonAdmin.statusCode, 403);
     const unauthenticated = await api.handler(uploadEvent({ contentType: "image/jpeg", data }, ""));
     assert.equal(unauthenticated.statusCode, 401);
+    assert.equal(JSON.parse(unauthenticated.body).message, "카카오 로그인이 필요합니다.");
+});
+
+test("한글 유형·필터를 포함한 사진 첨부 글을 저장하고 다시 조회", async () => {
+    const { api } = lambdaHarness();
+    const uploaded = await api.handler(uploadEvent({ contentType: "image/jpeg", data: Buffer.from([255, 216, 255, 224, 255, 217]).toString("base64") }));
+    assert.equal(uploaded.statusCode, 201);
+    const photoId = JSON.parse(uploaded.body).photoId;
+    const item = { id: "photo-card", type: "주주 구해요", status: "진행중", name: "사진 첨부 테스트", details: "기존 내용\n줄바꿈 유지", resort: "웰리힐리파크", season: "26/27", stayTypes: ["주말"], budgetManwon: 80, photos: [photoId] };
+    const event = { requestContext: { http: { method: "PUT" } }, rawPath: "/admin/collections/season-room", pathParameters: { collectionId: "season-room" }, headers: { authorization: "Bearer " + "t".repeat(30) }, body: JSON.stringify({ items: [item] }) };
+    const saved = await api.handler(event);
+    assert.equal(saved.statusCode, 200, saved.body);
+    const read = await api.handler({ requestContext: { http: { method: "GET" } }, rawPath: "/collections/season-room", pathParameters: { collectionId: "season-room" } });
+    assert.equal(read.statusCode, 200);
+    const restored = JSON.parse(read.body).items[0];
+    for (const key of ["type", "status", "details", "resort", "season", "budgetManwon"]) assert.equal(restored[key], item[key]);
+    assert.deepEqual(restored.photos, [photoId]);
+    assert.deepEqual(restored.stayTypes, ["주말"]);
+});
+
+test("현재 공개 게시글도 배포 코드에서 정상 검증", { skip: !process.env.GOYOUNGO_TEST_LIVE_COLLECTION }, async () => {
+    const result = await fetch("https://ndx4bl2obl.execute-api.ap-northeast-3.amazonaws.com/collections/season-room");
+    assert.equal(result.status, 200);
+    const { items } = await result.json();
+    const normalized = lambdaHarness().api.validateSeasonItems(items);
+    assert.equal(normalized.length, items.length);
+    items.forEach((item, index) => {
+        for (const key of ["id", "type", "status", "name", "details"]) assert.equal(normalized[index][key], item[key]);
+    });
 });
 
 test("이미지가 아닌 내용·잘못된 형식·용량 초과를 거부", async () => {

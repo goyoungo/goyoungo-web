@@ -49,6 +49,23 @@
 
 ## 배포
 
+Windows에서는 큰 템플릿을 `cloudformation deploy --s3-bucket`으로 전달할 때 시스템 문자 인코딩으로 재변환되어 Lambda의 한글 문자열이 손상될 수 있습니다. 아래 스크립트는 원본 UTF-8 바이트를 직접 업로드하고 SHA256을 다시 비교합니다. 기존 파라미터(비밀값 포함)는 그대로 유지하며, 리소스 삭제·교체가 발견되면 실행을 중단합니다.
+
+```powershell
+# 먼저 변경 목록을 확인합니다. 인증된 AWS CLI 프로필을 지정하세요.
+./backend/deploy-voting.ps1 -ArtifactBucket <existing-artifact-bucket> -Profile <profile>
+# 출력된 change set을 검토한 뒤 AWS CLI execute-change-set으로 실행합니다.
+# 검토 후 한 번에 실행하려면 -Execute 옵션을 사용할 수도 있습니다.
+```
+
+배포 후 Lambda ZIP의 `index.js`를 내려받아 같은 회귀 테스트를 실행하세요. 인증은 테스트용으로 모킹하며, 운영 글은 조회만 합니다.
+
+```powershell
+$env:GOYOUNGO_VOTING_CODE = '<downloaded-lambda-directory>/index.js'
+$env:GOYOUNGO_TEST_LIVE_COLLECTION = '1'
+node --test backend/tests/season-board.test.cjs
+```
+
 ```text
 aws cloudformation deploy \
   --region ap-northeast-3 \
