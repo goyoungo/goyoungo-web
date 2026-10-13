@@ -1996,6 +1996,7 @@
             '<label>게시판 유형<select name="type"><option value="주주 구해요">주주 구해요</option><option value="시즌방 구해요">시즌방 구해요</option></select></label>',
             '<label>모집 상태<select name="status"><option value="진행중">진행중</option><option value="완료">완료</option></select></label>',
             '<label class="admin-form-wide">작성자·방 이름<input name="name" required maxlength="160"></label>',
+            window.GoyoungoSeasonBoard ? window.GoyoungoSeasonBoard.fieldsHtml() : "",
             '<label>연락처<input name="contact" maxlength="120" inputmode="tel"></label>',
             '<label>SNS·카카오톡<input name="sns" maxlength="200"></label>',
             '<label class="admin-form-wide">모집 성별·인원 (쉼표로 구분)<input name="gender" maxlength="480" placeholder="남자 1, 여자 1"></label>',
@@ -2058,6 +2059,9 @@
         var modal = managedModal();
         if (!modal) return;
         modal.hidden = true;
+        if (currentManagedPage && currentManagedPage.type === "season" && window.GoyoungoSeasonBoard) {
+            window.GoyoungoSeasonBoard.resetDraft();
+        }
         document.body.removeAttribute("data-admin-modal-open");
     }
 
@@ -2085,6 +2089,7 @@
             form.elements.price.value = item ? item.price : "";
             form.elements.details.value = item ? item.details : "";
             form.elements.links.value = item ? (item.links || []).join("\n") : "";
+            if (window.GoyoungoSeasonBoard) window.GoyoungoSeasonBoard.openEditor(form, item, voteApiUrl);
             form.elements.name.focus();
         } else {
             form.elements.eyebrow.value = item ? (item.eyebrow || "") : "";
@@ -2138,6 +2143,7 @@
     }
 
     async function saveManagedForm(form) {
+        if (form.dataset.saving === "true") return;
         var itemId = form.elements.itemId.value || newMarketItemId();
         var item;
         if (currentManagedPage.type === "season") {
@@ -2178,8 +2184,26 @@
         var settings = managedCollectionSettings(currentManagedPage);
         var submit = form.querySelector('[type="submit"]');
         submit.disabled = true;
-        await persistManagedItems(nextItems, existingIndex >= 0 ? settings.noun + "를 수정했습니다." : "새 " + settings.noun + "를 추가했습니다.");
-        submit.disabled = false;
+        form.dataset.saving = "true";
+        try {
+            if (currentManagedPage.type === "season" && window.GoyoungoSeasonBoard) {
+                var extra = await window.GoyoungoSeasonBoard.saveEditor(form, function (photo) {
+                    var options = adminRequestOptions(photo);
+                    options.method = "POST";
+                    return fetchJson("/admin/season-photos", options);
+                });
+                Object.assign(item, extra);
+            }
+            await persistManagedItems(nextItems, existingIndex >= 0 ? settings.noun + "를 수정했습니다." : "새 " + settings.noun + "를 추가했습니다.");
+        } catch (error) {
+            setManagedStatus(error.message || "사진을 저장하지 못했습니다. 다시 시도해 주세요.", true);
+            if (error.status === 401 && window.GoyoungoAuth && typeof window.GoyoungoAuth.reauthenticate === "function") {
+                window.GoyoungoAuth.reauthenticate("사진을 올리려면 카카오 로그인을 다시 해주세요.");
+            }
+        } finally {
+            form.dataset.saving = "false";
+            submit.disabled = false;
+        }
     }
 
     async function deleteManagedItem(itemId) {
@@ -2194,6 +2218,7 @@
     function bindManagedAdminControls() {
         if (managedAdminBound) return;
         managedAdminBound = true;
+        if (window.GoyoungoSeasonBoard) window.GoyoungoSeasonBoard.bindEditor(root);
         root.addEventListener("click", function (event) {
             var add = event.target.closest("[data-collection-add]");
             if (add) return openManagedModal("");
@@ -2228,7 +2253,8 @@
     function renderSeason(page) {
         currentManagedPage = page;
         document.title = page.title + " - " + data.brand.title;
-        var cards = page.items.map(function (item) {
+        var seasonBoard = window.GoyoungoSeasonBoard;
+        function cardHtml(item) {
             var instagram = item.links.find(function (link) { return /instagram\.com/i.test(link); });
             var otherLinks = item.links.filter(function (link) { return !/instagram\.com/i.test(link); });
             var sns = item.sns
@@ -2236,9 +2262,11 @@
                 : '<span class="faint">—</span>';
             return [
                 '<article class="content-card" data-collection-item-id="' + esc(item.id) + '">',
+                seasonBoard ? seasonBoard.coverHtml(item, voteApiUrl) : "",
                 '<div class="card-topline"><h2>' + esc(item.name) + '</h2><span class="status-pill ' +
                     (item.status === "완료" ? "done" : "") + '">' + esc(item.status) + "</span></div>",
                 '<p class="price">' + esc(item.type) + "</p>",
+                seasonBoard ? seasonBoard.metadataHtml(item) : "",
                 '<dl class="meta-list">',
                 '<div class="meta-row"><dt>연락처</dt><dd>' + seasonContact(item.contact) + "</dd></div>",
                 '<div class="meta-row"><dt>SNS</dt><dd>' + sns + "</dd></div>",
@@ -2253,13 +2281,16 @@
                 managedCardAdminHtml(item),
                 "</article>"
             ].join("");
-        }).join("");
+        }
+        var cards = page.items.map(cardHtml).join("");
         if (!cards) {
             cards = '<div class="empty-state market-empty"><span aria-hidden="true">🏠</span>' +
                 '<h2>등록된 모집 카드가 없습니다</h2><p>새 모집 정보가 등록되면 여기에 표시됩니다.</p></div>';
         }
         root.innerHTML = '<div class="page-wrap">' + hero(page) + managedAdminHtml(page) +
-            '<div class="card-grid" data-no-page-edit>' + cards + "</div>" + managedModalHtml(page) + footer() + "</div>";
+            (seasonBoard ? seasonBoard.filtersHtml(page.items) : "") +
+            '<div class="card-grid season-card-grid" data-season-grid data-no-page-edit>' + cards + "</div>" + managedModalHtml(page) + footer() + "</div>";
+        if (seasonBoard) seasonBoard.mount(root, page, cardHtml, voteApiUrl);
         bindManagedAdminControls();
         setAdminUi(adminState.isAdmin);
     }

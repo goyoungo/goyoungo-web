@@ -18,6 +18,29 @@ Parameters:
     Description: Numeric Kakao user IDs allowed to edit restaurant and page information
 
 Resources:
+  SeasonPhotoBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      Tags:
+        - Key: Application
+          Value: goyoungo
+        - Key: Purpose
+          Value: season-room-photos
+
   VoteTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
@@ -57,6 +80,15 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
+        - PolicyName: SeasonPhotoAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Sub "${SeasonPhotoBucket.Arn}/season-photos/*"
         - PolicyName: VoteTableAccess
           PolicyDocument:
             Version: "2012-10-17"
@@ -109,12 +141,14 @@ Resources:
           KAKAO_APP_ID: !Ref KakaoAppId
           VOTE_HMAC_SECRET: !Ref VoteHmacSecret
           ADMIN_KAKAO_USER_IDS: !Join [",", !Ref AdminKakaoUserIds]
+          SEASON_PHOTO_BUCKET: !Ref SeasonPhotoBucket
       Code:
         ZipFile: |
           "use strict";
 
           const crypto = require("node:crypto");
           const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+          const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
           const {
             DynamoDBDocumentClient,
             BatchGetCommand,
@@ -124,6 +158,8 @@ Resources:
           } = require("@aws-sdk/lib-dynamodb");
 
           const tableName = process.env.VOTE_TABLE_NAME;
+          const photoBucket = process.env.SEASON_PHOTO_BUCKET;
+          const s3Client = new S3Client({});
           const kakaoAppId = String(process.env.KAKAO_APP_ID || "");
           const hmacSecret = process.env.VOTE_HMAC_SECRET || "";
           const adminKakaoUserIds = new Set(
@@ -634,7 +670,7 @@ Resources:
             }
             const allowed = new Set([
               "id", "type", "status", "name", "contact", "sns", "gender",
-              "details", "price", "updatedAt", "links"
+              "details", "price", "updatedAt", "links", "resort", "season", "stayTypes", "budgetManwon", "photos"
             ]);
             const seen = new Set();
             return source.map((item) => {
@@ -654,8 +690,21 @@ Resources:
               }
               const name = cleanText(item.name, "작성자·방 이름", 160);
               if (!name) throw new HttpError(400, "작성자 또는 방 이름을 입력해 주세요.");
+              const season = cleanText(item.season || "", "시즌", 5);
+              if (season && !/^\d{2}\/\d{2}$/.test(season)) throw new HttpError(400, "시즌은 26/27 형식으로 입력해 주세요.");
+              if (season && (+season.slice(0, 2) + 1) % 100 !== +season.slice(3)) throw new HttpError(400, "시즌의 시작·종료 연도를 확인해 주세요.");
+              const resort = cleanText(item.resort || "", "스키장", 40);
+              const resorts = ["웰리힐리파크", "휘닉스 평창", "모나 용평", "하이원리조트", "곤지암리조트", "지산포레스트리조트", "오투리조트", "비발디파크", "엘리시안 강촌", "무주덕유산리조트", "양지파인"];
+              if (resort && !resorts.includes(resort)) throw new HttpError(400, "스키장이 올바르지 않습니다.");
+              const stayTypes = cleanStringList(item.stayTypes || [], "이용 형태", 3, 10);
+              if (stayTypes.some((stay) => !["주중", "주말", "풀상주"].includes(stay))) throw new HttpError(400, "이용 형태가 올바르지 않습니다.");
+              const budgetManwon = item.budgetManwon == null ? null : item.budgetManwon;
+              if (budgetManwon !== null && (typeof budgetManwon !== "number" || !Number.isInteger(budgetManwon) || budgetManwon < 0 || budgetManwon > 10000)) throw new HttpError(400, "대표 시즌 비용은 0~10000만원으로 입력해 주세요.");
+              const photos = cleanStringList(item.photos || [], "사진", 6, 50);
+              photos.forEach(validatePhotoId);
               return {
                 id: collectionItemId(item.id, seen), type, status, name,
+                resort, season, stayTypes, budgetManwon, photos,
                 contact: cleanText(item.contact || "", "연락처", 120),
                 sns: cleanText(item.sns || "", "SNS", 200),
                 gender: cleanStringList(item.gender || [], "모집 성별·인원", 12, 40),
@@ -712,6 +761,66 @@ Resources:
               items: Array.isArray(item.items) ? item.items : null,
               updatedAt: item.updatedAt || null
             });
+          }
+
+          function validatePhotoId(value) {
+            if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp)$/.test(value)) {
+              throw new HttpError(400, "사진 식별자가 올바르지 않습니다.");
+            }
+          }
+
+          async function uploadSeasonPhoto(event) {
+            await verifiedAdmin(event);
+            if (!photoBucket) throw new HttpError(503, "사진 저장 기능을 준비하고 있습니다.");
+            const body = parseJsonBody(event, 850 * 1024);
+            const types = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+            const extension = types[body.contentType];
+            if (!extension || typeof body.data !== "string" || body.data.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(body.data)) {
+              throw new HttpError(400, "JPG·PNG·WebP 사진만 업로드할 수 있습니다.");
+            }
+            const bytes = Buffer.from(body.data, "base64");
+            if (bytes.toString("base64") !== body.data) throw new HttpError(400, "사진 데이터 형식이 올바르지 않습니다.");
+            if (!bytes.length || bytes.length > 600 * 1024) throw new HttpError(413, "사진 한 장은 압축 후 600KB 이하여야 합니다.");
+            const jpeg = bytes.length >= 5 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff && bytes[bytes.length - 2] === 0xff && bytes[bytes.length - 1] === 0xd9;
+            const png = bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+            const webp = bytes.length >= 12 && bytes.toString("ascii", 0, 4) === "RIFF" && bytes.toString("ascii", 8, 12) === "WEBP";
+            if (!({ jpg: jpeg, png, webp })[extension]) throw new HttpError(400, "사진의 파일 형식과 내용이 일치하지 않습니다.");
+            const photoId = crypto.randomUUID() + "." + extension;
+            await s3Client.send(new PutObjectCommand({
+              Bucket: photoBucket,
+              Key: "season-photos/" + photoId,
+              Body: bytes,
+              ContentType: body.contentType,
+              CacheControl: "public, max-age=86400, immutable",
+              ServerSideEncryption: "AES256"
+            }));
+            return response(201, { photoId });
+          }
+
+          async function readSeasonPhoto(event) {
+            const photoId = event.pathParameters && event.pathParameters.photoId;
+            validatePhotoId(photoId);
+            if (!photoBucket) throw new HttpError(404, "사진을 찾을 수 없습니다.");
+            let object;
+            try {
+              object = await s3Client.send(new GetObjectCommand({ Bucket: photoBucket, Key: "season-photos/" + photoId }));
+            } catch (error) {
+              if (error.name === "NoSuchKey" || error.$metadata && error.$metadata.httpStatusCode === 404) throw new HttpError(404, "사진을 찾을 수 없습니다.");
+              throw error;
+            }
+            if (!object.ContentLength || object.ContentLength > 600 * 1024) throw new HttpError(404, "사진을 찾을 수 없습니다.");
+            const types = { jpg: "image/jpeg", png: "image/png", webp: "image/webp" };
+            return {
+              statusCode: 200,
+              isBase64Encoded: true,
+              headers: {
+                "content-type": types[photoId.split(".").pop()],
+                "cache-control": "public, max-age=86400, immutable",
+                "x-content-type-options": "nosniff",
+                "content-disposition": 'inline; filename="' + photoId + '"'
+              },
+              body: Buffer.from(await object.Body.transformToByteArray()).toString("base64")
+            };
           }
 
           async function writeCollection(event) {
@@ -1063,6 +1172,12 @@ Resources:
               if (method === "GET" && /^\/collections\/[^/]+$/.test(event.rawPath || "")) {
                 return await readCollection(event);
               }
+              if (method === "GET" && /^\/season-photos\/[^/]+$/.test(event.rawPath || "")) {
+                return await readSeasonPhoto(event);
+              }
+              if (method === "POST" && event.rawPath === "/admin/season-photos") {
+                return await uploadSeasonPhoto(event);
+              }
               if (method === "GET" && event.rawPath === "/admin/me") {
                 return await readAdminMe(event);
               }
@@ -1114,6 +1229,7 @@ Resources:
         AllowMethods:
           - GET
           - PUT
+          - POST
           - OPTIONS
         AllowHeaders:
           - authorization
@@ -1209,6 +1325,20 @@ Resources:
         - - integrations
           - !Ref VoteIntegration
 
+  UploadSeasonPhotoRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref VoteApi
+      RouteKey: "POST /admin/season-photos"
+      Target: !Join ["/", ["integrations", !Ref VoteIntegration]]
+
+  ReadSeasonPhotoRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref VoteApi
+      RouteKey: "GET /season-photos/{photoId}"
+      Target: !Join ["/", ["integrations", !Ref VoteIntegration]]
+
   ReadPageHistoryRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -1269,6 +1399,9 @@ Resources:
       SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${VoteApi}/*/*/*"
 
 Outputs:
+  SeasonPhotoBucketName:
+    Description: Private bucket for public season-room photo attachments served by the API
+    Value: !Ref SeasonPhotoBucket
   ApiEndpoint:
     Description: Base URL for the voting API
     Value: !GetAtt VoteApi.ApiEndpoint
