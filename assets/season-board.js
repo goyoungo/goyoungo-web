@@ -24,8 +24,12 @@
     }
 
     function timestamp(value) {
-        var korean = /^(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일(?:\s*(\d{1,2}):(\d{1,2}))?/.exec(String(value || ""));
-        if (korean) return Date.UTC(+korean[1], +korean[2] - 1, +korean[3], +(korean[4] || 0), +(korean[5] || 0)) - 9 * 3600000;
+        var korean = /^(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일(?:\s*(오전|오후)?\s*(\d{1,2}):(\d{1,2}))?/.exec(String(value || ""));
+        if (korean) {
+            var hour = +(korean[5] || 0);
+            if (korean[4]) hour = hour % 12 + (korean[4] === "오후" ? 12 : 0);
+            return Date.UTC(+korean[1], +korean[2] - 1, +korean[3], hour, +(korean[6] || 0)) - 9 * 3600000;
+        }
         var parsed = Date.parse(value);
         return Number.isFinite(parsed) ? parsed : 0;
     }

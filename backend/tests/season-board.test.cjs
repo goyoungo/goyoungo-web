@@ -26,6 +26,9 @@ test("필터 조합과 미입력 예산 처리", () => {
     assert.deepEqual(board.filteredItems(items, { type: "주주 구해요", resort: "웰리힐리파크", season: "26/27", stay: "주말", budget: "80", status: "진행중" }).map(item => item.id), ["match"]);
     assert.deepEqual(board.filteredItems(items, { status: "완료" }).map(item => item.id), ["other"]);
     assert.equal(board.timestamp("2026년 10월 13일 15:28"), Date.parse("2026-10-13T15:28:00+09:00"));
+    assert.equal(board.timestamp("2026년 10월 13일 오후 03:28"), Date.parse("2026-10-13T15:28:00+09:00"));
+    assert.equal(board.timestamp("2026년 10월 13일 오전 12:28"), Date.parse("2026-10-13T00:28:00+09:00"));
+    assert.equal(board.timestamp("2026년 10월 13일 오후 12:28"), Date.parse("2026-10-13T12:28:00+09:00"));
 });
 
 function lambdaHarness(userId = "1") {
