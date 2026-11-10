@@ -301,15 +301,25 @@
         "o2", "vivaldi", "yangji", "elysian", "muju"
     ];
 
+    function sharedMenuTextAttributes(id, field) {
+        return ' data-page-sync-id="snowbro-menu-' + esc(id) + '-' + esc(field) +
+            '" data-page-sync-path="/snowbro/"';
+    }
+
+    function sharedMenuLinkAttributes(id) {
+        return ' data-page-link-sync-id="snowbro-menu-' + esc(id) +
+            '-href" data-page-link-sync-path="/snowbro/"';
+    }
+
     function sidebarLinks(items, currentPageId) {
         return items.map(function (item) {
             var isCurrent = item.id === currentPageId;
             return [
-                '<a class="site-sidebar-link' + (isCurrent ? " is-current" : "") + '" href="' + esc(item.href) + '"',
+                '<a class="site-sidebar-link' + (isCurrent ? " is-current" : "") + '" href="' + esc(item.href) + '"' + sharedMenuLinkAttributes(item.id),
                 isCurrent ? ' aria-current="page"' : "",
                 ">",
                 '<span aria-hidden="true">' + esc(item.icon || "•") + "</span>",
-                "<span>" + esc(item.title) + "</span>",
+                "<span" + sharedMenuTextAttributes(item.id, "title") + ">" + esc(item.title) + "</span>",
                 "</a>"
             ].join("");
         }).join("");
@@ -446,16 +456,18 @@
     }
 
     function hero(page) {
+        var navigationItem = data.navigation.find(function (item) { return data.pages[item.id] === page; });
+        var titleAttributes = navigationItem ? sharedMenuTextAttributes(navigationItem.id, "title") : "";
         return [
             '<nav class="breadcrumbs" aria-label="현재 위치">',
             '<a href="/">GO.YOUNGO</a><span aria-hidden="true">›</span>',
             '<a href="/snowbro/">SNOWBRO</a><span aria-hidden="true">›</span>',
-            '<span aria-current="page">' + esc(page.title) + "</span>",
+            '<span aria-current="page"' + titleAttributes + '>' + esc(page.title) + "</span>",
             "</nav>",
             '<header class="page-hero">',
             '<div class="page-icon" aria-hidden="true">' + esc(page.icon) + "</div>",
             '<p class="eyebrow">GO.YOUNGO</p>',
-            "<h1>" + esc(page.title) + "</h1>",
+            '<h1 data-page-document-title data-page-title-suffix=" - ' + esc(data.brand.title) + '"' + titleAttributes + '>' + esc(page.title) + "</h1>",
             "<p>" + esc(page.subtitle || "") + "</p>",
             page.hideSnapshot ? "" : '<p class="snapshot-note">마지막 정보 스냅샷 · ' + esc(data.brand.snapshotDate) + "</p>",
             "</header>"
@@ -494,11 +506,11 @@
         var cards = data.navigation.map(function (item, index) {
             var featured = item.id === "welpark" || item.id === "phoenix";
             return [
-                '<a class="hub-card ' + (featured ? "is-featured" : "") + '" href="' + esc(item.href) + '">',
+                '<a class="hub-card ' + (featured ? "is-featured" : "") + '" href="' + esc(item.href) + '"' + sharedMenuLinkAttributes(item.id) + '>',
                 '<span class="hub-index">' + String(index + 1).padStart(2, "0") + " · " +
                     esc(categories[item.id] || "GUIDE") + "</span>",
                 '<span class="hub-arrow" aria-hidden="true">↗</span>',
-                "<strong>" + esc(item.title) + "</strong>",
+                "<strong" + sharedMenuTextAttributes(item.id, "title") + ">" + esc(item.title) + "</strong>",
                 "<small>" + esc(item.summary) + "</small>",
                 "</a>"
             ].join("");

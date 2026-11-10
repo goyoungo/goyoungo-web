@@ -190,9 +190,12 @@
                 link.closest(".page-editor-toolbar, .login-screen, [data-no-page-edit]")
             ) return;
             var syncRoot = link.closest("[data-page-sync-id][data-page-sync-path]");
-            var syncPath = syncRoot ? normalizePagePath(syncRoot.dataset.pageSyncPath) : null;
-            var descriptor = syncRoot
-                ? "sync|" + syncRoot.dataset.pageSyncId + "|href"
+            var syncId = link.dataset.pageLinkSyncId || (syncRoot && syncRoot.dataset.pageSyncId);
+            var syncPath = link.dataset.pageLinkSyncPath
+                ? normalizePagePath(link.dataset.pageLinkSyncPath)
+                : (syncRoot ? normalizePagePath(syncRoot.dataset.pageSyncPath) : null);
+            var descriptor = syncId && syncPath
+                ? "sync|" + syncId + "|href"
                 : pagePath + "|" + elementPath(link) + "|href";
             var key = linkKey(descriptor);
             link.dataset.pageLinkKey = key;
@@ -208,6 +211,30 @@
     function processEditableContent(scope) {
         wrapTextNodes(scope);
         prepareLinks(scope);
+        syncDocumentTitle();
+    }
+
+    function syncDocumentTitle() {
+        var heading = editRoot.querySelector("[data-page-document-title]");
+        if (!heading) return;
+        var title = heading.textContent.trim();
+        document.title = title + (heading.dataset.pageTitleSuffix || "");
+        var openGraphTitle = document.querySelector('meta[property="og:title"]');
+        if (openGraphTitle) openGraphTitle.setAttribute("content", title);
+    }
+
+    function syncDisplayedValue(key, value, source) {
+        var isLink = key.indexOf("l_") === 0;
+        var selector = isLink ? '[data-page-link-key="' + key + '"]' : '[data-page-edit-key="' + key + '"]';
+        editRoot.querySelectorAll(selector).forEach(function (element) {
+            if (element === source) return;
+            if (isLink) element.setAttribute("href", value);
+            else {
+                if (element.textContent !== value) element.textContent = value;
+                element.classList.toggle("page-editable-multiline", value.includes("\n"));
+            }
+        });
+        syncDocumentTitle();
     }
 
     function updateEditableState(span) {
@@ -344,7 +371,7 @@
         toolbar.querySelector("[data-page-editor-cancel]").addEventListener("click", cancelEditing);
         linkInput.addEventListener("input", function () {
             if (!editing || !selectedLink) return;
-            selectedLink.setAttribute("href", linkInput.value.trim());
+            syncDisplayedValue(selectedLink.dataset.pageLinkKey, linkInput.value.trim());
             touchedKeys.add(selectedLink.dataset.pageLinkKey);
             setStatus(touchedKeys.size + "개 항목이 변경되었습니다.", false);
             updateToolbar();
@@ -393,6 +420,7 @@
         editRoot.querySelectorAll("[data-page-link-key]").forEach(function (link) {
             applyLinkOverride(link);
         });
+        syncDocumentTitle();
     }
 
     function cancelEditing() {
@@ -424,7 +452,7 @@
                 return;
             }
             var targetPath = syncPathByKey.get(key) || pagePath;
-            if (targetPath !== pagePath) hasSharedField = true;
+            if (syncPathByKey.has(key)) hasSharedField = true;
             if (!fieldsByPath[targetPath]) fieldsByPath[targetPath] = {};
             fieldsByPath[targetPath][key] = value === baselineValueForKey(key) ? null : value;
         });
@@ -455,7 +483,7 @@
             touchedKeys.clear();
             restoreDisplayedValues();
             clearLinkSelection();
-            setStatus(hasSharedField ? "연결된 카드와 본문에 함께 저장했습니다." : "페이지에 저장했습니다.", false);
+            setStatus(hasSharedField ? "연결된 모든 페이지와 카드에 함께 저장했습니다." : "페이지에 저장했습니다.", false);
         } catch (error) {
             if (error.status === 401 || error.status === 403) {
                 setAdmin(false);
@@ -510,6 +538,7 @@
         var target = event.target.closest("[data-page-edit-key]");
         if (!editing || !isAdmin || !target || !editRoot.contains(target)) return;
         touchedKeys.add(target.dataset.pageEditKey);
+        syncDisplayedValue(target.dataset.pageEditKey, target.textContent, target);
         target.classList.toggle("page-editable-multiline", target.textContent.includes("\n"));
         setStatus(touchedKeys.size + "개 항목이 변경되었습니다.", false);
         updateToolbar();

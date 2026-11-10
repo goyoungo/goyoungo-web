@@ -12,112 +12,96 @@ window.SITE_DATA = {
     {
       "id": "welpark",
       "icon": "🦝",
-      "title": "웰팍 맛집 리스트",
       "href": "/snowbro/welpark-restaurants.html",
       "summary": "웰리힐리파크 주변 맛집 35곳"
     },
     {
       "id": "phoenix",
       "icon": "🐦",
-      "title": "휘팍 맛집 리스트",
       "href": "/snowbro/phoenix-restaurants.html",
       "summary": "휘닉스 파크 주변 맛집 30곳"
     },
     {
       "id": "yongpyong",
       "icon": "🐉",
-      "title": "용평 맛집 리스트",
       "href": "/snowbro/yongpyong-restaurants.html",
       "summary": "용평 리조트 주변 맛집"
     },
     {
       "id": "high1",
       "icon": "✋",
-      "title": "하이원 맛집 리스트",
       "href": "/snowbro/high1-restaurants.html",
       "summary": "하이원 리조트 주변 맛집"
     },
     {
       "id": "konjiam",
       "icon": "🌲",
-      "title": "곤지암 맛집 리스트",
       "href": "/snowbro/konjiam-restaurants.html",
       "summary": "곤지암리조트 주변 맛집 16곳"
     },
     {
       "id": "jisan",
       "icon": "🎿",
-      "title": "지산 맛집 리스트",
       "href": "/snowbro/jisan-restaurants.html",
       "summary": "지산포레스트 주변 맛집 16곳"
     },
     {
       "id": "o2",
       "icon": "❄️",
-      "title": "오투 맛집 리스트",
       "href": "/snowbro/o2-restaurants.html",
       "summary": "오투리조트 주변 맛집 12곳"
     },
     {
       "id": "vivaldi",
       "icon": "🏔️",
-      "title": "비발디 맛집 리스트",
       "href": "/snowbro/vivaldi-restaurants.html",
       "summary": "비발디파크 주변 맛집 6곳"
     },
     {
       "id": "yangji",
       "icon": "📍",
-      "title": "양지파인 인근 맛집",
       "href": "/snowbro/yangji-restaurants.html",
       "summary": "양지파인 인근 맛집 4곳"
     },
     {
       "id": "elysian",
       "icon": "🚠",
-      "title": "엘리시안 맛집 리스트",
       "href": "/snowbro/elysian-restaurants.html",
       "summary": "엘리시안 강촌 주변 맛집 4곳"
     },
     {
       "id": "muju",
       "icon": "⛷️",
-      "title": "무주 맛집 리스트",
       "href": "/snowbro/muju-restaurants.html",
       "summary": "무주덕유산리조트 주변 맛집 3곳"
     },
     {
       "id": "market",
       "icon": "💵",
-      "title": "거래 게시판",
       "href": "/snowbro/marketplace.html",
       "summary": "장비 판매·구매 게시글"
     },
     {
       "id": "season",
       "icon": "🏠",
-      "title": "시즌방/주주 구해요",
       "href": "/snowbro/season-room.html",
       "summary": "시즌방과 주주 모집 정보"
     },
     {
       "id": "board-size",
       "icon": "📏",
-      "title": "보드 길이 추천",
       "href": "/snowbro/board-size.html",
       "summary": "체형·실력·스타일별 데크 길이 가이드"
     },
     {
       "id": "partner",
       "icon": "🤝",
-      "title": "제휴 업체 · 보드카페",
       "href": "/snowbro/board-cafe.html",
       "summary": "렌탈·엣징·왁싱 제휴 혜택"
     },
     {
       "id": "shuttle",
       "icon": "🚌",
-      "title": "24/25 스키장 셔틀",
       "href": "/snowbro/shuttle.html",
       "summary": "X5+·용평 셔틀 안내"
     }
@@ -1669,7 +1653,7 @@ window.SITE_DATA = {
     },
     "shuttle": {
       "type": "shuttle",
-      "title": "24/25 스키장 셔틀",
+      "title": "26/27 셔틀 정보",
       "icon": "🚌",
       "subtitle": "시즌 셔틀 안내와 예약 페이지",
       "items": [
@@ -1692,3 +1676,14 @@ window.SITE_DATA = {
     }
   }
 };
+
+// Page titles are the single source for every SNOWBRO menu and home card.
+window.SITE_DATA.navigation.forEach(function (item) {
+  var page = window.SITE_DATA.pages[item.id];
+  if (!page) return;
+  Object.defineProperty(item, "title", {
+    enumerable: true,
+    get: function () { return page.title; },
+    set: function (value) { page.title = value; }
+  });
+});
