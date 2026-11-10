@@ -270,11 +270,13 @@
     }
 
     function setAdminUi(isAdmin) {
+        var changed = adminState.isAdmin !== Boolean(isAdmin);
         adminState.isAdmin = Boolean(isAdmin);
         document.body.toggleAttribute("data-site-admin", adminState.isAdmin);
         root.querySelectorAll("[data-admin-edit], [data-market-admin], [data-collection-admin]").forEach(function (button) {
             button.hidden = !adminState.isAdmin;
         });
+        if (changed) refreshRestrictedNavigation();
     }
 
     async function refreshAdminStatus() {
@@ -288,11 +290,13 @@
             var payload = await fetchJson("/admin/me", {
                 headers: { Authorization: "Bearer " + token }
             });
+            if (token !== getVoteToken()) return;
             setAdminUi(payload.isAdmin === true);
         } catch (error) {
-            setAdminUi(false);
+            if (token === getVoteToken()) setAdminUi(false);
         } finally {
             adminState.checking = false;
+            if (token !== getVoteToken() && getVoteToken()) refreshAdminStatus();
         }
     }
 
@@ -312,10 +316,10 @@
     }
 
     function sidebarLinks(items, currentPageId) {
-        return items.map(function (item) {
+        return items.filter(function (item) { return !item.adminOnly || adminState.isAdmin; }).map(function (item) {
             var isCurrent = item.id === currentPageId;
             return [
-                '<a class="site-sidebar-link' + (isCurrent ? " is-current" : "") + '" href="' + esc(item.href) + '"' + sharedMenuLinkAttributes(item.id),
+                '<a class="site-sidebar-link' + (isCurrent ? " is-current" : "") + '" data-menu-id="' + esc(item.id) + '" href="' + esc(item.href) + '"' + sharedMenuLinkAttributes(item.id),
                 isCurrent ? ' aria-current="page"' : "",
                 ">",
                 '<span aria-hidden="true">' + esc(item.icon || "•") + "</span>",
@@ -361,7 +365,7 @@
             '<p class="site-sidebar-label">스키장 맛집</p>',
             sidebarLinks(restaurantLinks, currentPageId),
             '<p class="site-sidebar-label">기타 정보</p>',
-            sidebarLinks(utilityLinks, currentPageId),
+            '<div data-site-utility-links style="display:contents">' + sidebarLinks(utilityLinks, currentPageId) + '</div>',
             '<p class="site-sidebar-label">GO.YOUNGO</p>',
             '<a class="site-sidebar-link" href="/runbro/"><span aria-hidden="true">R</span><span>RUNBRO</span></a>',
             '<a class="site-sidebar-link" href="/"><span aria-hidden="true">GO</span><span>메인으로</span></a>',
@@ -483,8 +487,7 @@
         ].join("");
     }
 
-    function renderHome() {
-        document.title = data.brand.title + " - " + data.brand.byline;
+    function homeCard(item, index) {
         var categories = {
             welpark: "EAT",
             phoenix: "EAT",
@@ -503,18 +506,44 @@
             partner: "BENEFIT",
             shuttle: "RIDE"
         };
-        var cards = data.navigation.map(function (item, index) {
-            var featured = item.id === "welpark" || item.id === "phoenix";
-            return [
-                '<a class="hub-card ' + (featured ? "is-featured" : "") + '" href="' + esc(item.href) + '"' + sharedMenuLinkAttributes(item.id) + '>',
-                '<span class="hub-index">' + String(index + 1).padStart(2, "0") + " · " +
-                    esc(categories[item.id] || "GUIDE") + "</span>",
-                '<span class="hub-arrow" aria-hidden="true">↗</span>',
-                "<strong" + sharedMenuTextAttributes(item.id, "title") + ">" + esc(item.title) + "</strong>",
-                "<small>" + esc(item.summary) + "</small>",
-                "</a>"
-            ].join("");
-        }).join("");
+        if (item.adminOnly && !adminState.isAdmin) return "";
+        var featured = item.id === "welpark" || item.id === "phoenix";
+        return [
+            '<a class="hub-card ' + (featured ? "is-featured" : "") + '" data-menu-id="' + esc(item.id) + '" href="' + esc(item.href) + '"' + sharedMenuLinkAttributes(item.id) + '>',
+            '<span class="hub-index">' + String(index + 1).padStart(2, "0") + " · " +
+                esc(categories[item.id] || "GUIDE") + "</span>",
+            '<span class="hub-arrow" aria-hidden="true">↗</span>',
+            "<strong" + sharedMenuTextAttributes(item.id, "title") + ">" + esc(item.title) + "</strong>",
+            "<small>" + esc(item.summary) + "</small>",
+            "</a>"
+        ].join("");
+    }
+
+    function refreshRestrictedNavigation() {
+        var utilities = document.querySelector("[data-site-utility-links]");
+        if (utilities) utilities.innerHTML = sidebarLinks(data.navigation.filter(function (item) {
+            return restaurantPageIds.indexOf(item.id) === -1;
+        }), document.body.dataset.page);
+        var grid = root.querySelector(".utility-grid") || root.querySelector(".directory-section .hub-grid");
+        if (!grid) return;
+        data.navigation.forEach(function (item, index) {
+            if (!item.adminOnly) return;
+            var selector = '.hub-card[data-menu-id="' + item.id + '"]';
+            var existing = root.querySelector(selector);
+            if (!adminState.isAdmin) { if (existing) existing.remove(); return; }
+            if (existing) return;
+            var holder = document.createElement("div");
+            holder.innerHTML = homeCard(item, index);
+            var following = data.navigation.slice(index + 1).map(function (next) {
+                return root.querySelector('.hub-card[data-menu-id="' + next.id + '"]');
+            }).find(function (card) { return card && card.parentElement === grid; });
+            grid.insertBefore(holder.firstElementChild, following || null);
+        });
+    }
+
+    function renderHome() {
+        document.title = data.brand.title + " - " + data.brand.byline;
+        var cards = data.navigation.map(homeCard).join("");
 
         var restaurantTotal = Object.keys(data.pages).reduce(function (total, pageId) {
             var page = data.pages[pageId];
@@ -2371,231 +2400,79 @@
         setAdminUi(adminState.isAdmin);
     }
 
-    function renderBoardSize(page) {
-        document.title = page.title + " - " + data.brand.title;
+    var privateBoardSequence = 0;
+    var privateBoardPendingToken = null;
+
+    function clearPrivateBoard() {
+        privateBoardSequence += 1;
+        privateBoardPendingToken = null;
+        delete window.GoyoungoAdminBoardSize;
+    }
+
+    function renderPrivateBoardNotice(message, mode) {
+        document.title = "관리자 전용 - SNOWBRO";
         root.innerHTML = [
-            '<div class="page-wrap board-size-page">',
-            hero(page),
-            '<section class="board-size-layout" aria-label="보드 길이 계산기">',
-            '<form class="board-size-form" id="boardSizeForm">',
-            '<div class="board-size-form-heading"><p class="eyebrow">RIDER PROFILE</p>',
-            '<h2>내 라이딩 조건</h2><p>입력값은 추천 계산에만 사용하며 저장하지 않습니다.</p></div>',
-            '<div class="board-size-metrics">',
-            '<label><span>키</span><span class="board-size-number"><input type="number" name="height" min="130" max="210" step="1" value="175" inputmode="numeric" required><em>cm</em></span></label>',
-            '<label><span>몸무게</span><span class="board-size-number"><input type="number" name="weight" min="35" max="150" step="1" value="70" inputmode="numeric" required><em>kg</em></span></label>',
-            "</div>",
-            '<fieldset class="board-size-options"><legend>실력</legend><div class="board-size-option-grid level-options">',
-            '<label><input type="radio" name="level" value="입문"><span><strong>입문</strong><small>첫 시즌·낙엽 연습</small></span></label>',
-            '<label><input type="radio" name="level" value="초급"><span><strong>초급</strong><small>턴을 연결하는 단계</small></span></label>',
-            '<label><input type="radio" name="level" value="중급" checked><span><strong>중급</strong><small>슬로프를 안정적으로 주행</small></span></label>',
-            '<label><input type="radio" name="level" value="상급"><span><strong>상급</strong><small>속도·엣지 사용이 능숙</small></span></label>',
-            "</div></fieldset>",
-            '<fieldset class="board-size-options"><legend>선호 스타일</legend><div class="board-size-option-grid style-options">',
-            '<label><input type="radio" name="style" value="지빙"><span><strong>지빙</strong><small>박스·레일 중심</small></span></label>',
-            '<label><input type="radio" name="style" value="파크"><span><strong>파크</strong><small>킥커·스핀 중심</small></span></label>',
-            '<label><input type="radio" name="style" value="그라운드트릭"><span><strong>그라운드트릭</strong><small>회전·프레스 중심</small></span></label>',
-            '<label><input type="radio" name="style" value="덕 라이딩"><span><strong>덕 라이딩</strong><small>덕스탠스·올라운드</small></span></label>',
-            '<label><input type="radio" name="style" value="전향 해머 트릭"><span><strong>전향 해머 트릭</strong><small>해머 카빙과 트릭의 균형</small></span></label>',
-            '<label><input type="radio" name="style" value="해머/세미해머 라이딩" checked><span><strong>해머/세미해머</strong><small>카빙·고속 안정성</small></span></label>',
-            '<label><input type="radio" name="style" value="알파인"><span><strong>알파인 SL·GS</strong><small>하드부츠·레이스 지향</small></span></label>',
-            "</div></fieldset>",
-            '<button class="board-size-submit" type="submit">내 보드 길이 확인</button>',
-            "</form>",
-            '<section class="board-size-result" id="boardSizeResult" aria-live="polite" aria-labelledby="boardSizeResultTitle">',
-            '<div class="board-size-result-heading"><div><p class="eyebrow">RECOMMENDED</p>',
-            '<h2 id="boardSizeResultTitle">추천 중심 길이</h2></div>',
-            '<p class="board-size-profile" id="boardSizeProfile"></p></div>',
-            '<div class="board-size-primary" id="boardSizePrimary"><strong id="boardSizeRecommended">—</strong><span>cm</span></div>',
-            '<p class="board-size-priority" id="boardSizePriority"></p>',
-            '<div class="board-size-ranges" aria-label="길이별 검토 구간">',
-            '<article data-range="short"><span class="range-badge">짧은 길이</span><strong class="range-value">—</strong><p>빠른 회전과 낮은 스윙웨이트</p></article>',
-            '<article data-range="normal"><span class="range-badge">보통</span><strong class="range-value">—</strong><p>조작성과 안정성의 균형</p></article>',
-            '<article data-range="long"><span class="range-badge">긴 길이</span><strong class="range-value">—</strong><p>고속 안정성과 긴 유효엣지</p></article>',
-            "</div>",
-            '<div class="board-size-reasons"><h3>이렇게 계산했어요</h3><ul id="boardSizeReasons"></ul></div>',
-            '<p class="board-size-caution" id="boardSizeCaution"></p>',
-            "</section>",
-            "</section>",
-            '<section class="board-size-guide" aria-labelledby="boardSizeGuideTitle">',
-            '<div><p class="eyebrow">BEFORE YOU BUY</p><h2 id="boardSizeGuideTitle">길이 다음에는 이것도 확인하세요</h2></div>',
-            '<ol><li><strong>제품별 권장 체중</strong><span>같은 길이라도 플렉스와 설계에 따라 권장 체중이 다릅니다.</span></li>',
-            '<li><strong>허리 폭과 부츠 크기</strong><span>발이 크거나 전향각이 낮다면 토·힐 드래그가 없는지 확인하세요.</span></li>',
-            '<li><strong>유효엣지와 쉐이프</strong><span>볼륨 시프트·해머·알파인 데크는 전체 길이만으로 비교하기 어렵습니다.</span></li></ol>',
-            '<p class="board-size-sources">계산 기준 참고 · ',
-            '<a href="https://www.burton.com/en-us/blogs/the-burton-blog/snowboard-buying-guide" target="_blank" rel="noopener noreferrer">Burton 공식 구매 가이드 ↗</a>',
-            '<a href="https://www.salomon.com/en-ca/sg/a/how-to-choose-the-right-size-of-snowboard" target="_blank" rel="noopener noreferrer">Salomon 사이즈 가이드 ↗</a>',
-            '<a href="https://www.ogasaka-snowboard.com/product_25_03_ct_e.html" target="_blank" rel="noopener noreferrer">OGASAKA 올라운드 CT ↗</a>',
-            '<a href="https://www.ogasaka-snowboard.com/product_25_08_fc_e.html" target="_blank" rel="noopener noreferrer">OGASAKA 세미해머 FC ↗</a>',
-            '<a href="https://www.ogasaka-snowboard.com/product_25_11_xc_e.html" target="_blank" rel="noopener noreferrer">OGASAKA 풀해머 XC ↗</a>',
-            '<a href="https://kessler-swiss.com/en-US/pages/products/snowboard/presentation" target="_blank" rel="noopener noreferrer">Kessler 알파인 SL·GS ↗</a></p>',
-            "</section>",
-            footer(),
-            "</div>"
+            '<div class="page-wrap narrow" data-no-page-edit><div class="empty-state">',
+            '<span aria-hidden="true">🔒</span><h1>관리자 전용 페이지</h1>',
+            '<p role="status">' + esc(message) + '</p>',
+            mode ? '<button type="button" class="action-link primary" id="privateBoardLogin">' +
+                (mode === "retry" ? "권한 다시 확인" : "관리자 카카오 로그인") + '</button> ' : "",
+            '<a class="action-link" href="/snowbro/">SNOWBRO 홈으로</a>',
+            '</div></div>'
         ].join("");
-
-        var form = document.getElementById("boardSizeForm");
-        var result = document.getElementById("boardSizeResult");
-        var levelRules = {
-            "입문": { offset: -2, reason: "입문 단계의 조작 편의성을 위해 기준에서 2cm 줄였습니다." },
-            "초급": { offset: -1, reason: "턴 연결이 쉬운 쪽으로 기준에서 1cm 줄였습니다." },
-            "중급": { offset: 0, reason: "조작성과 안정성이 균형을 이루는 기준 길이를 유지했습니다." },
-            "상급": { offset: 1, reason: "속도와 엣지 안정성을 위해 기준에 1cm를 더했습니다." }
-        };
-        var styleRules = {
-            "지빙": { offset: -4, zone: "short", reason: "지빙은 프레스와 빠른 조작을 위해 짧은 구간을 우선합니다." },
-            "파크": { offset: -2, zone: "short", reason: "파크는 스핀과 공중 조작을 고려해 짧은 구간의 위쪽을 우선합니다." },
-            "그라운드트릭": { offset: -4, zone: "short", reason: "그라운드트릭은 회전과 프레스를 위해 짧은 구간을 우선합니다." },
-            "덕 라이딩": {
-                offset: 0,
-                zone: "normal",
-                sizes: [139, 143, 146, 148, 150, 152, 154, 156, 158, 161],
-                reason: "덕 라이딩은 그라운드트릭과 카빙을 함께 소화하는 OGASAKA CT 계열의 실제 길이를 참고해 균형 구간을 우선했습니다."
-            },
-            "전향 해머 트릭": {
-                offset: -1,
-                zone: "normal",
-                sizes: [145, 148, 151, 154, 157, 160, 163],
-                reason: "전향 해머 트릭은 세미해머의 긴 유효엣지를 확보하되 회전과 리버스 조작이 쉽도록 OGASAKA FC 계열의 짧은 쪽을 우선했습니다."
-            },
-            "해머/세미해머 라이딩": {
-                offset: 6,
-                zone: "long",
-                sizes: [145, 148, 151, 154, 157, 158, 160, 162, 163],
-                reason: "해머/세미해머 라이딩은 OGASAKA FC·XC 계열의 실제 출시 길이와 긴 유효엣지, 고속 안정성을 반영했습니다."
-            },
-            "알파인": { mode: "alpine", reason: "알파인은 Kessler ALPINE Worldcup의 공식 체중별 SL·GS 길이를 적용했습니다." }
-        };
-
-        function clamp(value, min, max) {
-            return Math.min(Math.max(value, min), max);
-        }
-
-        function nearestAvailableSize(value, sizes, min, max) {
-            var candidates = sizes.filter(function (size) {
-                return size >= min && size <= max;
+        var button = document.getElementById("privateBoardLogin");
+        if (button) button.addEventListener("click", function () {
+            var page = data.pages["board-size"];
+            if (mode === "retry") { renderPrivateBoardSize(page); return; }
+            var auth = window.GoyoungoAuth;
+            if (!auth) return;
+            var login = getVoteToken() && typeof auth.reauthenticate === "function"
+                ? auth.reauthenticate : auth.requestLogin;
+            if (typeof login === "function") login("관리자로 지정된 카카오 계정으로 로그인해 주세요.", function () {
+                renderPrivateBoardSize(page);
             });
-            if (!candidates.length) return value;
-            return candidates.reduce(function (nearest, size) {
-                return Math.abs(size - value) < Math.abs(nearest - value) ? size : nearest;
-            }, candidates[0]);
-        }
-
-        function alpineSizes(weight) {
-            if (weight <= 75) {
-                return { sl: 156, gs: 177, bracket: "55–75kg" };
-            }
-            return { sl: 162, gs: 186, bracket: "75–90kg" };
-        }
-
-        function updateBoardSize() {
-            var height = Number(form.elements.height.value);
-            var weight = Number(form.elements.weight.value);
-            var level = form.elements.level.value;
-            var style = form.elements.style.value;
-            if (!height || !weight || !levelRules[level] || !styleRules[style]) return;
-
-            var heightBase = height - 20;
-            var weightBase = 121 + (weight * 0.47);
-            var neutral = Math.round((heightBase * 0.35) + (weightBase * 0.65) + levelRules[level].offset);
-            neutral = clamp(neutral, height - 30, height - 7);
-
-            var styleRule = styleRules[style];
-            var primary = document.getElementById("boardSizePrimary");
-            var rangesEl = result.querySelector(".board-size-ranges");
-            var titleEl = document.getElementById("boardSizeResultTitle");
-
-            document.getElementById("boardSizeProfile").textContent = height + "cm · " + weight + "kg · " + level + " · " + style;
-
-            if (styleRule.mode === "alpine") {
-                var alpine = alpineSizes(weight);
-                titleEl.textContent = "추천 알파인 레이스 길이";
-                primary.classList.add("is-dual");
-                primary.innerHTML = [
-                    '<span class="board-size-dual-value"><small>SL</small><strong>' + alpine.sl + '</strong><em>cm</em></span>',
-                    '<span class="board-size-dual-divider" aria-hidden="true"></span>',
-                    '<span class="board-size-dual-value"><small>GS</small><strong>' + alpine.gs + '</strong><em>cm</em></span>'
-                ].join("");
-                rangesEl.hidden = true;
-                document.getElementById("boardSizePriority").textContent = "Kessler 공식 체중 구간 · " + alpine.bracket;
-
-                var alpineReasons = [
-                    "SL " + alpine.sl + "cm는 짧은 회전과 빠른 엣지 전환을 위한 슬라럼 규격입니다.",
-                    "GS " + alpine.gs + "cm는 큰 회전반경과 고속 안정성을 위한 자이언트 슬라럼 규격입니다.",
-                    styleRule.reason
-                ];
-                document.getElementById("boardSizeReasons").innerHTML = alpineReasons.map(function (reason) {
-                    return "<li>" + esc(reason) + "</li>";
-                }).join("");
-
-                var alpineCaution = "알파인 데크는 회전반경·유효엣지·플레이트 사용 여부에 따라 차이가 큽니다. 제조사 권장표를 우선하세요.";
-                if (weight < 55) {
-                    alpineCaution = "입력 체중이 Kessler 공식 표의 55kg 미만입니다. 표시값은 가장 가벼운 공식 규격이므로 제조사 또는 전문점 상담이 필요합니다.";
-                } else if (weight > 90) {
-                    alpineCaution = "입력 체중이 Kessler 공식 표의 90kg을 초과합니다. 표시값은 가장 무거운 공식 규격이므로 제조사 또는 전문점 상담이 필요합니다.";
-                } else if (weight === 75) {
-                    alpineCaution = "75kg은 두 공식 체중 구간의 경계입니다. 선호 플렉스와 부츠·플레이트 구성에 따라 상위 규격도 함께 비교하세요.";
-                }
-                document.getElementById("boardSizeCaution").textContent = alpineCaution;
-                return;
-            }
-
-            titleEl.textContent = "추천 중심 길이";
-            primary.classList.remove("is-dual");
-            primary.innerHTML = '<strong id="boardSizeRecommended">—</strong><span>cm</span>';
-            var recommendedEl = document.getElementById("boardSizeRecommended");
-            rangesEl.hidden = false;
-
-            var ranges = {
-                short: { min: neutral - 5, max: neutral - 2, label: "짧은 길이" },
-                normal: { min: neutral - 1, max: neutral + 2, label: "보통" },
-                long: { min: neutral + 3, max: neutral + 8, label: "긴 길이" }
-            };
-            var priorityRange = ranges[styleRule.zone];
-            var recommended = clamp(neutral + styleRule.offset, priorityRange.min, priorityRange.max);
-            if (styleRule.sizes) {
-                recommended = nearestAvailableSize(recommended, styleRule.sizes, priorityRange.min, priorityRange.max);
-            }
-
-            recommendedEl.textContent = recommended;
-            document.getElementById("boardSizePriority").textContent = "우선 검토 구간 · " + priorityRange.label + " " + priorityRange.min + "–" + priorityRange.max + "cm";
-
-            Array.prototype.forEach.call(result.querySelectorAll("[data-range]"), function (card) {
-                var rangeId = card.dataset.range;
-                var range = ranges[rangeId];
-                card.classList.toggle("is-priority", rangeId === styleRule.zone);
-                card.querySelector(".range-value").textContent = range.min + "–" + range.max + "cm";
-                var badge = card.querySelector(".range-badge");
-                badge.textContent = range.label + (rangeId === styleRule.zone ? " · 우선 검토" : "");
-            });
-
-            var reasons = [
-                "키 기준 " + Math.round(heightBase) + "cm와 체중 기준 " + Math.round(weightBase) + "cm를 함께 반영했습니다.",
-                levelRules[level].reason,
-                styleRule.reason
-            ];
-            document.getElementById("boardSizeReasons").innerHTML = reasons.map(function (reason) {
-                return "<li>" + esc(reason) + "</li>";
-            }).join("");
-
-            var caution = "최종 선택은 관심 제품의 권장 체중표와 허리 폭을 먼저 확인하세요.";
-            if (style === "전향 해머 트릭") {
-                caution = "전향 해머 트릭은 해머/세미해머 라이딩보다 짧게 계산합니다. 같은 길이라도 유효엣지가 긴 모델은 더 길게 느껴질 수 있으니 제품별 권장 체중을 함께 확인하세요.";
-            } else if (style === "해머/세미해머 라이딩") {
-                caution = "해머·세미해머는 같은 전체 길이라도 유효엣지와 플렉스 차이가 큽니다. 표시값과 가까운 실제 모델의 권장 체중·허리 폭을 반드시 함께 확인하세요.";
-            }
-            document.getElementById("boardSizeCaution").textContent = caution;
-        }
-
-        form.addEventListener("submit", function (event) {
-            event.preventDefault();
-            if (!form.reportValidity()) return;
-            updateBoardSize();
-            result.setAttribute("tabindex", "-1");
-            result.focus({ preventScroll: true });
         });
-        form.addEventListener("input", updateBoardSize);
-        form.addEventListener("change", updateBoardSize);
-        updateBoardSize();
+    }
+
+    async function renderPrivateBoardSize(page) {
+        var token = getVoteToken();
+        if (token && privateBoardPendingToken === token) return;
+        clearPrivateBoard();
+        if (!token) {
+            renderPrivateBoardNotice("이 페이지는 관리자로 지정된 카카오 계정만 열 수 있습니다.", "login");
+            return;
+        }
+        var sequence = privateBoardSequence;
+        privateBoardPendingToken = token;
+        renderPrivateBoardNotice("관리자 권한을 확인하고 있습니다.");
+        try {
+            var payload = await fetchJson("/admin/tools/board-size", {
+                headers: { Authorization: "Bearer " + token }, cache: "no-store"
+            });
+            if (sequence !== privateBoardSequence || token !== getVoteToken()) return;
+            if (!payload || typeof payload.script !== "string" || payload.script.length > 100000) {
+                throw new Error("관리자 도구를 불러오지 못했습니다.");
+            }
+            // Only trusted application code returned by the server's admin check
+            // is installed. The public bundle contains no calculator renderer.
+            var script = document.createElement("script");
+            script.textContent = payload.script;
+            document.head.appendChild(script);
+            script.remove();
+            if (typeof window.GoyoungoAdminBoardSize !== "function") throw new Error("관리자 도구를 실행하지 못했습니다.");
+            setAdminUi(true);
+            window.GoyoungoAdminBoardSize(page, { root: root, data: data, esc: esc, hero: hero, footer: footer });
+        } catch (error) {
+            if (sequence !== privateBoardSequence || token !== getVoteToken()) return;
+            delete window.GoyoungoAdminBoardSize;
+            setAdminUi(false);
+            var denied = error.status === 401 || error.status === 403;
+            renderPrivateBoardNotice(denied
+                ? "관리자 권한이 없거나 로그인이 만료되었습니다. 관리자 카카오 계정으로 로그인해 주세요."
+                : "관리자 권한을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.", denied ? "login" : "retry");
+        } finally {
+            if (sequence === privateBoardSequence) privateBoardPendingToken = null;
+        }
     }
 
     function renderUnknown() {
@@ -2639,18 +2516,36 @@
             await loadManagedCollection(page);
             renderShuttle(page);
         } else if (page.type === "boardSize") {
-            renderBoardSize(page);
+            await renderPrivateBoardSize(page);
         } else {
             renderUnknown();
         }
     }
 
     document.addEventListener("goyoungo:authchange", function (event) {
+        if (document.body.dataset.page === "board-size") {
+            if (event.detail && event.detail.authenticated) renderPrivateBoardSize(data.pages["board-size"]);
+            else {
+                clearPrivateBoard();
+                setAdminUi(false);
+                renderPrivateBoardNotice("이 페이지는 관리자로 지정된 카카오 계정만 열 수 있습니다.", "login");
+            }
+            return;
+        }
         if (event.detail && event.detail.authenticated) {
             refreshAdminStatus();
         } else {
             setAdminUi(false);
         }
+    });
+
+    window.addEventListener("pagehide", function () {
+        if (document.body.dataset.page !== "board-size") return;
+        clearPrivateBoard();
+        renderPrivateBoardNotice("페이지를 다시 열면 관리자 권한을 확인합니다.");
+    });
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted && document.body.dataset.page === "board-size") renderPrivateBoardSize(data.pages["board-size"]);
     });
 
     if (document.readyState === "loading") {

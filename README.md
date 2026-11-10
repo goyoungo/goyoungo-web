@@ -8,7 +8,7 @@ GO.YOUNGO의 라이프 디렉터리와 스키장 정보 서비스 SNOWBRO를 제
 - Kakao JavaScript SDK
 - AWS Amplify / CloudFront
 - API Gateway HTTP API / Lambda / DynamoDB
-- 빌드 과정 없는 다중 정적 페이지 구조
+- 다중 정적 페이지 구조 / 공개 파일만 `dist`로 묶어 Amplify에 배포
 
 ## 주요 경로
 
@@ -36,6 +36,10 @@ RUNBRO 화면은 `assets/runbro.css`, `assets/runbro.js`, `assets/runbro-config.
 
 - 도메인: https://goyoungo.com
 - 호스팅: AWS Amplify
+
+`node scripts/build-static.mjs`가 공개 HTML·정적 자산만 `dist/`에 복사합니다. `amplify.yml`은 이 디렉터리만 게시합니다. `backend/`, `scripts/`, 테스트·문서·Git 메타데이터는 웹으로 게시하지 않습니다. 기존 `customHttp.yml`의 응답 헤더 설정은 저장소 루트에서 유지합니다.
+
+보드 길이 추천은 관리자 전용입니다. 일반 메뉴·사이트맵에서는 제외하며, 페이지의 공개 HTML은 잠금 안내만 제공합니다. 계산기 코드는 `GET /admin/tools/board-size`에서 카카오 관리자 권한 확인 후 반환하고 캐시하지 않습니다. 해당 페이지의 관리자 수정값 조회도 같은 권한이 필요합니다.
 
 ## 로컬 미리보기
 

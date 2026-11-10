@@ -18,6 +18,7 @@
 - `GET /page-overrides?pagePath=<path>`: 공개 페이지 콘텐츠 수정값 조회
 - `PUT /admin/pages`: 관리자 카카오 계정의 페이지 글자·링크 수정 저장
 - `GET /admin/pages/history?pagePath=<path>`: 관리자 변경 이력 조회
+- `GET /admin/tools/board-size`: 관리자만 보드 길이 계산기 코드를 조회. 비로그인 401·비관리자 403, `private, no-store` 응답.
 - `GET /collections/{marketplace|season-room|shuttle}`: 공개 카드 목록 조회
 - `PUT /admin/collections/{marketplace|season-room|shuttle}`: 관리자 카드 추가·수정·삭제 결과 저장
 - `POST /admin/season-photos`: 관리자 사진 업로드. JSON `contentType`, `data`(base64)를 받고 `photoId`를 반환합니다.
@@ -25,6 +26,8 @@
 한 계정은 맛집마다 한 표만 가질 수 있습니다. 같은 선택을 다시 저장하면 그대로 유지되고, `null`은 취소입니다.
 
 정보 수정 요청은 사이트에서 인스타그램 DM 안내로 처리하므로 API에 별도로 저장하지 않습니다.
+
+`/snowbro/board-size.html`의 페이지 수정값 조회는 공개 `/page-overrides` 경로를 사용하더라도 관리자 인증을 요구합니다. 이 외 공개 페이지의 수정값은 기존처럼 비로그인 조회할 수 있습니다.
 
 ## 시즌방 게시판
 

@@ -24,6 +24,7 @@
     var linkInput = null;
     var linkName = null;
     var selectedLink = null;
+    var overrideReadSequence = 0;
 
     function normalizePagePath(value) {
         var path = String(value || "/").replace(/\/{2,}/g, "/");
@@ -325,6 +326,7 @@
     }
 
     function setAdmin(value) {
+        var changed = isAdmin !== Boolean(value);
         isAdmin = Boolean(value);
         if (!isAdmin) {
             editing = false;
@@ -334,6 +336,7 @@
         if (toolbar) toolbar.hidden = !isAdmin;
         updateToolbar();
         updateAllEditableStates();
+        if (changed && document.body.hasAttribute("data-page-admin-only")) loadOverrides();
     }
 
     function toolbarHtml() {
@@ -500,11 +503,17 @@
     }
 
     async function loadOverrides() {
+        var sequence = ++overrideReadSequence;
         try {
-            var targetPaths = Array.from(new Set([pagePath].concat(Array.from(syncPathByKey.values()))));
+            var token = authToken();
+            var targetPaths = Array.from(new Set([pagePath].concat(Array.from(syncPathByKey.values())))).filter(function (targetPath) {
+                return targetPath !== pagePath || !document.body.hasAttribute("data-page-admin-only") || (isAdmin && token);
+            });
             var payloads = await Promise.all(targetPaths.map(function (targetPath) {
-                return requestJson("/page-overrides?pagePath=" + encodeURIComponent(targetPath));
+                return requestJson("/page-overrides?pagePath=" + encodeURIComponent(targetPath), token
+                    ? { headers: { Authorization: "Bearer " + token }, cache: "no-store" } : {});
             }));
+            if (sequence !== overrideReadSequence) return;
             overrides = {};
             payloads.forEach(function (payload) {
                 Object.assign(overrides, payload.fields || {});

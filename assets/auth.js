@@ -24,7 +24,7 @@
 
         var script = document.createElement("script");
         script.id = "goyoungoPageEditorScript";
-        script.src = "/assets/page-editor.js?v=20261110-shared-menu1";
+        script.src = "/assets/page-editor.js?v=20261110-private-board1";
         script.async = true;
         document.head.appendChild(script);
     }

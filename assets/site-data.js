@@ -1579,6 +1579,7 @@ window.SITE_DATA = {
     },
     "board-size": {
       "type": "boardSize",
+      "adminOnly": true,
       "title": "보드 길이 추천",
       "icon": "📏",
       "subtitle": "키·몸무게·실력·라이딩 스타일로 우선 검토할 데크 길이를 찾아보세요",
@@ -1685,5 +1686,9 @@ window.SITE_DATA.navigation.forEach(function (item) {
     enumerable: true,
     get: function () { return page.title; },
     set: function (value) { page.title = value; }
+  });
+  Object.defineProperty(item, "adminOnly", {
+    enumerable: true,
+    get: function () { return page.adminOnly === true; }
   });
 });
